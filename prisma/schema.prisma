@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Модель Бота
+model Bot {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  flow      Flow?
+
+  sessions  UserSession[]
+}
+
+// Модель Потока
+model Flow {
+  id        String   @id @default(uuid())
+  nodes     Json     // Массив узлов React Flow
+  edges     Json     // Массив связей React Flow
+  
+  botId     String   @unique // Ссылка на бота
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+// Модель Сессии
+model UserSession {
+  id            String   @id @default(uuid())
+  telegramChatId String  // ID чата в Telegram
+  currentNodeId String?  // ID узла, на котором сейчас стоит пользователь
+  variables     Json?
+  
+  botId         String
+  bot           Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([botId, telegramChatId])
+}
