@@ -1,0 +1,79 @@
+'use client';
+
+import { Search, Bell } from 'lucide-react';
+import { Input } from '@/shared/ui/input';
+import { Button } from '@/shared/ui/button';
+import { useTranslations, useLocale } from 'next-intl';
+import Link from 'next/link';
+import { ThemeToggle } from '@/features/theme-toggle';
+import { LangSwitcher } from '@/features/language-switcher';
+
+export function Header() {
+  const t = useTranslations('Header');
+  const locale = useLocale();
+
+  // Временная переменная
+  const isAuth = false;
+
+  return (
+    <header className="border-border bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
+      <div className="flex h-14 items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-6">
+          <Link href={`/${locale}`} className="flex items-center gap-2">
+            <div className="bg-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-background h-5 w-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 8V4H8" />
+                <rect width="16" height="12" x="4" y="8" rx="2" />
+                <path d="M2 14h2" />
+                <path d="M20 14h2" />
+                <path d="M15 13v2" />
+                <path d="M9 13v2" />
+              </svg>
+            </div>
+            <span className="hidden text-lg font-semibold tracking-tight md:inline-block">
+              BotFlow
+            </span>
+          </Link>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center px-4 md:px-8">
+          <div className="relative w-full max-w-md">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <Input
+              type="search"
+              placeholder={t('search_placeholder')}
+              className="bg-muted/50 focus-visible:bg-background h-9 w-full pl-9 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <LangSwitcher />
+          <ThemeToggle />
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Bell className="h-4 w-4" />
+          </Button>
+
+          {isAuth ? (
+            <p>UserNav</p>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                {t('login')}
+              </Button>
+              <Button size="sm">{t('sign_up')}</Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

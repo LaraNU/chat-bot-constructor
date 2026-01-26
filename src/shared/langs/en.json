@@ -1,1 +1,30 @@
-{ "HomePage": { "title": "Hello!" } }
+{
+  "HomePage": {
+    "title": "Your Bots",
+    "description": "Manage and monitor your Telegram bot workflows",
+    "createButton": "Create New Bot",
+    "botCardTitle": "Bot"
+  },
+  "Metadata": {
+    "title": "Bot Flow",
+    "description": "Generated constructor for chat-bots"
+  },
+  "Header": {
+    "login": "Log in",
+    "sign_up": "Sign up",
+    "search_placeholder": "Search bots..."
+  },
+  "NodesPalette": {
+    "title": "Components",
+    "description": "Drag nodes to the canvas",
+    "startTrigger": {
+      "title": "Start Trigger",
+      "description": "Entry point for your workflow"
+    }
+  },
+  "PropertiesPanel": {
+    "title": "Properties",
+    "description": "Select a node to edit",
+    "emptyState": "Click on a node in the canvas to view and edit its properties"
+  }
+}
