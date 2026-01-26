@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import { hasLocale, Locale, NextIntlClientProvider } from 'next-intl';
