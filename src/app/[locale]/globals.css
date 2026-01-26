@@ -1,5 +1,12 @@
+[data-nextjs-toast-wrapper],
+[data-nextjs-dialog-overlay],
+#nextjs-portal {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 @import 'tailwindcss';
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 

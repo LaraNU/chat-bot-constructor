@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { Inter, Roboto } from 'next/font/google';
-import '@/app/globals.css';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import './globals.css';
+import { hasLocale, Locale, NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Header } from '@/widgets/header';
+import { ThemeProvider } from '@/shared/lib/theme';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -19,39 +21,50 @@ const roboto = Roboto({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'Create Chat Bot constructor App',
-  description: 'Generated constructor for chat-bots',
-  icons: {
-    icon: '/favicon.ico',
-  },
-};
-
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function RootLayout({
-  children,
-  params,
-}: Readonly<{
+export async function generateMetadata(props: Omit<LayoutProps<'/[locale]'>, 'children'>) {
+  const { locale } = await props.params;
+
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: 'Metadata',
+  });
+
+  return {
+    title: t('title'),
+    description: t('description'),
+    icons: {
+      icon: '/favicon.ico',
+    },
+  };
+}
+
+type PropsRootLayout = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
-}>) {
+};
+
+export default async function RootLayout({ children, params }: PropsRootLayout) {
   const { locale } = await params;
 
-  if (!routing.locales.includes(locale as 'en' | 'ru')) {
+  if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
   setRequestLocale(locale);
 
-  const messages = await getMessages();
-
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${roboto.variable} antialiased`}>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <Header />
+            <main>{children}</main>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

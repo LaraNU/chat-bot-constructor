@@ -1,1 +1,30 @@
-{ "HomePage": { "title": "Привет!" } }
+{
+  "HomePage": {
+    "title": "Ваши боты",
+    "description": "Управляйте сценариями ваших Telegram-ботов и отслеживайте их работу",
+    "createButton": "Создать нового бота",
+    "botCardTitle": "Бот"
+  },
+  "Metadata": {
+    "title": "Bot Flow",
+    "description": "Generated constructor for chat-bots"
+  },
+  "Header": {
+    "login": "Войти",
+    "sign_up": "Создать аккаунт",
+    "search_placeholder": "Искать бота..."
+  },
+  "NodesPalette": {
+    "title": "Компоненты",
+    "description": "Перетащите узлы на холст",
+    "startTrigger": {
+      "title": "Триггер запуска",
+      "description": "Точка входа в ваш сценарий"
+    }
+  },
+  "PropertiesPanel": {
+    "title": "Свойства",
+    "description": "Выберите узел для редактирования",
+    "emptyState": "Нажмите на узел на холсте, чтобы просмотреть и изменить его свойства"
+  }
+}
