@@ -1,4 +1,4 @@
-import { apiFetch } from './base';
+import { apiFetch } from '@/shared/api/base';
 import type { Bot } from '@prisma/client';
 
 export const getBots = async (): Promise<Bot[]> => {

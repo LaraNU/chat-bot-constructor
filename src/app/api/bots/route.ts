@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/shared/lib/prisma';
+import { botService } from '@/entities/bot/server/service';
 
 export async function GET() {
   try {
-    const bots = await prisma.bot.findMany();
-    return NextResponse.json(bots);
+    const data = await botService.getAllBots();
+    return NextResponse.json(data);
   } catch {
-    return NextResponse.json({ error: 'Failed to fetch bots' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
