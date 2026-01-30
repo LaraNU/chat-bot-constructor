@@ -13,6 +13,7 @@ model Bot {
   id        String   @id @default(uuid())
   name      String
   userId    String
+  description String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
