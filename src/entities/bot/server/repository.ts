@@ -8,7 +8,25 @@ export const botRepository = {
     });
   },
 
-  async create(data: { name: string; userId: string }): Promise<Bot> {
-    return prisma.bot.create({ data });
+  async create(data: { name: string; description?: string; userId: string }) {
+    return await prisma.$transaction(async (tx) => {
+      const bot = await tx.bot.create({
+        data: {
+          name: data.name,
+          userId: data.userId,
+          description: data.description,
+        },
+      });
+
+      await tx.flow.create({
+        data: {
+          botId: bot.id,
+          nodes: [],
+          edges: [],
+        },
+      });
+
+      return bot;
+    });
   },
 };
