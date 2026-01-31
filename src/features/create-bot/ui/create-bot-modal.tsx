@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { Button } from '@/shared/ui/button';
 import {
   Dialog,
@@ -37,6 +38,7 @@ export function CreateBotModal() {
   const t = useTranslations('createBot');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const formSchema = z.object({
     name: z.string().min(3, t('errors.nameMin')).max(32, t('errors.nameMax')),
@@ -62,10 +64,12 @@ export function CreateBotModal() {
   const onSubmit: SubmitHandler<FormInputs> = async ({ name, description }) => {
     setIsLoading(true);
     try {
-      await createNewBot({ name, description });
+      const newBot = await createNewBot({ name, description });
 
       reset();
       setIsOpen(false);
+
+      router.push(`/editor/${newBot.id}`);
     } finally {
       setIsLoading(false);
     }
@@ -82,12 +86,11 @@ export function CreateBotModal() {
 
       <DialogContent className="sm:max-w-[425px]">
         <form id="form-create-bot" onSubmit={handleSubmit(onSubmit)}>
-          <DialogHeader>
-            <DialogTitle>{t('trigger')}</DialogTitle>
-            <DialogDescription>{t('createBotDescription')}</DialogDescription>
-          </DialogHeader>
-
           <FieldGroup>
+            <DialogHeader>
+              <DialogTitle>{t('trigger')}</DialogTitle>
+              <DialogDescription>{t('createBotDescription')}</DialogDescription>
+            </DialogHeader>
             <Controller
               name="name"
               control={control}
@@ -128,17 +131,17 @@ export function CreateBotModal() {
                 </Field>
               )}
             />
-          </FieldGroup>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">{t('btnClose')}</Button>
-            </DialogClose>
-            <Button type="submit" form="form-create-bot" disabled={isLoading}>
-              {isLoading && <Spinner data-icon="inline-start" />}
-              {t('btnSave')}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">{t('btnClose')}</Button>
+              </DialogClose>
+              <Button type="submit" form="form-create-bot" disabled={isLoading}>
+                {isLoading && <Spinner data-icon="inline-start" />}
+                {t('btnSave')}
+              </Button>
+            </DialogFooter>
+          </FieldGroup>
         </form>
       </DialogContent>
     </Dialog>
