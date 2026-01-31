@@ -26,5 +26,20 @@
     "title": "Properties",
     "description": "Select a node to edit",
     "emptyState": "Click on a node in the canvas to view and edit its properties"
+  },
+  "createBot": {
+    "trigger": "Create new bot",
+    "createBotDescription": "Enter the basic information for your bot. You can edit these details later in the settings",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter bot name",
+    "descLabel": "Description",
+    "chars": "characters",
+    "btnClose": "Close",
+    "btnSave": "Save",
+    "errors": {
+      "nameMin": "Bot name must be at least 3 characters",
+      "nameMax": "Bot name must be at most 32 characters",
+      "descMax": "Description must be at most 100 characters"
+    }
   }
 }
