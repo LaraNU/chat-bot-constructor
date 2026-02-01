@@ -14,7 +14,12 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const newBot = await botService.createNewBot(body);
+    const dataForService = {
+      ...body,
+      userId: 'temp-user-id',
+    };
+
+    const newBot = await botService.createNewBot(dataForService);
 
     return NextResponse.json(newBot, { status: 201 });
   } catch {

@@ -65,10 +65,6 @@ export function CreateBotModal() {
     setIsLoading(true);
     try {
       const newBot = await createNewBot({ name, description });
-
-      reset();
-      setIsOpen(false);
-
       router.push(`/editor/${newBot.id}`);
     } finally {
       setIsLoading(false);
@@ -78,7 +74,7 @@ export function CreateBotModal() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" data-testid="open-create-bot-modal">
           <Plus className="mr-2 h-4 w-4" />
           {t('trigger')}
         </Button>
@@ -88,7 +84,7 @@ export function CreateBotModal() {
         <form id="form-create-bot" onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             <DialogHeader>
-              <DialogTitle>{t('trigger')}</DialogTitle>
+              <DialogTitle data-testid="create-bot-modal-title">{t('trigger')}</DialogTitle>
               <DialogDescription>{t('createBotDescription')}</DialogDescription>
             </DialogHeader>
             <Controller
@@ -99,6 +95,7 @@ export function CreateBotModal() {
                   <FieldLabel htmlFor="create-bot-name">{t('nameLabel')}</FieldLabel>
                   <Input
                     {...field}
+                    data-testid="bot-name-input"
                     id="create-bot-name"
                     placeholder={t('namePlaceholder')}
                     autoComplete="off"
@@ -117,6 +114,7 @@ export function CreateBotModal() {
                   <InputGroup>
                     <InputGroupTextarea
                       {...field}
+                      data-testid="bot-description-input"
                       id="create-bot-description"
                       rows={6}
                       className="min-h-24 resize-none"
@@ -136,7 +134,12 @@ export function CreateBotModal() {
               <DialogClose asChild>
                 <Button variant="outline">{t('btnClose')}</Button>
               </DialogClose>
-              <Button type="submit" form="form-create-bot" disabled={isLoading}>
+              <Button
+                type="submit"
+                form="form-create-bot"
+                disabled={isLoading}
+                data-testid="submit-create-bot-modal"
+              >
                 {isLoading && <Spinner data-icon="inline-start" />}
                 {t('btnSave')}
               </Button>
