@@ -65,6 +65,10 @@ export function CreateBotModal() {
     setIsLoading(true);
     try {
       const newBot = await createNewBot({ name, description });
+
+      setIsOpen(false);
+      reset();
+
       router.push(`/editor/${newBot.id}`);
     } finally {
       setIsLoading(false);

@@ -11,5 +11,7 @@ test('should open modal, fill form and redirect to editor', async ({ page }) => 
 
   await page.getByTestId('submit-create-bot-modal').click();
 
-  await expect(page).toHaveURL(/\/editor\/[a-zA-Z0-9-]+/);
+  await page.waitForURL(/.*\/editor\/.*/, { timeout: 15000 });
+
+  await expect(page).toHaveURL(/.*\/editor\/[a-zA-Z0-9-]+/);
 });
