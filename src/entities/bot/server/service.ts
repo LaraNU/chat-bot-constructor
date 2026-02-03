@@ -6,12 +6,18 @@ export const botService = {
     return await botRepository.findAll();
   },
 
-  async createBot(name: string) {
-    if (name.length < 3) throw new Error('Имя бота слишком короткое');
+  async createNewBot(data: { name: string; description?: string }) {
+    if (data.name.length < 3) {
+      throw new Error('Имя бота слишком короткое (минимум 3 символа)');
+    }
 
     // заглушка для userId, пока нет авторизации
     const userId = 'temp-user-id';
 
-    return await botRepository.create({ name, userId });
+    return await botRepository.create({
+      name: data.name,
+      description: data.description,
+      userId,
+    });
   },
 };

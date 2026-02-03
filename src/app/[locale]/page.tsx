@@ -1,8 +1,6 @@
 import { useTranslations } from 'next-intl';
-import { Button } from '@/shared/ui/button';
 import { Card, CardHeader } from '@/shared/ui/card';
-import { Link } from '@/i18n/navigation';
-import { Plus } from 'lucide-react';
+import { CreateBotModal } from '@/features/create-bot';
 
 export default function Home() {
   const t = useTranslations('HomePage');
@@ -15,12 +13,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
             <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
           </div>
-          <Button asChild>
-            <Link href="/editor/new">
-              <Plus className="mr-2 h-4 w-4" />
-              {t('createButton')}
-            </Link>
-          </Button>
+          <CreateBotModal />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
