@@ -61,7 +61,7 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
         <NextIntlClientProvider>
           <ThemeProvider>
             <Header />
-            <main>{children}</main>
+            {children}
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
