@@ -45,12 +45,26 @@
   "SignUpForm": {
     "title": "Sign Up",
     "nameLabel": "Your Name",
+    "namePlaceholder": "Jon",
     "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Create a password",
     "submit": "Create account",
     "errors": {
       "nameMin": "Min 3 characters",
+      "emailInvalid": "Invalid email",
+      "passwordMin": "At least 8 characters"
+    }
+  },
+  "SignInForm": {
+    "title": "Welcome back",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign in",
+    "errors": {
       "emailInvalid": "Invalid email",
       "passwordMin": "At least 8 characters"
     }

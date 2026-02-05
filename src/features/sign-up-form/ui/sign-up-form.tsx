@@ -66,7 +66,13 @@ export function SignUpForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-name">{t('nameLabel')}</FieldLabel>
-              <Input {...field} id="user-name" data-testid="user-name-input" autoComplete="off" />
+              <Input
+                {...field}
+                id="user-name"
+                data-testid="user-name-input"
+                placeholder={t('namePlaceholder')}
+                autoComplete="off"
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
@@ -78,7 +84,13 @@ export function SignUpForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-email">{t('emailLabel')}</FieldLabel>
-              <Input {...field} id="user-email" data-testid="user-email-input" autoComplete="off" />
+              <Input
+                {...field}
+                id="user-email"
+                data-testid="user-email-input"
+                placeholder={t('emailPlaceholder')}
+                autoComplete="off"
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}

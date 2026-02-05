@@ -45,7 +45,9 @@
   "SignUpForm": {
     "title": "Регистрация",
     "nameLabel": "Ваше имя",
+    "namePlaceholder": "Jon",
     "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
     "passwordLabel": "Пароль",
     "passwordPlaceholder": "Придумайте пароль",
     "submit": "Создать аккаунт",
@@ -53,6 +55,18 @@
       "nameMin": "Минимум 3 символа",
       "emailInvalid": "Некорректный email",
       "passwordMin": "Минимум 8 символов"
+    }
+  },
+  "SignInForm": {
+    "title": "Добро пожаловать",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите ваш пароль",
+    "submit": "Войти",
+    "errors": {
+      "emailInvalid": "Некорректный email",
+      "passwordMin": "Некорректный пароль"
     }
   }
 }
