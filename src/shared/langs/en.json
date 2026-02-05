@@ -41,5 +41,18 @@
       "nameMax": "Bot name must be at most 32 characters",
       "descMax": "Description must be at most 100 characters"
     }
+  },
+  "SignUpForm": {
+    "title": "Sign Up",
+    "nameLabel": "Your Name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Create a password",
+    "submit": "Create account",
+    "errors": {
+      "nameMin": "Min 3 characters",
+      "emailInvalid": "Invalid email",
+      "passwordMin": "At least 8 characters"
+    }
   }
 }

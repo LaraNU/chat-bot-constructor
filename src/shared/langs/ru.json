@@ -41,5 +41,18 @@
       "nameMax": "Название бота должно содержать максимум 32 буквы",
       "descMax": "Описание бота должно содержать максимум 100 букв"
     }
+  },
+  "SignUpForm": {
+    "title": "Регистрация",
+    "nameLabel": "Ваше имя",
+    "emailLabel": "Email",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Придумайте пароль",
+    "submit": "Создать аккаунт",
+    "errors": {
+      "nameMin": "Минимум 3 символа",
+      "emailInvalid": "Некорректный email",
+      "passwordMin": "Минимум 8 символов"
+    }
   }
 }
