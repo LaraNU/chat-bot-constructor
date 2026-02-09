@@ -68,5 +68,11 @@
       "emailInvalid": "Invalid email",
       "passwordMin": "At least 8 characters"
     }
+  },
+  "SignInPage": {
+    "title": "Welcome back",
+    "description": "Sign in to your account to continue",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Sign up"
   }
 }
