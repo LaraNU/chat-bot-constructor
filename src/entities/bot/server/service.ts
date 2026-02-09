@@ -1,23 +1,35 @@
 import { botRepository } from './repository';
+import { createClient } from '@/shared/lib/supabase/server';
 
 export const botService = {
   async getAllBots() {
-    // здесь будет проверка авторизации
-    return await botRepository.findAll();
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    return await botRepository.findAllByUserId(user.id);
   },
 
   async createNewBot(data: { name: string; description?: string }) {
-    if (data.name.length < 3) {
-      throw new Error('Имя бота слишком короткое (минимум 3 символа)');
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('You must be authorized');
     }
 
-    // заглушка для userId, пока нет авторизации
-    const userId = 'temp-user-id';
+    if (data.name.length < 3) {
+      throw new Error('Bot name is too short (minimum 3 characters)');
+    }
 
     return await botRepository.create({
-      name: data.name,
-      description: data.description,
-      userId,
+      ...data,
+      userId: user.id,
     });
   },
 };

@@ -2,8 +2,9 @@ import { prisma } from '@/shared/lib/prisma';
 import type { Bot } from '@prisma/client';
 
 export const botRepository = {
-  async findAll(): Promise<Bot[]> {
+  async findAllByUserId(userId: string): Promise<Bot[]> {
     return prisma.bot.findMany({
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
   },
