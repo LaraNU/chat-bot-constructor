@@ -32,11 +32,20 @@ export async function middleware(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  const isDashboardPage = request.nextUrl.pathname.includes('/editor');
+  const pathname = request.nextUrl.pathname;
 
-  if (!user && isDashboardPage) {
+  const isAuthPage = pathname.includes('/login') || pathname.includes('/sign-up');
+  const isProtectedPage = pathname.includes('/editor');
+
+  if (!user && isProtectedPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/sign-in';
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 
