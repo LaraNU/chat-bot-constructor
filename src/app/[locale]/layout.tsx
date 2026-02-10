@@ -6,6 +6,8 @@ import { routing } from '@/i18n/routing';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Header } from '@/widgets/header';
 import { ThemeProvider } from '@/shared/lib/theme';
+import { createClient } from '@/shared/lib/supabase/server';
+import { AuthProvider } from '@/features/auth';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -55,13 +57,20 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
 
   setRequestLocale(locale);
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${roboto.variable} antialiased`}>
         <NextIntlClientProvider>
           <ThemeProvider>
-            <Header />
-            {children}
+            <AuthProvider initialUser={user}>
+              <Header user={user} />
+              {children}
+            </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
