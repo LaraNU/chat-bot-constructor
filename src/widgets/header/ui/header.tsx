@@ -66,12 +66,12 @@ export function Header() {
           ) : (
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="sm:flex">
-                <Link href={'/sign-in'} type="button">
+                <Link href={'/login'} type="button">
                   {t('login')}
                 </Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href={'/sign-up'} type="button">
+                <Link href={'/signup'} type="button">
                   {t('sign_up')}
                 </Link>
               </Button>
