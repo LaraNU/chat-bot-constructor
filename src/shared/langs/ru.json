@@ -74,5 +74,11 @@
     "description": "Войдите в свой аккаунт, чтобы продолжить",
     "noAccount": "Нет аккаунта?",
     "signUpLink": "Зарегистрироваться"
+  },
+  "SignUpPage": {
+    "title": "Создать аккаунт",
+    "description": "Начните работу с BotFlow бесплатно",
+    "alreadyHaveAccount": "Уже есть аккаунт?",
+    "signInLink": "Войти"
   }
 }

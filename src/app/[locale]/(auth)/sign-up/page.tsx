@@ -1,21 +1,24 @@
+import { useTranslations } from 'next-intl';
 import { SignUpForm } from '@/features/sign-up-form';
 import { Link } from '@/i18n/navigation';
 
 export default function SignupPage() {
+  const t = useTranslations('SignUpPage');
+
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Get started with BotFlow for free</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+          <p className="text-muted-foreground mt-2 text-sm">{t('description')}</p>
         </div>
 
         <SignUpForm />
 
         <p className="text-muted-foreground mt-6 text-center text-sm">
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link href="/sign-in" className="text-foreground font-medium hover:underline">
-            Sign in
+            {t('signInLink')}
           </Link>
         </p>
       </div>

@@ -74,5 +74,11 @@
     "description": "Sign in to your account to continue",
     "noAccount": "Don't have an account?",
     "signUpLink": "Sign up"
+  },
+  "SignUpPage": {
+    "title": "Create an account",
+    "description": "Get started with BotFlow for free",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInLink": "Sign in"
   }
 }
