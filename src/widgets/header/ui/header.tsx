@@ -1,5 +1,3 @@
-'use client';
-
 import { Search, Bell } from 'lucide-react';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
@@ -7,12 +5,15 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { ThemeToggle } from '@/features/theme-toggle';
 import { LangSwitcher } from '@/features/language-switcher';
+import { UserMenu } from '@/features/user-menu';
+import { User } from '@supabase/supabase-js';
 
-export function Header() {
+type HeaderProps = {
+  user: User | null;
+};
+
+export function Header({ user }: HeaderProps) {
   const t = useTranslations('Header');
-
-  // Временная переменная
-  const isAuth = false;
 
   return (
     <header className="border-border bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
@@ -61,22 +62,24 @@ export function Header() {
             <Bell className="h-4 w-4" />
           </Button>
 
-          {isAuth ? (
-            <p>UserNav</p>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="sm:flex">
-                <Link href={'/login'} type="button">
-                  {t('login')}
-                </Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href={'/signup'} type="button">
-                  {t('sign_up')}
-                </Link>
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {user ? (
+              <UserMenu user={user} />
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="sm:flex">
+                  <Link href={'/login'} type="button">
+                    {t('login')}
+                  </Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href={'/signup'} type="button">
+                    {t('signUp')}
+                  </Link>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

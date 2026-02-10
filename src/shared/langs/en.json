@@ -10,8 +10,9 @@
     "description": "Generated constructor for chat-bots"
   },
   "Header": {
-    "login": "Log in",
-    "sign_up": "Sign up",
+    "login": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
     "search_placeholder": "Search bots..."
   },
   "NodesPalette": {

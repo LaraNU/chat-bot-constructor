@@ -11,7 +11,8 @@
   },
   "Header": {
     "login": "Войти",
-    "sign_up": "Создать аккаунт",
+    "signUp": "Создать аккаунт",
+    "signOut": "Выйти",
     "search_placeholder": "Искать бота..."
   },
   "NodesPalette": {
