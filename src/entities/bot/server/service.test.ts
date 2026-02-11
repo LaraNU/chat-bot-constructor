@@ -1,11 +1,16 @@
 import { botRepository } from './repository';
 import { vi, beforeEach, describe, test, expect } from 'vitest';
 import { botService } from './service';
+import { createClient } from '@/shared/lib/supabase/server';
+
+vi.mock('@/shared/lib/supabase/server', () => ({
+  createClient: vi.fn(),
+}));
 
 vi.mock('./repository', () => ({
   botRepository: {
     create: vi.fn(),
-    findAll: vi.fn(),
+    findAllByUserId: vi.fn(),
   },
 }));
 
@@ -14,6 +19,17 @@ describe('botService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    const mockSupabaseClient = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: mockUserId } },
+          error: null,
+        }),
+      },
+    } as unknown as Awaited<ReturnType<typeof createClient>>;
+
+    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient);
   });
 
   describe('createNewBot', () => {
@@ -31,11 +47,11 @@ describe('botService', () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(botRepository.findAll).mockResolvedValue([mockCreatedBot]);
+      vi.mocked(botRepository.findAllByUserId).mockResolvedValue([mockCreatedBot]);
 
       const result = await botService.getAllBots();
 
-      expect(botRepository.findAll).toHaveBeenCalled();
+      expect(botRepository.findAllByUserId).toHaveBeenCalled();
       expect(result).toEqual([mockCreatedBot]);
     });
 
@@ -69,7 +85,7 @@ describe('botService', () => {
       };
 
       await expect(botService.createNewBot(invalidBot)).rejects.toThrow(
-        'Имя бота слишком короткое (минимум 3 символа)'
+        'Bot name is too short (minimum 3 characters)'
       );
 
       expect(botRepository.create).not.toHaveBeenCalled();
