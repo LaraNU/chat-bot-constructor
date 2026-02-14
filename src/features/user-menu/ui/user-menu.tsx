@@ -22,7 +22,7 @@ export function UserMenu({ user }: { user: User }) {
       <span className="text-muted-foreground text-sm">
         {user.user_metadata?.display_name || user.email}
       </span>
-      <Button size="sm" onClick={handleLogout}>
+      <Button size="sm" onClick={handleLogout} data-testid="sign-out-button">
         {t('signOut')}
       </Button>
     </>

@@ -10,6 +10,8 @@ import { useState } from 'react';
 import { Spinner } from '@/shared/ui/spinner';
 import { createClient } from '@/shared/lib/supabase/client';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { AuthError } from '@supabase/supabase-js';
 
 type FormInputs = {
   email: string;
@@ -36,6 +38,7 @@ export function SignInForm() {
 
   const onSubmit: SubmitHandler<FormInputs> = async ({ email, password }) => {
     setIsLoading(true);
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -44,9 +47,30 @@ export function SignInForm() {
 
       if (error) throw error;
     } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+      if (err instanceof AuthError) {
+        const errorMessage = getErrorMessage(err.code);
+
+        toast.error(errorMessage, { position: 'top-center' });
+      } else {
+        toast.error(t('errors.unexpected'), { position: 'top-center' });
+      }
+    }
+
+    setIsLoading(false);
+  };
+
+  const getErrorMessage = (code: string | undefined) => {
+    switch (code) {
+      case 'invalid_credentials':
+        return t('errors.invalid_credentials');
+      case 'email_not_confirmed':
+        return t('errors.email_not_confirmed');
+      case 'user_not_found':
+        return t('errors.user_not_found');
+      case 'too_many_requests':
+        return t('errors.too_many_requests');
+      default:
+        return t('errors.default');
     }
   };
 

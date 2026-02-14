@@ -9,7 +9,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   };
 
   try {
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, { ...options, headers, credentials: 'include' });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

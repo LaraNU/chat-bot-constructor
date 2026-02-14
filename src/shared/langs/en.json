@@ -40,7 +40,8 @@
     "errors": {
       "nameMin": "Bot name must be at least 3 characters",
       "nameMax": "Bot name must be at most 32 characters",
-      "descMax": "Description must be at most 100 characters"
+      "descMax": "Description must be at most 100 characters",
+      "createFailed": "Failed to create bot. Please try again"
     }
   },
   "SignUpForm": {
@@ -67,7 +68,13 @@
     "submit": "Sign in",
     "errors": {
       "emailInvalid": "Invalid email",
-      "passwordMin": "At least 8 characters"
+      "passwordMin": "At least 8 characters",
+      "invalid_credentials": "Invalid email or password. Please try again",
+      "email_not_confirmed": "Please confirm your email before logging in",
+      "user_not_found": "User with these credentials not found",
+      "too_many_requests": "Too many login attempts. Please try again later",
+      "unexpected": "An unexpected error occurred",
+      "default": "Authentication error. Please check your data"
     }
   },
   "SignInPage": {

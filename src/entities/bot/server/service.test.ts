@@ -49,9 +49,9 @@ describe('botService', () => {
 
       vi.mocked(botRepository.findAllByUserId).mockResolvedValue([mockCreatedBot]);
 
-      const result = await botService.getAllBots();
+      const result = await botService.getAllBots(mockUserId);
 
-      expect(botRepository.findAllByUserId).toHaveBeenCalled();
+      expect(botRepository.findAllByUserId).toHaveBeenCalledWith(mockUserId);
       expect(result).toEqual([mockCreatedBot]);
     });
 

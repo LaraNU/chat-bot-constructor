@@ -6,7 +6,10 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
 
   return (
-    <div className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden">
+    <div
+      data-testid="editor-root"
+      className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden"
+    >
       <NodesPalette />
       <main className="relative flex-1">
         <div className="border-border border-b p-4">
