@@ -8,6 +8,7 @@ import { Header } from '@/widgets/header';
 import { ThemeProvider } from '@/shared/lib/theme';
 import { createClient } from '@/shared/lib/supabase/server';
 import { AuthProvider } from '@/features/auth';
+import { Toaster } from '@/shared/ui/sonner';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -70,6 +71,7 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
             <AuthProvider initialUser={user}>
               <Header user={user} />
               {children}
+              <Toaster />
             </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
