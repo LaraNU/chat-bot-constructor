@@ -7,7 +7,7 @@ import path from 'path';
  * https://github.com/motdotla/dotenv
  */
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -84,5 +84,10 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
+    },
   },
 });
