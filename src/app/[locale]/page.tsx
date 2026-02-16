@@ -1,27 +1,24 @@
-import { useTranslations } from 'next-intl';
-import { Card, CardHeader } from '@/shared/ui/card';
-import { CreateBotModal } from '@/features/create-bot';
+import { createClient } from '@/shared/lib/supabase/server';
+import { BotDashboard } from '@/widgets/bot-dashboard';
+import { Footer } from '@/widgets/footer';
+import { HeroSection } from '@/widgets/landing/hero-section';
 
-export default function Home() {
-  const t = useTranslations('HomePage');
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    return <BotDashboard />;
+  }
 
   return (
-    <div className="bg-background min-h-screen">
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-            <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
-          </div>
-          <CreateBotModal />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="group hover:border-foreground/20 relative overflow-hidden transition-all hover:shadow-md">
-            <CardHeader>{t('botCardTitle')}</CardHeader>
-          </Card>
-        </div>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-1">
+        <HeroSection />
       </main>
+      <Footer />
     </div>
   );
 }

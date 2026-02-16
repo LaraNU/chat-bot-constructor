@@ -11,7 +11,8 @@
   },
   "Header": {
     "login": "Войти",
-    "sign_up": "Создать аккаунт",
+    "signUp": "Создать аккаунт",
+    "signOut": "Выйти",
     "search_placeholder": "Искать бота..."
   },
   "NodesPalette": {
@@ -39,7 +40,53 @@
     "errors": {
       "nameMin": "Название бота должно содержать минимум 3 буквы",
       "nameMax": "Название бота должно содержать максимум 32 буквы",
-      "descMax": "Описание бота должно содержать максимум 100 букв"
+      "descMax": "Описание бота должно содержать максимум 100 букв",
+      "createFailed": "Не удалось создать бота. Пожалуйста, попробуйте снова"
     }
+  },
+  "SignUpForm": {
+    "title": "Регистрация",
+    "nameLabel": "Ваше имя",
+    "namePlaceholder": "Jon",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Придумайте пароль",
+    "submit": "Создать аккаунт",
+    "errors": {
+      "nameMin": "Минимум 3 символа",
+      "emailInvalid": "Некорректный email",
+      "passwordMin": "Минимум 8 символов"
+    }
+  },
+  "SignInForm": {
+    "title": "Добро пожаловать",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите ваш пароль",
+    "submit": "Войти",
+    "errors": {
+      "emailInvalid": "Некорректный email",
+      "passwordMin": "Некорректный пароль",
+      "invalid_credentials": "Неверная почта или пароль. Попробуйте снова",
+      "email_not_confirmed": "Пожалуйста, подтвердите вашу почту перед входом",
+      "user_not_found": "Пользователь с такими данными не найден",
+      "too_many_requests": "Слишком много попыток входа. Попробуйте позже",
+      "unexpected": "Произошла непредвиденная ошибка",
+      "default": "Ошибка при авторизации. Проверьте данные"
+    }
+  },
+  "SignInPage": {
+    "title": "С возвращением",
+    "description": "Войдите в свой аккаунт, чтобы продолжить",
+    "noAccount": "Нет аккаунта?",
+    "signUpLink": "Зарегистрироваться"
+  },
+  "SignUpPage": {
+    "title": "Создать аккаунт",
+    "description": "Начните работу с BotFlow бесплатно",
+    "alreadyHaveAccount": "Уже есть аккаунт?",
+    "signInLink": "Войти"
   }
 }

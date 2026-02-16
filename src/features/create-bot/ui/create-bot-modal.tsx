@@ -28,6 +28,7 @@ import { Plus } from 'lucide-react';
 import { createNewBot } from '@/entities/bot/api/bots';
 import { useState } from 'react';
 import { Spinner } from '@/shared/ui/spinner';
+import { toast } from 'sonner';
 
 type FormInputs = {
   name: string;
@@ -70,6 +71,9 @@ export function CreateBotModal() {
       reset();
 
       router.push(`/editor/${newBot.id}`);
+    } catch (e) {
+      console.error(e);
+      toast.error(t('errors.createFailed'));
     } finally {
       setIsLoading(false);
     }

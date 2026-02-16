@@ -10,8 +10,9 @@
     "description": "Generated constructor for chat-bots"
   },
   "Header": {
-    "login": "Log in",
-    "sign_up": "Sign up",
+    "login": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
     "search_placeholder": "Search bots..."
   },
   "NodesPalette": {
@@ -39,7 +40,53 @@
     "errors": {
       "nameMin": "Bot name must be at least 3 characters",
       "nameMax": "Bot name must be at most 32 characters",
-      "descMax": "Description must be at most 100 characters"
+      "descMax": "Description must be at most 100 characters",
+      "createFailed": "Failed to create bot. Please try again"
     }
+  },
+  "SignUpForm": {
+    "title": "Sign Up",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Jon",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Create a password",
+    "submit": "Create account",
+    "errors": {
+      "nameMin": "Min 3 characters",
+      "emailInvalid": "Invalid email",
+      "passwordMin": "At least 8 characters"
+    }
+  },
+  "SignInForm": {
+    "title": "Welcome back",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign in",
+    "errors": {
+      "emailInvalid": "Invalid email",
+      "passwordMin": "At least 8 characters",
+      "invalid_credentials": "Invalid email or password. Please try again",
+      "email_not_confirmed": "Please confirm your email before logging in",
+      "user_not_found": "User with these credentials not found",
+      "too_many_requests": "Too many login attempts. Please try again later",
+      "unexpected": "An unexpected error occurred",
+      "default": "Authentication error. Please check your data"
+    }
+  },
+  "SignInPage": {
+    "title": "Welcome back",
+    "description": "Sign in to your account to continue",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Sign up"
+  },
+  "SignUpPage": {
+    "title": "Create an account",
+    "description": "Get started with BotFlow for free",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInLink": "Sign in"
   }
 }
