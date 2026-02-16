@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     const data = await botService.getAllBots(user.id);
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('GET /api/bots error:', error);
     return NextResponse.json(
