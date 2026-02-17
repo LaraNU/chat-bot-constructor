@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl';
-import { Card, CardHeader } from '@/shared/ui/card';
 import { CreateBotModal } from '@/features/create-bot';
+import { BotList } from '@/widgets/bot-list';
+import { BotListFallback } from '@/widgets/bot-list';
+import { Suspense } from 'react';
 
 export function BotDashboard() {
   const t = useTranslations('HomePage');
@@ -18,11 +20,9 @@ export function BotDashboard() {
           <CreateBotModal />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="group hover:border-foreground/20 relative overflow-hidden transition-all hover:shadow-md">
-            <CardHeader>{t('botCardTitle')}</CardHeader>
-          </Card>
-        </div>
+        <Suspense fallback={<BotListFallback />}>
+          <BotList />
+        </Suspense>
       </main>
     </div>
   );
