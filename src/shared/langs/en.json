@@ -15,14 +15,6 @@
     "signOut": "Sign out",
     "search_placeholder": "Search bots..."
   },
-  "NodesPalette": {
-    "title": "Components",
-    "description": "Drag nodes to the canvas",
-    "startTrigger": {
-      "title": "Start Trigger",
-      "description": "Entry point for your workflow"
-    }
-  },
   "PropertiesPanel": {
     "title": "Properties",
     "description": "Select a node to edit",
@@ -97,5 +89,27 @@
     "description": "Get started with BotFlow for free",
     "alreadyHaveAccount": "Already have an account?",
     "signInLink": "Sign in"
+  },
+  "WorkflowEditor": {
+    "title": "Components",
+    "description": "Drag nodes to the canvas",
+    "nodes": {
+      "start": {
+        "name": "Start",
+        "description": "Entry point for your workflow"
+      },
+      "message": {
+        "name": "Message",
+        "description": "Send a text message to the user"
+      },
+      "condition": {
+        "name": "Condition",
+        "description": "Split workflow logic"
+      },
+      "end": {
+        "name": "End",
+        "description": "End of the conversation"
+      }
+    }
   }
 }

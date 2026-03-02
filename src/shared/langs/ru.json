@@ -15,14 +15,6 @@
     "signOut": "Выйти",
     "search_placeholder": "Искать бота..."
   },
-  "NodesPalette": {
-    "title": "Компоненты",
-    "description": "Перетащите узлы на холст",
-    "startTrigger": {
-      "title": "Триггер запуска",
-      "description": "Точка входа в ваш сценарий"
-    }
-  },
   "PropertiesPanel": {
     "title": "Свойства",
     "description": "Выберите узел для редактирования",
@@ -97,5 +89,27 @@
     "description": "Начните работу с BotFlow бесплатно",
     "alreadyHaveAccount": "Уже есть аккаунт?",
     "signInLink": "Войти"
+  },
+  "WorkflowEditor": {
+    "title": "Компоненты",
+    "description": "Перетащите узлы на холст",
+    "nodes": {
+      "start": {
+        "name": "Начало",
+        "description": "Точка входа в сценарий"
+      },
+      "message": {
+        "name": "Сообщение",
+        "description": "Отправить текст пользователю"
+      },
+      "condition": {
+        "name": "Условие",
+        "description": "Разделение логики"
+      },
+      "end": {
+        "name": "Конец",
+        "description": "Завершение диалога"
+      }
+    }
   }
 }
