@@ -2,21 +2,34 @@
 
 import { memo } from 'react';
 import { MessageSquare } from 'lucide-react';
-import { NodeProps, Handle, Position } from '@xyflow/react';
+import { NodeProps, Handle, Position, useReactFlow } from '@xyflow/react';
 import {
   BaseNode,
   BaseNodeContent,
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
-import { AppNode, MessageNodeData } from '../../model/types';
+import { MessageAppNode } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
+import { Textarea } from '@/shared/ui/textarea';
+import { Label } from '@/shared/ui/label';
 
-export const MessageNode = memo(({ data }: NodeProps<AppNode>) => {
+export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const t = useTranslations('WorkflowEditor');
-  const nodeData = data as MessageNodeData;
   const config = WORKFLOW_NODES_CONFIG.message;
+  const { setNodes } = useReactFlow();
+
+  const onChangeText = (val: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          return { ...node, data: { ...node.data, text: val } };
+        }
+        return node;
+      })
+    );
+  };
 
   return (
     <BaseNode className="w-64">
@@ -33,14 +46,14 @@ export const MessageNode = memo(({ data }: NodeProps<AppNode>) => {
 
       <BaseNodeContent className="space-y-2 p-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
             {t('nodes.message.description') || 'Message Text'}
-          </label>
-          <textarea
-            className="nodrag nowheel border-input focus-visible:ring-primary min-h-[80px] w-full resize-none rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors outline-none focus-visible:ring-1"
+          </Label>
+          <Textarea
+            className="nodrag nowheel"
             placeholder={t('nodes.message.description') || 'Enter message...'}
-            value={nodeData.text}
-            onChange={(e) => nodeData.onChange?.(e.target.value)}
+            value={data.text}
+            onChange={(e) => onChangeText(e.target.value)}
           />
         </div>
       </BaseNodeContent>
