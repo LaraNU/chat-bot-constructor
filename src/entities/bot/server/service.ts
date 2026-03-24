@@ -1,4 +1,5 @@
 import { botRepository } from './repository';
+import { createBotSchema } from '../model/types';
 
 export const botService = {
   async getAllBots(userId: string) {
@@ -6,8 +7,10 @@ export const botService = {
   },
 
   async createNewBot(data: { name: string; description?: string; userId: string }) {
-    if (data.name.length < 3) {
-      throw new Error('Bot name is too short (minimum 3 characters)');
+    const parsed = createBotSchema.safeParse({ name: data.name, description: data.description });
+
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues.map((item) => item.message).join(', '));
     }
 
     return await botRepository.create(data);

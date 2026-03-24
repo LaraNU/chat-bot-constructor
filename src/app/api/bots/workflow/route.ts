@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { botService } from '@/entities/bot/server/service';
 import { createClient } from '@/shared/lib/supabase/server';
+import { workflowService } from '@/entities/workflow/server/service';
 import { ApiError, UnauthorizedError, ValidationError } from '@/shared/api/errors';
 
 const catchApiError = (error: unknown) => {
@@ -8,14 +8,14 @@ const catchApiError = (error: unknown) => {
     return NextResponse.json({ error: error.message }, { status: error.status });
   }
 
-  console.error('GET /api/bots error:', error);
+  console.error('GET /api/bots/workflow error:', error);
   return NextResponse.json(
     { error: 'Internal Server Error', details: String(error) },
     { status: 500 }
   );
 };
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const supabase = await createClient();
     const {
@@ -26,8 +26,20 @@ export async function GET() {
       throw new UnauthorizedError();
     }
 
-    const data = await botService.getAllBots(user.id);
-    return NextResponse.json(data, { status: 200 });
+    const url = new URL(req.url);
+    const botId = url.searchParams.get('botId');
+
+    if (!botId) {
+      throw new ValidationError('botId is required');
+    }
+
+    const workflow = await workflowService.getWorkflowByBotId(botId);
+
+    if (!workflow) {
+      return NextResponse.json({ nodes: [], edges: [] }, { status: 200 });
+    }
+
+    return NextResponse.json({ nodes: workflow.nodes, edges: workflow.edges }, { status: 200 });
   } catch (error) {
     return catchApiError(error);
   }
@@ -46,12 +58,19 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    const { botId, nodes, edges } = body;
+
+    if (!botId) {
+      throw new ValidationError('botId is required');
+    }
+
+    if (!Array.isArray(nodes) || !Array.isArray(edges)) {
+      throw new ValidationError('Invalid payload: nodes/edges must be arrays');
+    }
+
     try {
-      const bot = await botService.createNewBot({
-        ...body,
-        userId: user.id,
-      });
-      return NextResponse.json(bot, { status: 201 });
+      const workflow = await workflowService.saveWorkflow(botId, nodes, edges);
+      return NextResponse.json({ ...workflow }, { status: 200 });
     } catch (serviceError) {
       if (serviceError instanceof Error) {
         throw new ValidationError(serviceError.message);

@@ -85,7 +85,7 @@ describe('botService', () => {
       };
 
       await expect(botService.createNewBot(invalidBot)).rejects.toThrow(
-        'Bot name is too short (minimum 3 characters)'
+        'Bot name must be at least 3 characters'
       );
 
       expect(botRepository.create).not.toHaveBeenCalled();

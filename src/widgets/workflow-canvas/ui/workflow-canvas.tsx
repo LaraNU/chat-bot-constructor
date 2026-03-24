@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -16,6 +16,7 @@ import {
 import '@xyflow/react/dist/style.css';
 
 import { Button } from '@/shared/ui/button';
+import { getWorkflowByBotId, saveWorkflow } from '@/entities/workflow/api/workflow';
 import { WorkflowNodeType } from '@/entities/workflow';
 import { StartNode } from '@/entities/workflow/ui/nodes/start-node';
 import { MessageNode } from '@/entities/workflow/ui/nodes/message-node';
@@ -41,6 +42,28 @@ export function WorkflowCanvas({
   const [edges, setEdges, onEdgesChange] = useEdgesState<AppEdge>(initialEdges);
 
   const { screenToFlowPosition } = useReactFlow();
+
+  useEffect(() => {
+    async function loadWorkflow() {
+      try {
+        const data = await getWorkflowByBotId(botId);
+
+        if (data.nodes && Array.isArray(data.nodes)) {
+          setNodes(data.nodes as AppNode[]);
+        }
+
+        if (data.edges && Array.isArray(data.edges)) {
+          setEdges(data.edges as AppEdge[]);
+        }
+      } catch (error) {
+        console.error('Load workflow error:', error);
+      }
+    }
+
+    if (botId) {
+      loadWorkflow();
+    }
+  }, [botId, setEdges, setNodes]);
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -79,12 +102,8 @@ export function WorkflowCanvas({
 
   const onSave = async () => {
     try {
-      const response = await fetch('/api/bots/workflow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ botId, nodes, edges }),
-      });
-      if (response.ok) alert('Saved successfully!');
+      await saveWorkflow({ botId, nodes, edges });
+      alert('Saved successfully!');
     } catch (error) {
       console.error('Save error:', error);
     }
