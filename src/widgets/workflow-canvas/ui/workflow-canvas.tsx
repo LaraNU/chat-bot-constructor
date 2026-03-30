@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import {
   ReactFlow,
   Background,
@@ -20,11 +22,15 @@ import { getWorkflowByBotId, saveWorkflow } from '@/entities/workflow/api/workfl
 import { WorkflowNodeType } from '@/entities/workflow';
 import { StartNode } from '@/entities/workflow/ui/nodes/start-node';
 import { MessageNode } from '@/entities/workflow/ui/nodes/message-node';
+import { ConditionNode } from '@/entities/workflow/ui/nodes/condition-node';
+import { EndNode } from '@/entities/workflow/ui/nodes/end-node';
 import { AppEdge, AppNode } from '@/entities/workflow/model/types';
 
 const nodeTypes: NodeTypes = {
   start: StartNode,
   message: MessageNode,
+  condition: ConditionNode,
+  end: EndNode,
 };
 
 interface WorkflowCanvasProps {
@@ -38,6 +44,7 @@ export function WorkflowCanvas({
   initialEdges = [],
   botId,
 }: WorkflowCanvasProps) {
+  const t = useTranslations('WorkflowCanvas');
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<AppEdge>(initialEdges);
 
@@ -57,13 +64,14 @@ export function WorkflowCanvas({
         }
       } catch (error) {
         console.error('Load workflow error:', error);
+        toast.error(t('messages.loadError'));
       }
     }
 
     if (botId) {
       loadWorkflow();
     }
-  }, [botId, setEdges, setNodes]);
+  }, [botId, setEdges, setNodes, t]);
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -103,9 +111,10 @@ export function WorkflowCanvas({
   const onSave = async () => {
     try {
       await saveWorkflow({ botId, nodes, edges });
-      alert('Saved successfully!');
+      toast.success(t('messages.saveSuccess'));
     } catch (error) {
       console.error('Save error:', error);
+      toast.error(t('messages.saveError'));
     }
   };
 
@@ -127,7 +136,7 @@ export function WorkflowCanvas({
 
         <Panel position="top-right" className="flex gap-2">
           <Button onClick={onSave} size="sm" className="shadow-md">
-            Save Changes
+            {t('saveButton')}
           </Button>
         </Panel>
       </ReactFlow>

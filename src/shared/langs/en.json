@@ -110,6 +110,31 @@
         "name": "End",
         "description": "End of the conversation"
       }
+    },
+    "condition": {
+      "variable": "Variable to Check",
+      "variablePlaceholder": "e.g., message_text, status, user_field",
+      "operator": "Comparison Operator",
+      "value": "Compare With",
+      "valuePlaceholder": "e.g., 'Buy' or '100'"
+    },
+    "operators": {
+      "equals": "Equals (=)",
+      "contains": "Contains",
+      "greaterThan": "Greater Than (>)",
+      "lessThan": "Less Than (<)",
+      "exists": "Exists"
+    },
+    "end": {
+      "messagePlaceholder": "Enter farewell message (optional)..."
+    }
+  },
+  "WorkflowCanvas": {
+    "saveButton": "Save Changes",
+    "messages": {
+      "saveSuccess": "Workflow saved successfully!",
+      "saveError": "Failed to save workflow. Please try again.",
+      "loadError": "Failed to load workflow. Please refresh the page."
     }
   }
 }

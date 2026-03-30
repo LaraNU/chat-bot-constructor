@@ -1,5 +1,5 @@
 'use client';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, useReactFlow, NodeProps } from '@xyflow/react';
 import {
   BaseNode,
   BaseNodeContent,
@@ -8,13 +8,19 @@ import {
 } from '@/shared/ui/base-node';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
-import { Play } from 'lucide-react';
-import { memo } from 'react';
+import { Play, Trash2 } from 'lucide-react';
+import { memo, useCallback } from 'react';
+import { Button } from '@/shared/ui/button';
+import { StartAppNode } from '../../model/types';
 
-export const StartNode = memo(() => {
+export const StartNode = memo(({ id }: NodeProps<StartAppNode>) => {
   const t = useTranslations('WorkflowEditor');
-
   const config = WORKFLOW_NODES_CONFIG.start;
+  const { setNodes } = useReactFlow();
+
+  const handleDelete = useCallback(() => {
+    setNodes((nds) => nds.filter((node) => node.id !== id));
+  }, [id, setNodes]);
 
   return (
     <BaseNode className="w-64">
@@ -25,6 +31,14 @@ export const StartNode = memo(() => {
         <BaseNodeHeaderTitle className="text-xs font-semibold">
           {t(`nodes.start.name`)}
         </BaseNodeHeaderTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
+          onClick={handleDelete}
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-2 p-3">
