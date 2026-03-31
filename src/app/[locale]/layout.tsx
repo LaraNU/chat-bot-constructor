@@ -6,9 +6,9 @@ import { routing } from '@/i18n/routing';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Header } from '@/widgets/header';
 import { ThemeProvider } from '@/shared/lib/theme';
-import { createClient } from '@/shared/lib/supabase/server';
 import { AuthProvider } from '@/features/auth';
 import { Toaster } from '@/shared/ui/sonner';
+import { getAuthenticatedUser } from '@/shared/auth';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -58,10 +58,7 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
 
   setRequestLocale(locale);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   return (
     <html lang={locale} suppressHydrationWarning>
