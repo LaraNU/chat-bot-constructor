@@ -82,7 +82,8 @@
     "title": "Welcome back",
     "description": "Sign in to your account to continue",
     "noAccount": "Don't have an account?",
-    "signUpLink": "Sign up"
+    "signUpLink": "Sign up",
+    "success": "You have successfully signed in!"
   },
   "SignUpPage": {
     "title": "Create an account",

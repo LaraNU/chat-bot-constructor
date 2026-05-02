@@ -3,83 +3,19 @@
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/shared/ui/field';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { Spinner } from '@/shared/ui/spinner';
-import { createClient } from '@/shared/lib/supabase/client';
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
-import { AuthError } from '@supabase/supabase-js';
-
-type FormInputs = {
-  email: string;
-  password: string;
-};
+import { useSignIn } from '../model/use-sign-in';
 
 export function SignInForm() {
-  const t = useTranslations('SignInForm');
-  const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
-
-  const formSchema = z.object({
-    email: z.email(t('errors.emailInvalid')),
-    password: z.string().min(8, t('errors.passwordMin')),
-  });
-
-  const { handleSubmit, control } = useForm<FormInputs>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  const onSubmit: SubmitHandler<FormInputs> = async ({ email, password }) => {
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      if (err instanceof AuthError) {
-        const errorMessage = getErrorMessage(err.code);
-
-        toast.error(errorMessage, { position: 'top-center' });
-      } else {
-        toast.error(t('errors.unexpected'), { position: 'top-center' });
-      }
-    }
-
-    setIsLoading(false);
-  };
-
-  const getErrorMessage = (code: string | undefined) => {
-    switch (code) {
-      case 'invalid_credentials':
-        return t('errors.invalid_credentials');
-      case 'email_not_confirmed':
-        return t('errors.email_not_confirmed');
-      case 'user_not_found':
-        return t('errors.user_not_found');
-      case 'too_many_requests':
-        return t('errors.too_many_requests');
-      default:
-        return t('errors.default');
-    }
-  };
+  const { form, onSubmit, isLoading, t } = useSignIn();
 
   return (
-    <form id="sign-in-form" onSubmit={handleSubmit(onSubmit)}>
+    <form id="sign-in-form" onSubmit={onSubmit}>
       <FieldGroup>
         <Controller
           name="email"
-          control={control}
+          control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-email">{t('emailLabel')}</FieldLabel>
@@ -97,7 +33,7 @@ export function SignInForm() {
 
         <Controller
           name="password"
-          control={control}
+          control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-password">{t('passwordLabel')}</FieldLabel>
