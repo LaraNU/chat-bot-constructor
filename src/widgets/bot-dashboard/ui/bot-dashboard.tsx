@@ -1,11 +1,11 @@
-import { useTranslations } from 'next-intl';
 import { CreateBotModal } from '@/features/create-bot';
 import { BotList } from '@/widgets/bot-list';
 import { BotListFallback } from '@/widgets/bot-list';
 import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
 
-export function BotDashboard() {
-  const t = useTranslations('HomePage');
+export async function BotDashboard() {
+  const t = await getTranslations('HomePage');
 
   return (
     <div className="bg-background min-h-screen">

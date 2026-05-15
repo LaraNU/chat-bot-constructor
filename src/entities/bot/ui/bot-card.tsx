@@ -1,21 +1,31 @@
+import { getTranslations, getFormatter } from 'next-intl/server';
 import { Pencil, Trash } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Logo } from '@/shared/ui/icons/logo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { ReactNode } from 'react';
 
 type BotCardProps = {
   id: string;
   name: string;
   status?: 'active' | 'draft';
-  lastUpdated: string;
+  updatedAt: string;
   description: string | null;
+  deleteActionSlot?: ReactNode;
 };
 
-export function BotCard({ id, name, status, lastUpdated, description }: BotCardProps) {
-  const t = useTranslations('BotCard');
+export async function BotCard({
+  id,
+  name,
+  status = 'draft',
+  updatedAt,
+  description,
+  deleteActionSlot,
+}: BotCardProps) {
+  const t = await getTranslations('BotCard');
+  const formatter = await getFormatter();
 
   return (
     <Card className="group hover:border-foreground/20 relative overflow-hidden transition-all hover:shadow-md">
@@ -43,7 +53,12 @@ export function BotCard({ id, name, status, lastUpdated, description }: BotCardP
             {status === 'active' ? t('active') : t('draft')}
           </Badge>
           <span className="text-muted-foreground text-xs">
-            {t('lastUpdated')} {lastUpdated}
+            {t('lastUpdated')}{' '}
+            {formatter.dateTime(new Date(updatedAt), {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })}
           </span>
         </div>
 
@@ -54,10 +69,13 @@ export function BotCard({ id, name, status, lastUpdated, description }: BotCardP
               {t('edit')}
             </Link>
           </Button>
-          <Button variant="secondary" size="sm" className="flex-1">
-            <Trash className="mr-2 h-3.5 w-3.5" />
-            {t('delete')}
-          </Button>
+
+          {deleteActionSlot ?? (
+            <Button variant="secondary" size="sm" className="flex-1">
+              <Trash className="mr-2 h-3.5 w-3.5" />
+              {t('delete')}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

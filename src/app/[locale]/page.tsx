@@ -1,24 +1,24 @@
 import { createClient } from '@/shared/lib/supabase/server';
-import { BotDashboard } from '@/widgets/bot-dashboard';
-import { Footer } from '@/widgets/footer';
-import { HeroSection } from '@/widgets/landing/hero-section';
+import { setRequestLocale } from 'next-intl/server';
+import { DashboardPage } from '@/views/dashboard';
+import { LandingPage } from '@/views/landing';
 
-export default async function Home() {
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function Home({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    return <BotDashboard />;
+    return <DashboardPage />;
   }
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <HeroSection />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <LandingPage />;
 }

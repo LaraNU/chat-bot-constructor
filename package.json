@@ -16,6 +16,8 @@
     "test": "vitest run",
     "test:playwright": "playwright test",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "prettier": "prettier --write .",
     "prepare": "husky",
     "postinstall": "prisma generate"
   },

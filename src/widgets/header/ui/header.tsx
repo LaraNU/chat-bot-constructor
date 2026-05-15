@@ -1,3 +1,5 @@
+'use client';
+
 import { Search, Bell } from 'lucide-react';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
@@ -6,14 +8,11 @@ import { Link } from '@/i18n/navigation';
 import { ThemeToggle } from '@/features/theme-toggle';
 import { LangSwitcher } from '@/features/language-switcher';
 import { UserMenu } from '@/features/user-menu';
-import { User } from '@supabase/supabase-js';
+import { useAuth } from '@/app/providers/auth-provider';
 
-type HeaderProps = {
-  user: User | null;
-};
-
-export function Header({ user }: HeaderProps) {
+export function Header() {
   const t = useTranslations('Header');
+  const { user } = useAuth();
 
   return (
     <header className="border-border bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-sm">

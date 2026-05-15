@@ -46,13 +46,15 @@ export function CreateBotModal() {
     description: z.string().max(100, t('errors.descMax')),
   });
 
-  const { handleSubmit, control, reset } = useForm<FormInputs>({
+  const { handleSubmit, control, reset, watch } = useForm<FormInputs>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       description: '',
     },
   });
+
+  const descriptionValue = watch('description');
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -129,7 +131,7 @@ export function CreateBotModal() {
                     />
                     <InputGroupAddon align="block-end">
                       <InputGroupText className="tabular-nums">
-                        {field.value.length}/100 {t('chars')}
+                        {descriptionValue.length}/100 {t('chars')}
                       </InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/shared/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -18,26 +18,36 @@ export function AuthProvider({
   const supabase = createClient();
   const router = useRouter();
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         setUser(null);
-        router.refresh();
       } else if (session?.user) {
         setUser(session.user);
-
-        if (!user) router.refresh();
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router, user]);
+  }, [supabase]);
 
-  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    router.refresh();
+  }, [user, router]);
+
+  const contextValue = useMemo(() => ({ user }), [user]);
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

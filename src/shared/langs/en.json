@@ -76,7 +76,8 @@
       "too_many_requests": "Too many login attempts. Please try again later",
       "unexpected": "An unexpected error occurred",
       "default": "Authentication error. Please check your data"
-    }
+    },
+    "success": "You have successfully signed in!"
   },
   "SignInPage": {
     "title": "Welcome back",
@@ -137,5 +138,6 @@
       "saveError": "Failed to save workflow. Please try again.",
       "loadError": "Failed to load workflow. Please refresh the page."
     }
-  }
+  },
+  "heroSection": {}
 }
