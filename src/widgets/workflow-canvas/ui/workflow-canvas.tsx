@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { NODE_TYPES } from './node-types';
+import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -11,67 +12,29 @@ import {
   useEdgesState,
   useReactFlow,
   Panel,
-  NodeTypes,
   OnConnect,
   addEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { Button } from '@/shared/ui/button';
-import { getWorkflowByBotId, saveWorkflow } from '@/entities/workflow/api/workflow';
+import { saveWorkflow } from '@/entities/workflow/api/workflow';
 import { WorkflowNodeType } from '@/entities/workflow';
-import { StartNode } from '@/entities/workflow/ui/nodes/start-node';
-import { MessageNode } from '@/entities/workflow/ui/nodes/message-node';
-import { ConditionNode } from '@/entities/workflow/ui/nodes/condition-node';
-import { EndNode } from '@/entities/workflow/ui/nodes/end-node';
-import { AppEdge, AppNode } from '@/entities/workflow/model/types';
-
-const nodeTypes: NodeTypes = {
-  start: StartNode,
-  message: MessageNode,
-  condition: ConditionNode,
-  end: EndNode,
-};
+import type { AppEdge, AppNode } from '@/entities/workflow/model/types';
 
 interface WorkflowCanvasProps {
-  initialNodes?: AppNode[];
-  initialEdges?: AppEdge[];
+  initialNodes: AppNode[];
+  initialEdges: AppEdge[];
   botId: string;
 }
 
-export function WorkflowCanvas({
-  initialNodes = [],
-  initialEdges = [],
-  botId,
-}: WorkflowCanvasProps) {
+export function WorkflowCanvas({ initialNodes, initialEdges, botId }: WorkflowCanvasProps) {
   const t = useTranslations('WorkflowCanvas');
+
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<AppEdge>(initialEdges);
 
   const { screenToFlowPosition } = useReactFlow();
-
-  useEffect(() => {
-    async function loadWorkflow() {
-      try {
-        const data = await getWorkflowByBotId(botId);
-
-        if (data.nodes && Array.isArray(data.nodes)) {
-          setNodes(data.nodes as AppNode[]);
-        }
-
-        if (data.edges && Array.isArray(data.edges)) {
-          setEdges(data.edges as AppEdge[]);
-        }
-      } catch (error) {
-        console.error('Load workflow error:', error);
-        toast.error(t('messages.loadError'));
-      }
-    }
-
-    if (botId) {
-      loadWorkflow();
-    }
-  }, [botId, setEdges, setNodes, t]);
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -81,9 +44,7 @@ export function WorkflowCanvas({
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-
       const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType;
-
       if (!type) return;
 
       const position = screenToFlowPosition({
@@ -128,12 +89,11 @@ export function WorkflowCanvas({
         onDrop={onDrop}
         onDragOver={onDragOver}
         onConnect={onConnect}
-        nodeTypes={nodeTypes}
+        nodeTypes={NODE_TYPES}
         fitView
       >
         <Background />
         <Controls />
-
         <Panel position="top-right" className="flex gap-2">
           <Button onClick={onSave} size="sm" className="shadow-md">
             {t('saveButton')}

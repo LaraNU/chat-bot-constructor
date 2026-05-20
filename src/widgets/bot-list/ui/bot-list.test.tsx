@@ -3,7 +3,7 @@ import { vi, beforeEach, describe, expect, test, Mock } from 'vitest';
 import { BotList } from './bot-list';
 import { createClient } from '@/shared/lib/supabase/server';
 import { botService } from '@/entities/bot/server/service';
-import { BotCard } from '@/features/bot-card';
+import { BotCard } from '@/entities/bot';
 
 vi.mock('@/shared/lib/supabase/server', () => ({
   createClient: vi.fn(),

@@ -15,36 +15,6 @@ const catchApiError = (error: unknown) => {
   );
 };
 
-export async function GET(req: Request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new UnauthorizedError();
-    }
-
-    const url = new URL(req.url);
-    const botId = url.searchParams.get('botId');
-
-    if (!botId) {
-      throw new ValidationError('botId is required');
-    }
-
-    const workflow = await workflowService.getWorkflowByBotId(botId);
-
-    if (!workflow) {
-      return NextResponse.json({ nodes: [], edges: [] }, { status: 200 });
-    }
-
-    return NextResponse.json({ nodes: workflow.nodes, edges: workflow.edges }, { status: 200 });
-  } catch (error) {
-    return catchApiError(error);
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();

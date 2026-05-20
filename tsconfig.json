@@ -12,6 +12,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowArbitraryExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
@@ -35,7 +36,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }

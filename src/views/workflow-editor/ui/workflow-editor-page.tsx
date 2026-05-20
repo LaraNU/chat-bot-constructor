@@ -1,16 +1,19 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+import { ReactFlowProvider } from '@xyflow/react';
 import { NodesPalette } from '@/widgets/nodes-palette';
 import { WorkflowCanvas } from '@/widgets/workflow-canvas';
 import { PropertiesPanel } from '@/widgets/properties-panel';
-import { ReactFlowProvider } from '@xyflow/react';
-import { useTranslations } from 'next-intl';
+import type { AppEdge, AppNode } from '@/entities/workflow/model/types';
 
 type Props = {
   botId: string;
+  initialNodes: AppNode[];
+  initialEdges: AppEdge[];
 };
 
-export function WorkflowEditorPage({ botId }: Props) {
+export function WorkflowEditorPage({ botId, initialNodes, initialEdges }: Props) {
   const t = useTranslations('WorkflowEditor');
 
   return (
@@ -20,13 +23,13 @@ export function WorkflowEditorPage({ botId }: Props) {
     >
       <ReactFlowProvider>
         <NodesPalette />
-        <main className="relative flex-1">
+        <main className="text-card-foreground relative flex-1">
           <div className="border-border border-b p-4">
             <h2 className="text-sm font-medium">
               {t('title')} {botId}
             </h2>
           </div>
-          <WorkflowCanvas botId={botId} />
+          <WorkflowCanvas botId={botId} initialNodes={initialNodes} initialEdges={initialEdges} />
         </main>
         <PropertiesPanel />
       </ReactFlowProvider>

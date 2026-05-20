@@ -1,24 +1,33 @@
-import { WorkflowEditorPage } from '@/views/workflow-editor';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { ScopedIntlProvider } from '@/app/providers/scoped-intl-provider';
+import { requireAuthenticatedUser } from '@/shared/auth';
+import { workflowService } from '@/entities/workflow/server/service';
+import { WorkflowEditorPage } from '@/views/workflow-editor';
+import type { AppNode, AppEdge } from '@/entities/workflow/model/types';
 
 type EditorPageProps = {
   params: Promise<{ locale: string; id: string }>;
 };
 
 export default async function EditorPage({ params }: EditorPageProps) {
-  const { id, locale } = await params;
+  await requireAuthenticatedUser();
 
+  const { id, locale } = await params;
   setRequestLocale(locale);
 
   if (!id) {
     notFound();
   }
 
+  const workflow = await workflowService.getWorkflowByBotId(id);
+
+  const initialNodes = (workflow?.nodes as unknown as AppNode[]) ?? [];
+  const initialEdges = (workflow?.edges as unknown as AppEdge[]) ?? [];
+
   return (
     <ScopedIntlProvider scopes={['WorkflowEditor', 'WorkflowCanvas', 'PropertiesPanel']}>
-      <WorkflowEditorPage botId={id} />
+      <WorkflowEditorPage botId={id} initialNodes={initialNodes} initialEdges={initialEdges} />
     </ScopedIntlProvider>
   );
 }
