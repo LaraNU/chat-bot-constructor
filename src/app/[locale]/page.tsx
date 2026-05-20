@@ -2,6 +2,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 import { setRequestLocale } from 'next-intl/server';
 import { DashboardPage } from '@/views/dashboard';
 import { LandingPage } from '@/views/landing';
+import { ScopedIntlProvider } from '../providers/scoped-intl-provider';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -17,7 +18,11 @@ export default async function Home({ params }: Props) {
   } = await supabase.auth.getUser();
 
   if (user) {
-    return <DashboardPage />;
+    return (
+      <ScopedIntlProvider scopes={['Metadata', 'createBot', 'BotCard', 'HomePage']}>
+        <DashboardPage />
+      </ScopedIntlProvider>
+    );
   }
 
   return <LandingPage />;

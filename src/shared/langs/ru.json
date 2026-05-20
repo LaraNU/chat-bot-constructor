@@ -67,6 +67,7 @@
     "passwordLabel": "Пароль",
     "passwordPlaceholder": "Введите ваш пароль",
     "submit": "Войти",
+    "success": "Вы успешно вошли в систему!",
     "errors": {
       "emailInvalid": "Некорректный email",
       "passwordMin": "Некорректный пароль",
