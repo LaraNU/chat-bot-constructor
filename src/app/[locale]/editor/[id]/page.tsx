@@ -4,7 +4,6 @@ import { ScopedIntlProvider } from '@/app/providers/scoped-intl-provider';
 import { requireAuthenticatedUser } from '@/shared/auth';
 import { workflowService } from '@/entities/workflow/server/service';
 import { WorkflowEditorPage } from '@/views/workflow-editor';
-import type { AppNode, AppEdge } from '@/entities/workflow/model/types';
 
 type EditorPageProps = {
   params: Promise<{ locale: string; id: string }>;
@@ -22,8 +21,8 @@ export default async function EditorPage({ params }: EditorPageProps) {
 
   const workflow = await workflowService.getWorkflowByBotId(id);
 
-  const initialNodes = (workflow?.nodes as unknown as AppNode[]) ?? [];
-  const initialEdges = (workflow?.edges as unknown as AppEdge[]) ?? [];
+  const initialNodes = workflow?.nodes ?? [];
+  const initialEdges = workflow?.edges ?? [];
 
   return (
     <ScopedIntlProvider scopes={['WorkflowEditor', 'WorkflowCanvas', 'PropertiesPanel']}>

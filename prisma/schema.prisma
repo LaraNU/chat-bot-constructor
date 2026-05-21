@@ -3,6 +3,10 @@ generator client {
   engineType = "library"
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -26,7 +30,11 @@ model Bot {
 // Модель Потока
 model Flow {
   id        String   @id @default(uuid())
+
+  /// [WorkflowNodes]
   nodes     Json     // Массив узлов React Flow
+
+  /// [WorkflowEdges]
   edges     Json     // Массив связей React Flow
   
   botId     String   @unique // Ссылка на бота

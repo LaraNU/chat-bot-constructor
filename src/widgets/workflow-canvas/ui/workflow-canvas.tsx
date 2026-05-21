@@ -18,9 +18,9 @@ import {
 import '@xyflow/react/dist/style.css';
 
 import { Button } from '@/shared/ui/button';
-import { saveWorkflow } from '@/entities/workflow/api/workflow';
 import { WorkflowNodeType } from '@/entities/workflow';
 import type { AppEdge, AppNode } from '@/entities/workflow/model/types';
+import { saveWorkflowAction } from '@/entities/workflow';
 
 interface WorkflowCanvasProps {
   initialNodes: AppNode[];
@@ -71,7 +71,7 @@ export function WorkflowCanvas({ initialNodes, initialEdges, botId }: WorkflowCa
 
   const onSave = async () => {
     try {
-      await saveWorkflow({ botId, nodes, edges });
+      await saveWorkflowAction({ botId, nodes, edges });
       toast.success(t('messages.saveSuccess'));
     } catch (error) {
       console.error('Save error:', error);
