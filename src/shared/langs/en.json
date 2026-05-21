@@ -133,6 +133,7 @@
   },
   "WorkflowCanvas": {
     "saveButton": "Save Changes",
+    "savingButton": "Saving...",
     "messages": {
       "saveSuccess": "Workflow saved successfully!",
       "saveError": "Failed to save workflow. Please try again.",
