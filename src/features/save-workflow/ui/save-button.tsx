@@ -3,24 +3,31 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useStoreApi } from '@xyflow/react';
+
 import { Button } from '@/shared/ui/button';
 import { saveWorkflowAction } from '@/entities/workflow';
-import type { AppEdge, AppNode } from '@/entities/workflow';
+import type { AppEdge, AppNode } from '@/entities/workflow/model/types';
 
 interface SaveWorkflowButtonProps {
   botId: string;
-  nodes: AppNode[];
-  edges: AppEdge[];
 }
 
-export function SaveWorkflowButton({ botId, nodes, edges }: SaveWorkflowButtonProps) {
+export function SaveWorkflowButton({ botId }: SaveWorkflowButtonProps) {
   const t = useTranslations('WorkflowCanvas');
   const [isLoading, setIsLoading] = useState(false);
+
+  const store = useStoreApi();
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      await saveWorkflowAction({ botId, nodes, edges });
+      const { nodes, edges } = store.getState();
+
+      const currentNodes = nodes as AppNode[];
+      const currentEdges = edges as AppEdge[];
+
+      await saveWorkflowAction({ botId, nodes: currentNodes, edges: currentEdges });
       toast.success(t('messages.saveSuccess'));
     } catch (error) {
       console.error('Save error:', error);
