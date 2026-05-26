@@ -3,7 +3,8 @@
     "title": "Your Bots",
     "description": "Manage and monitor your Telegram bot workflows",
     "createButton": "Create New Bot",
-    "botCardTitle": "Bot"
+    "botCardTitle": "Bot",
+    "emptyState": "You don't have any bots yet. Click the button above to create your first one!"
   },
   "Metadata": {
     "title": "Bot Flow",
