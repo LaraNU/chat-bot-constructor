@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { Controller, SubmitHandler, useForm, useWatch } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm, useWatch, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -29,8 +29,42 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/dialog';
-
 import { createBotSchema, type FormInputs } from '../model/validation';
+
+const DescriptionField = memo(({ control }: { control: Control<FormInputs> }) => {
+  const t = useTranslations('createBot');
+
+  const descriptionValue = useWatch({ control, name: 'description' });
+
+  return (
+    <Controller
+      name="description"
+      control={control}
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor="create-bot-description">{t('descLabel')}</FieldLabel>
+          <InputGroup>
+            <InputGroupTextarea
+              {...field}
+              data-testid="bot-description-input"
+              id="create-bot-description"
+              rows={6}
+              className="min-h-24 resize-none"
+            />
+            <InputGroupAddon align="block-end">
+              <InputGroupText className="tabular-nums">
+                {(descriptionValue || '').length}/100 {t('chars')}
+              </InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
+          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+        </Field>
+      )}
+    />
+  );
+});
+
+DescriptionField.displayName = 'DescriptionField';
 
 export function CreateBotModal() {
   const t = useTranslations('createBot');
@@ -44,11 +78,6 @@ export function CreateBotModal() {
       name: '',
       description: '',
     },
-  });
-
-  const descriptionValue = useWatch({
-    control,
-    name: 'description',
   });
 
   const handleOpenChange = (open: boolean) => {
@@ -97,36 +126,14 @@ export function CreateBotModal() {
                     id="create-bot-name"
                     placeholder={t('namePlaceholder')}
                     autoComplete="off"
+                    key="create-bot-name-input"
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
             />
 
-            <Controller
-              name="description"
-              control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="create-bot-description">{t('descLabel')}</FieldLabel>
-                  <InputGroup>
-                    <InputGroupTextarea
-                      {...field}
-                      data-testid="bot-description-input"
-                      id="create-bot-description"
-                      rows={6}
-                      className="min-h-24 resize-none"
-                    />
-                    <InputGroupAddon align="block-end">
-                      <InputGroupText className="tabular-nums">
-                        {(descriptionValue || '').length}/100 {t('chars')}
-                      </InputGroupText>
-                    </InputGroupAddon>
-                  </InputGroup>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+            <DescriptionField control={control} />
 
             <DialogFooter>
               <DialogClose asChild>
