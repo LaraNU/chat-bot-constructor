@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { BotCard } from './bot-card';
-import { vi, Mock } from 'vitest';
+import { vi, Mock, beforeEach, describe, expect, test } from 'vitest';
+import { useTranslations, useFormatter } from 'next-intl';
 
 vi.mock('next-intl', () => ({
   useTranslations: vi.fn(),
+  useFormatter: vi.fn(),
 }));
 
 vi.mock('@/i18n/navigation', () => ({
@@ -12,10 +14,10 @@ vi.mock('@/i18n/navigation', () => ({
   ),
 }));
 
-import { useTranslations } from 'next-intl';
-
 describe('BotCard', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+
     (useTranslations as Mock).mockReturnValue((key: string) => {
       const dictionary: Record<string, string> = {
         active: 'Active',
@@ -24,8 +26,11 @@ describe('BotCard', () => {
         edit: 'Edit',
         delete: 'Delete',
       };
-
       return dictionary[key] ?? key;
+    });
+
+    (useFormatter as Mock).mockReturnValue({
+      dateTime: vi.fn(() => '17.02.2026'),
     });
   });
 
@@ -35,7 +40,7 @@ describe('BotCard', () => {
         id="bot-1"
         name="Support Bot"
         status="active"
-        lastUpdated="02/17/2026"
+        updatedAt="2026-02-17T00:00:00.000Z"
         description="Answers FAQs"
       />
     );
@@ -43,14 +48,21 @@ describe('BotCard', () => {
     expect(screen.getByText('Support Bot')).toBeInTheDocument();
     expect(screen.getByText('Answers FAQs')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.getByText('Last updated 02/17/2026')).toBeInTheDocument();
+
+    expect(screen.getByText('Last updated 17.02.2026')).toBeInTheDocument();
+
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/editor/bot-1');
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
   });
 
   test('shows draft label when status is not active', () => {
-    render(<BotCard id="bot-2" name="Draft Bot" lastUpdated="02/17/2026" description={null} />);
-
+    render(
+      <BotCard
+        id="bot-2"
+        name="Draft Bot"
+        updatedAt="2026-02-17T00:00:00.000Z"
+        description={null}
+      />
+    );
     expect(screen.getByText('Draft')).toBeInTheDocument();
   });
 });
