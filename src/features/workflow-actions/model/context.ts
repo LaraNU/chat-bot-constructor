@@ -1,0 +1,28 @@
+'use client';
+
+import { createContext, useContext } from 'react';
+import type {
+  MessageNodeData,
+  StartNodeData,
+  ConditionNodeData,
+  EndNodeData,
+} from '@/entities/workflow/model/types';
+
+export type NodeDataUpdatePayload = Partial<
+  MessageNodeData & StartNodeData & ConditionNodeData & EndNodeData
+>;
+
+interface WorkflowActionsContextType {
+  onNodeDelete: (id: string) => void;
+  onNodeUpdate: (id: string, data: NodeDataUpdatePayload) => void;
+}
+
+export const WorkflowActionsContext = createContext<WorkflowActionsContextType | null>(null);
+
+export function useWorkflowActions() {
+  const context = useContext(WorkflowActionsContext);
+  if (!context) {
+    throw new Error('useWorkflowActions must be used within WorkflowActionsContext');
+  }
+  return context;
+}

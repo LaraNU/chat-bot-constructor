@@ -1,6 +1,5 @@
 import { prisma } from '@/shared/lib/prisma';
 import type { Flow } from '@prisma/client';
-import type { PrismaJsonArray } from '../model/types';
 
 export const workflowRepository = {
   async getByBotId(botId: string): Promise<Flow | null> {
@@ -9,11 +8,7 @@ export const workflowRepository = {
     });
   },
 
-  async upsertByBotId(
-    botId: string,
-    nodes: PrismaJsonArray,
-    edges: PrismaJsonArray
-  ): Promise<Flow> {
+  async upsertByBotId(botId: string, nodes: Flow['nodes'], edges: Flow['edges']): Promise<Flow> {
     return prisma.flow.upsert({
       where: { botId },
       update: {

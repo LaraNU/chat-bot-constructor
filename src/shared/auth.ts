@@ -1,7 +1,8 @@
 import { createClient } from '@/shared/lib/supabase/server';
 import type { User } from '@supabase/supabase-js';
+import { cache } from 'react';
 
-export async function getAuthenticatedUser(): Promise<User | null> {
+export const getAuthenticatedUser = cache(async (): Promise<User | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -14,7 +15,7 @@ export async function getAuthenticatedUser(): Promise<User | null> {
   }
 
   return user;
-}
+});
 
 export async function requireAuthenticatedUser(): Promise<User> {
   const user = await getAuthenticatedUser();
@@ -24,11 +25,4 @@ export async function requireAuthenticatedUser(): Promise<User> {
   }
 
   return user;
-}
-
-// For middleware - check if user is authenticated
-export async function isUserAuthenticated(): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  return !!data?.claims;
 }

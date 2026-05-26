@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/lib/prisma';
 import type { Bot } from '@prisma/client';
+import type { AppNode, AppEdge } from '@/entities/workflow/model/types';
 
 export const botRepository = {
   async findAllByUserId(userId: string): Promise<Bot[]> {
@@ -9,7 +10,16 @@ export const botRepository = {
     });
   },
 
-  async create(data: { name: string; description?: string; userId: string }) {
+  async findPaginatedByUserId(userId: string, limit: number, offset: number): Promise<Bot[]> {
+    return prisma.bot.findMany({
+      where: { userId },
+      take: limit,
+      skip: offset,
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+
+  async create(data: { name: string; description?: string; userId: string }): Promise<Bot> {
     return await prisma.$transaction(async (tx) => {
       const bot = await tx.bot.create({
         data: {
@@ -22,8 +32,8 @@ export const botRepository = {
       await tx.flow.create({
         data: {
           botId: bot.id,
-          nodes: [],
-          edges: [],
+          nodes: [] as AppNode[],
+          edges: [] as AppEdge[],
         },
       });
 

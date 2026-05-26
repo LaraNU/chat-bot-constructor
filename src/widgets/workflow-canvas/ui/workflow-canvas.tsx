@@ -1,145 +1,58 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  useNodesState,
-  useEdgesState,
-  useReactFlow,
-  Panel,
-  NodeTypes,
-  OnConnect,
-  addEdge,
-} from '@xyflow/react';
+import { ReactFlow, Background, Controls, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useMemo } from 'react';
 
-import { Button } from '@/shared/ui/button';
-import { getWorkflowByBotId, saveWorkflow } from '@/entities/workflow/api/workflow';
-import { WorkflowNodeType } from '@/entities/workflow';
-import { StartNode } from '@/entities/workflow/ui/nodes/start-node';
-import { MessageNode } from '@/entities/workflow/ui/nodes/message-node';
-import { ConditionNode } from '@/entities/workflow/ui/nodes/condition-node';
-import { EndNode } from '@/entities/workflow/ui/nodes/end-node';
-import { AppEdge, AppNode } from '@/entities/workflow/model/types';
+import { NODE_TYPES } from './node-types';
+import type { AppEdge, AppNode } from '@/entities/workflow';
 
-const nodeTypes: NodeTypes = {
-  start: StartNode,
-  message: MessageNode,
-  condition: ConditionNode,
-  end: EndNode,
-};
+import { useCanvasDragDrop } from '@/features/drag-drop-node';
+
+import { WorkflowActionsContext, useWorkflowCore } from '@/features/workflow-actions';
 
 interface WorkflowCanvasProps {
-  initialNodes?: AppNode[];
-  initialEdges?: AppEdge[];
-  botId: string;
+  initialNodes: AppNode[];
+  initialEdges: AppEdge[];
 }
 
-export function WorkflowCanvas({
-  initialNodes = [],
-  initialEdges = [],
-  botId,
-}: WorkflowCanvasProps) {
-  const t = useTranslations('WorkflowCanvas');
+export function WorkflowCanvas({ initialNodes, initialEdges }: WorkflowCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<AppEdge>(initialEdges);
 
-  const { screenToFlowPosition } = useReactFlow();
+  const { onNodeDelete, onNodeUpdate, onConnect } = useWorkflowCore({
+    setNodes,
+    setEdges,
+  });
 
-  useEffect(() => {
-    async function loadWorkflow() {
-      try {
-        const data = await getWorkflowByBotId(botId);
+  const { onDrop, onDragOver } = useCanvasDragDrop(setNodes);
 
-        if (data.nodes && Array.isArray(data.nodes)) {
-          setNodes(data.nodes as AppNode[]);
-        }
-
-        if (data.edges && Array.isArray(data.edges)) {
-          setEdges(data.edges as AppEdge[]);
-        }
-      } catch (error) {
-        console.error('Load workflow error:', error);
-        toast.error(t('messages.loadError'));
-      }
-    }
-
-    if (botId) {
-      loadWorkflow();
-    }
-  }, [botId, setEdges, setNodes, t]);
-
-  const onConnect: OnConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+  const actionsValue = useMemo(
+    () => ({
+      onNodeDelete,
+      onNodeUpdate,
+    }),
+    [onNodeDelete, onNodeUpdate]
   );
-
-  const onDrop = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault();
-
-      const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType;
-
-      if (!type) return;
-
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      const newNode: AppNode = {
-        id: crypto.randomUUID(),
-        type,
-        position,
-        data: type === 'message' ? { text: '' } : { triggerType: 'manual' },
-      } as AppNode;
-
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [screenToFlowPosition, setNodes]
-  );
-
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
-
-  const onSave = async () => {
-    try {
-      await saveWorkflow({ botId, nodes, edges });
-      toast.success(t('messages.saveSuccess'));
-    } catch (error) {
-      console.error('Save error:', error);
-      toast.error(t('messages.saveError'));
-    }
-  };
 
   return (
-    <div className="bg-muted/5 relative h-full flex-1">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        fitView
-      >
-        <Background />
-        <Controls />
-
-        <Panel position="top-right" className="flex gap-2">
-          <Button onClick={onSave} size="sm" className="shadow-md">
-            {t('saveButton')}
-          </Button>
-        </Panel>
-      </ReactFlow>
-    </div>
+    <WorkflowActionsContext.Provider value={actionsValue}>
+      <div className="bg-muted/5 relative h-full flex-1">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onConnect={onConnect}
+          nodeTypes={NODE_TYPES}
+          fitView
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
+      </div>
+    </WorkflowActionsContext.Provider>
   );
 }

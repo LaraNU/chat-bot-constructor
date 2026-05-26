@@ -9,3 +9,12 @@ export const createBotSchema = z.object({
 });
 
 export type CreateBot = z.infer<typeof createBotSchema>;
+
+export type Bot = {
+  name: string;
+  description: string | null;
+  id: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};

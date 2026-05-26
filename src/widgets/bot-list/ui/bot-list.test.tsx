@@ -3,7 +3,39 @@ import { vi, beforeEach, describe, expect, test, Mock } from 'vitest';
 import { BotList } from './bot-list';
 import { createClient } from '@/shared/lib/supabase/server';
 import { botService } from '@/entities/bot/server/service';
-import { BotCard } from '@/features/bot-card';
+import { InfiniteBotList } from '@/entities/bot/ui/infinite-bot-list';
+import { BOTS_PER_PAGE } from '@/entities/bot';
+
+type initialBotsMock = {
+  name: string;
+  description: string | null;
+  id: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn().mockResolvedValue((key: string) => key),
+  getFormatter: vi.fn().mockResolvedValue({
+    dateTime: vi.fn(() => '17.02.2026'),
+  }),
+}));
+
+vi.mock('next-intl', () => ({
+  useTranslations: vi.fn(() => (key: string) => key),
+  useFormatter: vi.fn(() => ({
+    dateTime: vi.fn(() => '17.02.2026'),
+  })),
+}));
+
+vi.mock('@/i18n/navigation', () => ({
+  Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  usePathname: vi.fn(() => '/'),
+}));
 
 vi.mock('@/shared/lib/supabase/server', () => ({
   createClient: vi.fn(),
@@ -11,12 +43,20 @@ vi.mock('@/shared/lib/supabase/server', () => ({
 
 vi.mock('@/entities/bot/server/service', () => ({
   botService: {
-    getAllBots: vi.fn(),
+    getPaginatedBots: vi.fn(),
   },
 }));
 
-vi.mock('@/features/bot-card', () => ({
-  BotCard: vi.fn(({ name }: { name: string }) => <div data-testid="bot-card">{name}</div>),
+vi.mock('@/entities/bot/ui/infinite-bot-list', () => ({
+  InfiniteBotList: vi.fn(({ initialBots }: { initialBots: initialBotsMock[] }) => (
+    <div data-testid="infinite-bot-list">
+      {initialBots.map((bot) => (
+        <div key={bot.id} data-testid="mock-bot-item">
+          {bot.name}
+        </div>
+      ))}
+    </div>
+  )),
 }));
 
 describe('BotList', () => {
@@ -32,19 +72,18 @@ describe('BotList', () => {
     });
 
     const result = await BotList();
-
     expect(result).toBeNull();
-    expect(botService.getAllBots).not.toHaveBeenCalled();
+    expect(botService.getPaginatedBots).not.toHaveBeenCalled();
   });
 
-  test('loads user bots and renders BotCard for each one', async () => {
+  test('loads user bots and renders InfiniteBotList with correct payload', async () => {
     (createClient as Mock).mockResolvedValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }),
       },
     });
 
-    (botService.getAllBots as Mock).mockResolvedValue([
+    (botService.getPaginatedBots as Mock).mockResolvedValue([
       {
         id: 'bot-1',
         name: 'Bot One',
@@ -62,25 +101,26 @@ describe('BotList', () => {
     const ui = await BotList();
     render(ui);
 
-    expect(botService.getAllBots).toHaveBeenCalledWith('user-1');
-    expect(screen.getAllByTestId('bot-card')).toHaveLength(2);
+    expect(botService.getPaginatedBots).toHaveBeenCalledWith('user-1', BOTS_PER_PAGE, 0);
+    expect(screen.getAllByTestId('mock-bot-item')).toHaveLength(2);
 
-    expect(BotCard).toHaveBeenCalledWith(
+    expect(InfiniteBotList).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: 'bot-1',
-        name: 'Bot One',
-        description: 'First bot',
-        lastUpdated: expect.any(String),
-      }),
-      undefined
-    );
-
-    expect(BotCard).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 'bot-2',
-        name: 'Bot Two',
-        description: null,
-        lastUpdated: expect.any(String),
+        initialBots: [
+          {
+            id: 'bot-1',
+            name: 'Bot One',
+            description: 'First bot',
+            updatedAt: '2026-02-17T00:00:00.000Z',
+          },
+          {
+            id: 'bot-2',
+            name: 'Bot Two',
+            description: null,
+            updatedAt: '2026-02-16T00:00:00.000Z',
+          },
+        ],
+        limit: BOTS_PER_PAGE,
       }),
       undefined
     );

@@ -3,7 +3,8 @@
     "title": "Your Bots",
     "description": "Manage and monitor your Telegram bot workflows",
     "createButton": "Create New Bot",
-    "botCardTitle": "Bot"
+    "botCardTitle": "Bot",
+    "emptyState": "You don't have any bots yet. Click the button above to create your first one!"
   },
   "Metadata": {
     "title": "Bot Flow",
@@ -76,13 +77,15 @@
       "too_many_requests": "Too many login attempts. Please try again later",
       "unexpected": "An unexpected error occurred",
       "default": "Authentication error. Please check your data"
-    }
+    },
+    "success": "You have successfully signed in!"
   },
   "SignInPage": {
     "title": "Welcome back",
     "description": "Sign in to your account to continue",
     "noAccount": "Don't have an account?",
-    "signUpLink": "Sign up"
+    "signUpLink": "Sign up",
+    "success": "You have successfully signed in!"
   },
   "SignUpPage": {
     "title": "Create an account",
@@ -131,10 +134,12 @@
   },
   "WorkflowCanvas": {
     "saveButton": "Save Changes",
+    "savingButton": "Saving...",
     "messages": {
       "saveSuccess": "Workflow saved successfully!",
       "saveError": "Failed to save workflow. Please try again.",
       "loadError": "Failed to load workflow. Please refresh the page."
     }
-  }
+  },
+  "heroSection": {}
 }

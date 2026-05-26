@@ -1,28 +1,32 @@
-import { NodesPalette } from '@/widgets/nodes-palette';
-import { WorkflowCanvas } from '@/widgets/workflow-canvas';
-import { PropertiesPanel } from '@/widgets/properties-panel';
-import { ReactFlowProvider } from '@xyflow/react';
+import { notFound } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
+import { ScopedIntlProvider } from '@/app/providers/scoped-intl-provider';
+import { requireAuthenticatedUser } from '@/shared/auth';
+import { workflowService } from '@/entities/workflow/server/service';
+import { WorkflowEditorPage } from '@/views/workflow-editor';
 
-export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+type EditorPageProps = {
+  params: Promise<{ locale: string; id: string }>;
+};
+
+export default async function EditorPage({ params }: EditorPageProps) {
+  await requireAuthenticatedUser();
+
+  const { id, locale } = await params;
+  setRequestLocale(locale);
+
+  if (!id) {
+    notFound();
+  }
+
+  const workflow = await workflowService.getWorkflowByBotId(id);
+
+  const initialNodes = workflow?.nodes ?? [];
+  const initialEdges = workflow?.edges ?? [];
 
   return (
-    id && (
-      <div
-        data-testid="editor-root"
-        className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden"
-      >
-        <ReactFlowProvider>
-          <NodesPalette />
-          <main className="relative flex-1">
-            <div className="border-border border-b p-4">
-              <h2 className="text-sm font-medium">Редактор бота {id}</h2>
-            </div>
-            <WorkflowCanvas botId={id} />
-          </main>
-          <PropertiesPanel />
-        </ReactFlowProvider>
-      </div>
-    )
+    <ScopedIntlProvider scopes={['WorkflowEditor', 'WorkflowCanvas', 'PropertiesPanel']}>
+      <WorkflowEditorPage botId={id} initialNodes={initialNodes} initialEdges={initialEdges} />
+    </ScopedIntlProvider>
   );
 }

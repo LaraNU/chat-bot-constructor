@@ -12,6 +12,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowArbitraryExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
@@ -19,13 +20,12 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@/app/*": ["./src/app/*"],
       "@/entities/*": ["./src/entities/*"],
       "@/features/*": ["./src/features/*"],
-      "@/pages/*": ["./src/pages/*"],
+      "@/views/*": ["./src/views/*"],
       "@/shared/*": ["./src/shared/*"],
       "@/widgets/*": ["./src/widgets/*"]
     }
@@ -36,7 +36,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }

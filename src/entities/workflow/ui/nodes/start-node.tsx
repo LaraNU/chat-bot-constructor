@@ -1,5 +1,5 @@
 'use client';
-import { Handle, Position, useReactFlow, NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeProps } from '@xyflow/react';
 import {
   BaseNode,
   BaseNodeContent,
@@ -9,18 +9,15 @@ import {
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
 import { Play, Trash2 } from 'lucide-react';
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { Button } from '@/shared/ui/button';
 import { StartAppNode } from '../../model/types';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 export const StartNode = memo(({ id }: NodeProps<StartAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.start;
-  const { setNodes } = useReactFlow();
-
-  const handleDelete = useCallback(() => {
-    setNodes((nds) => nds.filter((node) => node.id !== id));
-  }, [id, setNodes]);
+  const { onNodeDelete } = useWorkflowActions();
 
   return (
     <BaseNode className="w-64">
@@ -35,7 +32,7 @@ export const StartNode = memo(({ id }: NodeProps<StartAppNode>) => {
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={handleDelete}
+          onClick={() => onNodeDelete(id)}
         >
           <Trash2 className="size-3.5" />
         </Button>

@@ -1,40 +1,28 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { MessageSquare, Trash2 } from 'lucide-react';
-import { NodeProps, Handle, Position, useReactFlow } from '@xyflow/react';
+import { NodeProps, Handle, Position } from '@xyflow/react';
+import { useTranslations } from 'next-intl';
+
 import {
   BaseNode,
   BaseNodeContent,
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
-import { MessageAppNode } from '../../model/types';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { useTranslations } from 'next-intl';
-import { Textarea } from '@/shared/ui/textarea';
 import { Label } from '@/shared/ui/label';
 import { Button } from '@/shared/ui/button';
+
+import type { MessageAppNode } from '../../model/types';
+import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
+import { useWorkflowActions } from '@/features/workflow-actions';
+import { NodeTextarea } from './fields/node-textarea';
 
 export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.message;
-  const { setNodes } = useReactFlow();
-
-  const onChangeText = (val: string) => {
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === id) {
-          return { ...node, data: { ...node.data, text: val } };
-        }
-        return node;
-      })
-    );
-  };
-
-  const handleDelete = useCallback(() => {
-    setNodes((nds) => nds.filter((node) => node.id !== id));
-  }, [id, setNodes]);
+  const { onNodeDelete } = useWorkflowActions();
 
   return (
     <BaseNode className="w-64">
@@ -45,13 +33,13 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
           <MessageSquare className="size-3.5" />
         </div>
         <BaseNodeHeaderTitle className="text-xs font-semibold">
-          {t(`nodes.message.name`)}
+          {t('nodes.message.name')}
         </BaseNodeHeaderTitle>
         <Button
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={handleDelete}
+          onClick={() => onNodeDelete(id)}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -62,11 +50,12 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
           <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
             {t('nodes.message.description') || 'Message Text'}
           </Label>
-          <Textarea
-            className="nodrag nowheel"
+
+          <NodeTextarea
+            nodeId={id}
+            field="text"
+            initialValue={data.text ?? ''}
             placeholder={t('nodes.message.description') || 'Enter message...'}
-            value={data.text ?? ''}
-            onChange={(e) => onChangeText(e.target.value)}
           />
         </div>
       </BaseNodeContent>

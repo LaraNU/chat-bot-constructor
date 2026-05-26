@@ -1,14 +1,13 @@
 import { Inter, Roboto } from 'next/font/google';
-import './globals.css';
-import { hasLocale, Locale, NextIntlClientProvider } from 'next-intl';
+import '../globals.css';
+import { hasLocale, Locale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Header } from '@/widgets/header';
-import { ThemeProvider } from '@/shared/lib/theme';
-import { AuthProvider } from '@/features/auth';
-import { Toaster } from '@/shared/ui/sonner';
 import { getAuthenticatedUser } from '@/shared/auth';
+import { AppProviders } from '../providers/app-providers';
+import { ScopedIntlProvider } from '../providers/scoped-intl-provider';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -63,15 +62,12 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${roboto.variable} antialiased`}>
-        <NextIntlClientProvider>
-          <ThemeProvider>
-            <AuthProvider initialUser={user}>
-              <Header user={user} />
-              {children}
-              <Toaster />
-            </AuthProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        <AppProviders initialUser={user}>
+          <ScopedIntlProvider scopes={['Header']}>
+            <Header />
+          </ScopedIntlProvider>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );
