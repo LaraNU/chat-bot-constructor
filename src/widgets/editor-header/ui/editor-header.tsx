@@ -3,12 +3,14 @@
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { SaveWorkflowButton } from '@/features/save-workflow';
+import { PublishBotButton } from '@/features/publish-bot';
 
 interface EditorHeaderProps {
   botId: string;
+  initialToken?: string | null;
 }
 
-export const EditorHeader = memo(({ botId }: EditorHeaderProps) => {
+export const EditorHeader = memo(({ botId, initialToken }: EditorHeaderProps) => {
   const t = useTranslations('WorkflowEditor');
 
   return (
@@ -17,6 +19,7 @@ export const EditorHeader = memo(({ botId }: EditorHeaderProps) => {
         {t('title')} {botId}
       </h2>
       <SaveWorkflowButton botId={botId} />
+      <PublishBotButton botId={botId} initialToken={initialToken} />
     </div>
   );
 });
