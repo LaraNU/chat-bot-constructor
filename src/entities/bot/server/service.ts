@@ -1,10 +1,17 @@
 import { botRepository } from './repository';
 import { createBotSchema } from '../model/types';
-import type { Bot } from '../model/types';
+import type { Bot } from '@prisma/client';
 
 export const botService = {
   async getAllBots(userId: string) {
     return await botRepository.findAllByUserId(userId);
+  },
+
+  async getBotById(id: string): Promise<Bot | null> {
+    if (!id) {
+      throw new Error('Bot ID is required');
+    }
+    return await botRepository.findById(id);
   },
 
   async getPaginatedBots(userId: string, limit: number, offset: number): Promise<Bot[]> {

@@ -24,11 +24,17 @@ export function SaveWorkflowButton({ botId }: SaveWorkflowButtonProps) {
     try {
       const { nodes, edges } = store.getState();
 
-      const currentNodes = nodes as AppNode[];
-      const currentEdges = edges as AppEdge[];
+      const result = await saveWorkflowAction({
+        botId,
+        nodes: nodes as AppNode[],
+        edges: edges as AppEdge[],
+      });
 
-      await saveWorkflowAction({ botId, nodes: currentNodes, edges: currentEdges });
-      toast.success(t('messages.saveSuccess'));
+      if (result.success) {
+        toast.success(t('messages.saveSuccess'));
+      } else {
+        toast.error(result.error || t('messages.saveError'));
+      }
     } catch (error) {
       console.error('Save error:', error);
       toast.error(t('messages.saveError'));

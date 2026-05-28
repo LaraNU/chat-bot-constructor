@@ -10,6 +10,12 @@ export const botRepository = {
     });
   },
 
+  async findById(id: string): Promise<Bot | null> {
+    return prisma.bot.findUnique({
+      where: { id },
+    });
+  },
+
   async findPaginatedByUserId(userId: string, limit: number, offset: number): Promise<Bot[]> {
     return prisma.bot.findMany({
       where: { userId },

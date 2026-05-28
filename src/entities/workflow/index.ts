@@ -1,4 +1,13 @@
-export { WORKFLOW_NODES_CONFIG, type WorkflowNodeType } from './model/nodes-config';
+export type { WorkflowPayload, workflowSchema } from './model/validation';
+export { WORKFLOW_NODES_CONFIG } from './model/nodes-config';
 export { workflowService } from './server/service';
 export { saveWorkflowAction } from './api/actions';
-export type { AppNode, AppEdge, WorkflowPayload } from './model/types';
+export type {
+  AppNode,
+  AppEdge,
+  WorkflowNodeType,
+  MessageAppNode,
+  ConditionAppNode,
+  EndAppNode,
+} from './model/types';
+export { NODE_TYPES } from './ui/nodes/node-types';

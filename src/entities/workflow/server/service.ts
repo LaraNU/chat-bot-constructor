@@ -1,5 +1,5 @@
 import { workflowRepository } from './repository';
-import { workflowSchema } from '../model/types';
+import { workflowSchema } from '../model/validation';
 import type { AppNode, AppEdge } from '../model/types';
 import type { Flow } from '@prisma/client';
 

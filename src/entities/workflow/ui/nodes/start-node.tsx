@@ -1,23 +1,40 @@
 'use client';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+
+import { memo } from 'react';
+import { Play, Trash2 } from 'lucide-react';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { useTranslations } from 'next-intl';
+
 import {
   BaseNode,
   BaseNodeContent,
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { useTranslations } from 'next-intl';
-import { Play, Trash2 } from 'lucide-react';
-import { memo } from 'react';
 import { Button } from '@/shared/ui/button';
-import { StartAppNode } from '../../model/types';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+import { Label } from '@/shared/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
-export const StartNode = memo(({ id }: NodeProps<StartAppNode>) => {
+import type { StartAppNode, StartNodeData } from '../../model/types';
+import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
+import { useWorkflowActions } from '@/features/workflow-actions';
+
+type TriggerType = StartNodeData['triggerType'];
+
+interface TriggerOption {
+  value: TriggerType;
+  translationKey: 'message' | 'manual';
+}
+
+const TRIGGER_OPTIONS: TriggerOption[] = [
+  { value: 'message', translationKey: 'message' },
+  { value: 'manual', translationKey: 'manual' },
+];
+
+export const StartNode = memo(({ id, data }: NodeProps<StartAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.start;
-  const { onNodeDelete } = useWorkflowActions();
+  const { onNodeUpdate, onNodeDelete } = useWorkflowActions();
 
   return (
     <BaseNode className="w-64">
@@ -26,7 +43,7 @@ export const StartNode = memo(({ id }: NodeProps<StartAppNode>) => {
           <Play className="size-3.5" />
         </div>
         <BaseNodeHeaderTitle className="text-xs font-semibold">
-          {t(`nodes.start.name`)}
+          {t('nodes.start.name')}
         </BaseNodeHeaderTitle>
         <Button
           variant="ghost"
@@ -38,11 +55,27 @@ export const StartNode = memo(({ id }: NodeProps<StartAppNode>) => {
         </Button>
       </BaseNodeHeader>
 
-      <BaseNodeContent className="space-y-2 p-3">
+      <BaseNodeContent className="space-y-3 p-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('nodes.start.description') || 'Start Node Description'}
-          </label>
+          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+            {t('nodes.start.triggerLabel') || 'Trigger Type'}
+          </Label>
+
+          <Select
+            value={data.triggerType ?? 'message'}
+            onValueChange={(val) => onNodeUpdate(id, { triggerType: val as TriggerType })}
+          >
+            <SelectTrigger className="nodrag h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TRIGGER_OPTIONS.map(({ value, translationKey }) => (
+                <SelectItem key={value} value={value} className="text-xs">
+                  {t(`nodes.start.triggers.${translationKey}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </BaseNodeContent>
 

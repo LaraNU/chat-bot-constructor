@@ -1,4 +1,4 @@
-export type WorkflowNodeType = 'start' | 'message' | 'condition' | 'end';
+import type { WorkflowNodeType } from './types';
 
 export interface NodeConfig {
   translationKey: string;
@@ -27,4 +27,4 @@ export const WORKFLOW_NODES_CONFIG: Record<WorkflowNodeType, NodeConfig> = {
     iconName: 'stop',
     color: 'bg-destructive/15 text-destructive border-destructive/30',
   },
-};
+} as const;

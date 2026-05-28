@@ -18,6 +18,7 @@ model Bot {
   id        String   @id @default(uuid())
   name      String
   userId    String
+  token     String?
   description String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

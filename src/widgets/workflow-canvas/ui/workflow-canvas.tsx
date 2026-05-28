@@ -4,7 +4,7 @@ import { ReactFlow, Background, Controls, useNodesState, useEdgesState } from '@
 import '@xyflow/react/dist/style.css';
 import { useMemo } from 'react';
 
-import { NODE_TYPES } from './node-types';
+import { NODE_TYPES } from '@/entities/workflow';
 import type { AppEdge, AppNode } from '@/entities/workflow';
 
 import { useCanvasDragDrop } from '@/features/drag-drop-node';

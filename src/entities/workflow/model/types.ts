@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { Node, Edge, BuiltInNode } from '@xyflow/react';
 
 export type MessageNodeData = { label?: string; text: string };
@@ -18,13 +17,7 @@ export type EndAppNode = Node<EndNodeData, 'end'>;
 export type AppNode = MessageAppNode | StartAppNode | ConditionAppNode | EndAppNode | BuiltInNode;
 export type AppEdge = Edge;
 
-export const workflowSchema = z.object({
-  botId: z.uuid({ message: 'botId must be a valid uuid' }),
-  nodes: z.array(z.custom<AppNode>()),
-  edges: z.array(z.custom<AppEdge>()),
-});
-
-export type WorkflowPayload = z.infer<typeof workflowSchema>;
+export type WorkflowNodeType = 'start' | 'message' | 'condition' | 'end';
 
 declare global {
   /* eslint-disable-next-line @typescript-eslint/no-namespace */
