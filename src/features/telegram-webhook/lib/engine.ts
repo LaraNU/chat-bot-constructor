@@ -67,8 +67,16 @@ export async function runWorkflowEngine({
       if (operator === 'equals') isTrue = valueToCheck.toLowerCase() === value.toLowerCase();
       if (operator === 'contains')
         isTrue = valueToCheck.toLowerCase().includes(value.toLowerCase());
-      if (operator === 'lessThan') isTrue = valueToCheck.localeCompare(value) < 0;
-      if (operator === 'greaterThan') isTrue = valueToCheck.localeCompare(value) > 0;
+
+      if (operator === 'lessThan' || operator === 'greaterThan') {
+        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+        const compareResult = collator.compare(valueToCheck, value);
+
+        if (operator === 'lessThan') isTrue = compareResult < 0;
+        if (operator === 'greaterThan') isTrue = compareResult > 0;
+      }
+
       if (operator === 'exists') isTrue = !!valueToCheck;
 
       const targetHandle = isTrue ? 'true' : 'false';
