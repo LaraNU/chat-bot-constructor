@@ -1,5 +1,6 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { createClient } from '@/shared/lib/supabase/server';
 import { prisma } from '@/shared/lib/prisma';
 import { UnauthorizedError } from '@/shared/api/errors';
@@ -32,7 +33,16 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
       throw new UnauthorizedError();
     }
 
-    await setTelegramWebhook(token, botId);
+    const headersList = await headers();
+    const host = headersList.get('host');
+    const protocol =
+      host?.startsWith('localhost') || host?.startsWith('127.0.0.1') ? 'http' : 'https';
+
+    const appUrl = host
+      ? `${protocol}://${host}`
+      : process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_URL}`;
+
+    await setTelegramWebhook(token, botId, appUrl);
 
     await prisma.bot.update({
       where: { id: botId, userId: user.id },

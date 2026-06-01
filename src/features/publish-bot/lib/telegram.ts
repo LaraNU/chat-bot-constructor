@@ -3,9 +3,11 @@ interface TelegramWebhookResponse {
   description?: string;
 }
 
-export async function setTelegramWebhook(token: string, botId: string): Promise<void> {
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://strobe-delouse-roulette.ngrok-free.dev';
+export async function setTelegramWebhook(
+  token: string,
+  botId: string,
+  appUrl: string
+): Promise<void> {
   const webhookUrl = `${appUrl}/api/webhook?botId=${botId}&token=${token}`;
 
   const telegramUrl = `https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`;
