@@ -2,7 +2,7 @@ import { workflowRepository } from './repository';
 import { workflowService } from './service';
 import { vi, describe, test, beforeEach, expect } from 'vitest';
 import type { Flow } from '@prisma/client';
-import type { PrismaJsonArray } from '../model/types';
+import type { AppNode, AppEdge } from '../model/types';
 
 vi.mock('./repository', () => ({
   workflowRepository: {
@@ -24,8 +24,8 @@ describe('workflowService', () => {
       botId: mockBotId,
       nodes: [
         { id: '1', type: 'start', data: { triggerType: 'manual' }, position: { x: 0, y: 0 } },
-      ] as PrismaJsonArray,
-      edges: [] as PrismaJsonArray,
+      ] as AppNode[],
+      edges: [] as AppEdge[],
     };
 
     vi.mocked(workflowRepository.getByBotId).mockResolvedValue(mockWorkflow);
@@ -40,8 +40,8 @@ describe('workflowService', () => {
     const mockWorkflow: Flow = {
       id: 'flow-id',
       botId: mockBotId,
-      nodes: [] as PrismaJsonArray,
-      edges: [] as PrismaJsonArray,
+      nodes: [] as AppNode[],
+      edges: [] as AppEdge[],
     };
 
     vi.mocked(workflowRepository.upsertByBotId).mockResolvedValue(mockWorkflow);
@@ -54,7 +54,7 @@ describe('workflowService', () => {
 
   test('should validate the workflow payload', async () => {
     await expect(workflowService.saveWorkflow('invalid-bot-id', [], [])).rejects.toThrow(
-      'botId must be a valid uuid'
+      'botId must be a valid UUID'
     );
 
     expect(workflowRepository.upsertByBotId).not.toHaveBeenCalled();
