@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/shared/lib/prisma';
+import type { AppNode, AppEdge } from '@/entities/workflow';
+import type { TelegramUpdate, UserContext } from '../model/types';
+import { getCurrentNodeId, saveUserSession } from '../lib/session';
+import { runWorkflowEngine } from '../lib/engine';
+
+export async function handleTelegramWebhook(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { searchParams } = new URL(request.url);
+    const botId = searchParams.get('botId');
+    const botToken = searchParams.get('token');
+
+    if (!botId || !botToken) {
+      return NextResponse.json({ error: 'Missing configuration' }, { status: 400 });
+    }
+
+    const update = (await request.json()) as TelegramUpdate;
+    if (!update.message || !update.message.text) {
+      return NextResponse.json({ success: true });
+    }
+
+    const context: UserContext = {
+      botId,
+      botToken,
+      chatId: update.message.chat.id.toString(),
+      userText: update.message.text,
+      username: update.message.from.username ?? '',
+    };
+
+    const flow = await prisma.flow.findUnique({ where: { botId } });
+    if (!flow) {
+      return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
+    }
+
+    const initialNodeId = await getCurrentNodeId(context.botId, context.chatId, context.userText);
+
+    const finalNodeId = await runWorkflowEngine({
+      nodes: flow.nodes as AppNode[],
+      edges: flow.edges as AppEdge[],
+      initialNodeId,
+      context,
+    });
+
+    await saveUserSession(context.botId, context.chatId, finalNodeId);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('❌ Webhook Execution Error:', error);
+    return NextResponse.json({ success: true });
+  }
+}

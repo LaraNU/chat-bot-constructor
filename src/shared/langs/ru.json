@@ -99,37 +99,44 @@
     "nodes": {
       "start": {
         "name": "Начало",
-        "description": "Точка входа в сценарий"
+        "description": "Точка входа в сценарий",
+        "triggerLabel": "Тип триггера",
+        "triggers": {
+          "message": "При первом сообщении",
+          "manual": "Ручной запуск"
+        }
       },
       "message": {
         "name": "Сообщение",
-        "description": "Отправить текст пользователю"
+        "description": "Отправить текст пользователю",
+        "messagePlaceholder": "Введите текст сообщения..."
       },
       "condition": {
         "name": "Условие",
-        "description": "Разделение логики"
+        "description": "Разделение логики",
+        "variable": "Переменная",
+        "variablePlaceholder": "например, message_text",
+        "operator": "Оператор",
+        "value": "Значение",
+        "valuePlaceholder": "например, \"Купить\""
       },
       "end": {
         "name": "Конец",
-        "description": "Завершение диалога"
+        "description": "Завершение диалога",
+        "messagePlaceholder": "Введите прощальное сообщение (опционально)..."
       }
     },
-    "condition": {
-      "variable": "Переменная для проверки",
-      "variablePlaceholder": "напр., message_text, status, user_field",
-      "operator": "Оператор сравнения",
-      "value": "Значение для сравнения",
-      "valuePlaceholder": "напр., 'Купить' или '100'"
+    "variables": {
+      "messageText": "Текст сообщения",
+      "username": "Имя пользователя",
+      "callbackData": "Callback-данные (кнопки)"
     },
     "operators": {
       "equals": "Равно (=)",
       "contains": "Содержит",
       "greaterThan": "Больше (>)",
       "lessThan": "Меньше (<)",
-      "exists": "Существует"
-    },
-    "end": {
-      "messagePlaceholder": "Введите прощальное сообщение (опционально)..."
+      "exists": "Заполнено"
     }
   },
   "WorkflowCanvas": {
@@ -138,7 +145,18 @@
     "messages": {
       "saveSuccess": "Сценарий успешно сохранён!",
       "saveError": "Не удалось сохранить сценарий. Пожалуйста, попробуйте снова.",
-      "loadError": "Не удалось загрузить сценарий. Пожалуйста, обновите страницу."
+      "loadError": "Не удалось загрузить сценарий. Пожалуйста, обновите страницу.",
+      "invalidToken": "Недействительный токен. Пожалуйста, проверьте настройки бота."
+    },
+    "publishDialog": {
+      "publishBtn": "Опубликовать",
+      "publishTitle": "Публикация бота",
+      "publishDescription": "Введите токен вашего бота, полученный у @BotFather, чтобы привязать сценарий холста к реальному чату.",
+      "publishing": "Публикация...",
+      "launchBtn": "Запустить бота",
+      "cancelBtn": "Отмена",
+      "publishSuccess": "Бот успешно опубликован и запущен в Telegram!",
+      "publishError": "Не удалось опубликовать бота. Пожалуйста, попробуйте снова."
     }
   },
   "heroSection": {}

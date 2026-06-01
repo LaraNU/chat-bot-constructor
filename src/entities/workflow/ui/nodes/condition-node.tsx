@@ -23,6 +23,30 @@ import { NodeInput } from './fields/node-input';
 type VariableType = ConditionNodeData['variable'];
 type OperatorType = ConditionNodeData['operator'];
 
+interface VariableOption {
+  value: VariableType;
+  translationKey: 'messageText' | 'username' | 'callbackData';
+}
+
+interface OperatorOption {
+  value: OperatorType;
+  translationKey: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'exists';
+}
+
+const VARIABLE_OPTIONS: VariableOption[] = [
+  { value: 'message_text', translationKey: 'messageText' },
+  { value: 'username', translationKey: 'username' },
+  { value: 'callback_data', translationKey: 'callbackData' },
+];
+
+const OPERATOR_OPTIONS: OperatorOption[] = [
+  { value: 'equals', translationKey: 'equals' },
+  { value: 'contains', translationKey: 'contains' },
+  { value: 'greaterThan', translationKey: 'greaterThan' },
+  { value: 'lessThan', translationKey: 'lessThan' },
+  { value: 'exists', translationKey: 'exists' },
+];
+
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.condition;
@@ -53,7 +77,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
         {/* Variable Select */}
         <div className="flex flex-col gap-1.5">
           <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('condition.variable') || 'Variable'}
+            {t('nodes.condition.variable') || 'Variable'}
           </Label>
           <Select
             value={data.variable ?? ''}
@@ -63,15 +87,11 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="message_text" className="text-xs">
-                Message Text
-              </SelectItem>
-              <SelectItem value="username" className="text-xs">
-                Username
-              </SelectItem>
-              <SelectItem value="callback_data" className="text-xs">
-                Callback Data
-              </SelectItem>
+              {VARIABLE_OPTIONS.map(({ value, translationKey }) => (
+                <SelectItem key={value} value={value} className="text-xs">
+                  {t(`variables.${translationKey}`)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -79,7 +99,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
         {/* Operator Select */}
         <div className="flex flex-col gap-1.5">
           <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('condition.operator') || 'Operator'}
+            {t('nodes.condition.operator') || 'Operator'}
           </Label>
           <Select
             value={data.operator ?? ''}
@@ -89,29 +109,26 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="equals" className="text-xs">
-                =
-              </SelectItem>
-              <SelectItem value="contains" className="text-xs">
-                Contains
-              </SelectItem>
-              <SelectItem value="exists" className="text-xs">
-                Exists
-              </SelectItem>
+              {OPERATOR_OPTIONS.map(({ value, translationKey }) => (
+                <SelectItem key={value} value={value} className="text-xs">
+                  {t(`operators.${translationKey}`)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
+        {/* Value Input */}
         {data.operator !== 'exists' && (
           <div className="flex flex-col gap-1.5">
             <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-              {t('condition.value') || 'Value'}
+              {t('nodes.condition.value') || 'Value'}
             </Label>
             <NodeInput
               nodeId={id}
               field="value"
               initialValue={data.value ?? ''}
-              placeholder={t('condition.valuePlaceholder') || 'e.g., "Buy"'}
+              placeholder={t('nodes.condition.valuePlaceholder') || 'e.g., "Buy"'}
             />
           </div>
         )}

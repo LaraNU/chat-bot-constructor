@@ -11,9 +11,10 @@ type Props = {
   botId: string;
   initialNodes: AppNode[];
   initialEdges: AppEdge[];
+  initialToken: string | null;
 };
 
-export function WorkflowEditorPage({ botId, initialNodes, initialEdges }: Props) {
+export function WorkflowEditorPage({ botId, initialNodes, initialEdges, initialToken }: Props) {
   return (
     <div
       data-testid="editor-root"
@@ -23,7 +24,7 @@ export function WorkflowEditorPage({ botId, initialNodes, initialEdges }: Props)
         <NodesPalette />
 
         <main className="text-card-foreground relative flex flex-1 flex-col">
-          <EditorHeader botId={botId} />
+          <EditorHeader botId={botId} initialToken={initialToken} />
           <WorkflowCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
         </main>
 

@@ -51,7 +51,7 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
 
           <NodeTextarea
             nodeId={id}
-            field="text"
+            field="message"
             initialValue={data.message ?? ''}
             placeholder={t('nodes.end.description') || 'Enter exit message (optional)...'}
           />

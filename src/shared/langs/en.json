@@ -99,27 +99,37 @@
     "nodes": {
       "start": {
         "name": "Start",
-        "description": "Entry point for your workflow"
+        "description": "Entry point for your workflow",
+        "triggerLabel": "Trigger Type",
+        "triggers": {
+          "message": "On First Message",
+          "manual": "Manual Trigger"
+        }
       },
       "message": {
         "name": "Message",
-        "description": "Send a text message to the user"
+        "description": "Send a text message to the user",
+        "messagePlaceholder": "Enter message..."
       },
       "condition": {
         "name": "Condition",
-        "description": "Split workflow logic"
+        "description": "Split workflow logic",
+        "variable": "Variable",
+        "variablePlaceholder": "e.g., message_text",
+        "operator": "Operator",
+        "value": "Value",
+        "valuePlaceholder": "e.g., \"Buy\""
       },
       "end": {
         "name": "End",
-        "description": "End of the conversation"
+        "description": "End of the conversation",
+        "messagePlaceholder": "Enter exit message (optional)..."
       }
     },
-    "condition": {
-      "variable": "Variable to Check",
-      "variablePlaceholder": "e.g., message_text, status, user_field",
-      "operator": "Comparison Operator",
-      "value": "Compare With",
-      "valuePlaceholder": "e.g., 'Buy' or '100'"
+    "variables": {
+      "messageText": "Message Text",
+      "username": "Username",
+      "callbackData": "Callback Data"
     },
     "operators": {
       "equals": "Equals (=)",
@@ -127,9 +137,6 @@
       "greaterThan": "Greater Than (>)",
       "lessThan": "Less Than (<)",
       "exists": "Exists"
-    },
-    "end": {
-      "messagePlaceholder": "Enter farewell message (optional)..."
     }
   },
   "WorkflowCanvas": {
@@ -138,7 +145,18 @@
     "messages": {
       "saveSuccess": "Workflow saved successfully!",
       "saveError": "Failed to save workflow. Please try again.",
-      "loadError": "Failed to load workflow. Please refresh the page."
+      "loadError": "Failed to load workflow. Please refresh the page.",
+      "invalidToken": "Invalid token. Please check your bot settings."
+    },
+    "publishDialog": {
+      "publishBtn": "Publish",
+      "publishTitle": "Publish Bot",
+      "publishDescription": "Enter your bot token from @BotFather to link your canvas workflow to a real chat.",
+      "publishing": "Publishing...",
+      "launchBtn": "Launch Bot",
+      "cancelBtn": "Cancel",
+      "publishSuccess": "Bot published successfully!",
+      "publishError": "Failed to publish bot. Please try again."
     }
   },
   "heroSection": {}
