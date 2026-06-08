@@ -1,22 +1,28 @@
 import { z } from 'zod';
 
+const trimmedNonEmptyString = (emptyErrorMessage: string) =>
+  z
+    .string()
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: emptyErrorMessage });
+
 const startNodeDataSchema = z.object({
   triggerType: z.enum(['manual', 'message']),
 });
 
 const endNodeDataSchema = z.object({
-  message: z.string().optional(),
+  message: trimmedNonEmptyString('End message text cannot be empty'),
 });
 
 const messageNodeDataSchema = z.object({
   label: z.string().optional(),
-  text: z.string().min(1, { message: 'Message text cannot be empty' }),
+  text: trimmedNonEmptyString('Message text cannot be empty'),
 });
 
 const conditionNodeDataSchema = z.object({
   variable: z.enum(['message_text', 'username', 'callback_data']),
   operator: z.enum(['equals', 'contains', 'greaterThan', 'lessThan', 'exists']),
-  value: z.string(),
+  value: trimmedNonEmptyString('Condition value cannot be empty'),
 });
 
 const baseNodeSchema = z.object({

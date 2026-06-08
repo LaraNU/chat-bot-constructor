@@ -11,17 +11,19 @@ interface InfiniteBotListProps {
   limit: number;
 }
 
-const MemoizedBotItem = memo(({ bot }: { bot: SerializedBot }) => {
-  return (
-    <BotCard
-      id={bot.id}
-      name={bot.name}
-      updatedAt={bot.updatedAt}
-      description={bot.description}
-      deleteActionSlot={<DeleteBotButton botId={bot.id} />}
-    />
-  );
-});
+const MemoizedBotItem = memo(
+  ({ bot, onDelete }: { bot: SerializedBot; onDelete: (id: string) => void }) => {
+    return (
+      <BotCard
+        id={bot.id}
+        name={bot.name}
+        updatedAt={bot.updatedAt}
+        description={bot.description}
+        deleteActionSlot={<DeleteBotButton botId={bot.id} onSuccess={() => onDelete(bot.id)} />}
+      />
+    );
+  }
+);
 
 MemoizedBotItem.displayName = 'MemoizedBotItem';
 
@@ -31,6 +33,10 @@ export function InfiniteBotList({ initialBots, limit }: InfiniteBotListProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const handleDeleteBot = useCallback((id: string) => {
+    setBots((prev) => prev.filter((bot) => bot.id !== id));
+  }, []);
 
   const loadMoreBots = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -73,7 +79,7 @@ export function InfiniteBotList({ initialBots, limit }: InfiniteBotListProps) {
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {bots.map((bot) => (
-          <MemoizedBotItem key={bot.id} bot={bot} />
+          <MemoizedBotItem key={bot.id} bot={bot} onDelete={handleDeleteBot} />
         ))}
       </div>
 

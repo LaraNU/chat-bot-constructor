@@ -40,9 +40,12 @@
   "BotCard": {
     "lastUpdated": "Last updated",
     "edit": "Edit",
-    "delete": "Delete",
+    "deleteBtn": "Delete",
+    "cancelBtn": "Cancel",
+    "deleteTitle": "Delete Confirmation",
     "deleteConfirmation": "Are you sure you want to delete this bot? This action cannot be undone",
     "deleteSuccess": "Bot deleted successfully",
+    "deleteError": "Failed to delete bot. Please try again",
     "active": "Active",
     "draft": "Draft"
   },

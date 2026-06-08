@@ -46,4 +46,18 @@ export const botRepository = {
       return bot;
     });
   },
+
+  async delete(id: string): Promise<Bot> {
+    return await prisma.$transaction(async (tx) => {
+      await tx.flow.deleteMany({
+        where: { botId: id },
+      });
+
+      const bot = await tx.bot.delete({
+        where: { id },
+      });
+
+      return bot;
+    });
+  },
 };

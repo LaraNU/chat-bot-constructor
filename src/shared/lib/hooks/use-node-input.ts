@@ -13,8 +13,15 @@ export function useNodeInput({ initialValue, nodeId, field, onUpdate }: UseNodeI
   const [value, setValue] = useState(initialValue);
 
   const commitChange = () => {
-    if (value !== initialValue) {
-      onUpdate(nodeId, { [field]: value });
+    const trimmedValue = value.trim();
+
+    if (trimmedValue === '') {
+      setValue(initialValue);
+      return;
+    }
+
+    if (trimmedValue !== initialValue) {
+      onUpdate(nodeId, { [field]: trimmedValue });
     }
   };
 

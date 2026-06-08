@@ -3,7 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { ScopedIntlProvider } from '@/app/providers/scoped-intl-provider';
 import { requireAuthenticatedUser } from '@/shared/auth';
 import { workflowService } from '@/entities/workflow/server/service';
-import { botService } from '@/entities/bot';
+import { botService } from '@/entities/bot/server';
 import { WorkflowEditorPage } from '@/views/workflow-editor';
 
 type EditorPageProps = {
