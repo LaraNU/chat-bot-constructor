@@ -1,6 +1,5 @@
 import { Node, Edge, BuiltInNode } from '@xyflow/react';
 
-export type MessageNodeData = { label?: string; text: string };
 export type StartNodeData = { triggerType: 'manual' | 'message' };
 export type ConditionNodeData = {
   variable: 'message_text' | 'username' | 'callback_data';
@@ -8,6 +7,17 @@ export type ConditionNodeData = {
   value: string;
 };
 export type EndNodeData = { message?: string };
+export type InlineButton = {
+  id: string;
+  text: string;
+  value: string;
+};
+export type MessageNodeData = {
+  label?: string;
+  text: string;
+  saveToVariable?: string;
+  buttons?: InlineButton[];
+};
 
 export type MessageAppNode = Node<MessageNodeData, 'message'>;
 export type StartAppNode = Node<StartNodeData, 'start'>;

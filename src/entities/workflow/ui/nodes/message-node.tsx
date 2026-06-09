@@ -18,6 +18,8 @@ import type { MessageAppNode } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useWorkflowActions } from '@/features/workflow-actions';
 import { NodeTextarea } from './fields/node-textarea';
+import { NodeInput } from './fields';
+import { NodeButtons } from './fields/node-buttons';
 
 export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const t = useTranslations('WorkflowEditor');
@@ -57,6 +59,26 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
             initialValue={data.text ?? ''}
             placeholder={t('nodes.message.description') || 'Enter message...'}
           />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+            {t('nodes.message.saveToVariable') || 'Save user input to variable'}
+          </Label>
+          <NodeInput
+            nodeId={id}
+            field="saveToVariable"
+            initialValue={data.saveToVariable ?? ''}
+            placeholder={t('nodes.message.saveToVariablePlaceholder') || 'variable_name'}
+            className="h-8 text-xs"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5 border-t pt-2">
+          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+            {t('nodes.message.buttons') || 'Inline Buttons'}
+          </Label>
+          <NodeButtons nodeId={id} buttons={data.buttons} />
         </div>
       </BaseNodeContent>
 

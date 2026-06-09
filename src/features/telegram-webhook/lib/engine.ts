@@ -43,7 +43,7 @@ export async function runWorkflowEngine({
   edges,
   initialNodeId,
   context,
-  tempData = { answers: {} as Record<string, string> },
+  tempData = { answers: {} },
 }: RunEngineParams): Promise<string | null> {
   let currentNodeId = getNextNodeId(initialNodeId, nodes, edges);
 
@@ -51,20 +51,16 @@ export async function runWorkflowEngine({
     const currentNode = nodes.find((n) => n.id === currentNodeId);
 
     if (!currentNode) {
-      // Нода не найдена, завершаем workflow
       break;
     }
 
-    // Получаем обработчик для типа текущей ноды
     const nodeType = currentNode.type as WorkflowNodeType;
     const handler = getNodeHandler(nodeType);
 
     if (!handler) {
-      // Обработчик не найден, пропускаем эту ноду
       break;
     }
 
-    // Выполняем обработчик
     const result = await handler.handle({
       node: currentNode,
       edges,
@@ -73,12 +69,10 @@ export async function runWorkflowEngine({
       tempData,
     });
 
-    // Если нужно остановиться (точка ожидания ответа), возвращаем текущую ноду
     if (result.shouldStop) {
       return result.nextNodeId;
     }
 
-    // Переходим к следующей ноде
     currentNodeId = result.nextNodeId;
   }
 

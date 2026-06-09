@@ -16,16 +16,25 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
     }
 
     const update = (await request.json()) as TelegramUpdate;
-    if (!update.message || !update.message.text) {
+    const callbackQuery = update.callback_query;
+    if (!update.message?.text && !callbackQuery) {
+      return NextResponse.json({ success: true });
+    }
+
+    const chatId = callbackQuery ? callbackQuery.message?.chat.id : update.message?.chat.id;
+
+    if (!chatId) {
       return NextResponse.json({ success: true });
     }
 
     const context: UserContext = {
       botId,
       botToken,
-      chatId: update.message.chat.id.toString(),
-      userText: update.message.text,
-      username: update.message.from.username ?? '',
+      chatId: chatId.toString(),
+      userText: callbackQuery ? callbackQuery.data : update.message!.text!,
+      username: callbackQuery
+        ? (callbackQuery.from?.username ?? '')
+        : (update.message!.from?.username ?? ''),
     };
 
     const flow = await prisma.flow.findUnique({ where: { botId } });

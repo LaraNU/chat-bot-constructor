@@ -8,41 +8,24 @@ function compareValues(valueToCheck: string, value: string, operator: string): b
   switch (operator) {
     case 'equals':
       return valueToCheck.toLowerCase() === value.toLowerCase();
-
     case 'contains':
       return valueToCheck.toLowerCase().includes(value.toLowerCase());
-
     case 'exists':
-      return !!valueToCheck;
-
+      return valueToCheck.trim() !== '';
     case 'lessThan':
     case 'greaterThan': {
       const collator = new Intl.Collator(undefined, {
         numeric: true,
         sensitivity: 'base',
       });
-
       const compareResult = collator.compare(valueToCheck, value);
-
       if (operator === 'lessThan') return compareResult < 0;
       if (operator === 'greaterThan') return compareResult > 0;
-
       return false;
     }
-
     default:
       return false;
   }
-}
-
-/**
- * Получить значение из tempData с безопасным приведением типов
- */
-function getTempDataValue(tempData: Record<string, unknown>, key: string): string {
-  const value = tempData[key];
-  if (typeof value === 'string') return value;
-  if (value == null) return '';
-  return String(value);
 }
 
 /**
@@ -57,26 +40,24 @@ export const conditionHandler: NodeHandler = {
 
     let valueToCheck = '';
 
-    // Получаем значение переменной для проверки
-    if (variable === 'message_text') {
+    if (variable === 'message_text' || variable === 'callback_data') {
       valueToCheck = context.userText;
     } else if (variable === 'username') {
       valueToCheck = context.username;
-    } else if (variable === 'callback_data') {
-      // callback_data может быть получена из tempData если потребуется
-      valueToCheck = getTempDataValue(tempData, 'callback_data');
+    } else {
+      const savedAnswers = (tempData.answers as Record<string, unknown>) || {};
+      const answerValue = savedAnswers[variable];
+
+      valueToCheck = answerValue != null ? String(answerValue) : '';
     }
 
-    // Проверяем условие
     const isTrue = compareValues(valueToCheck, value, operator);
 
-    // Определяем, какое ребро использовать (true или false)
     const targetHandle = isTrue ? 'true' : 'false';
     const conditionEdge = edges.find(
       (e) => e.source === node.id && e.sourceHandle === targetHandle
     );
 
-    // Ищем целевую ноду
     const nextNode = conditionEdge ? nodes.find((n) => n.id === conditionEdge.target) : undefined;
 
     return {

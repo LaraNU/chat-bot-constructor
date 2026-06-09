@@ -112,7 +112,28 @@
       "message": {
         "name": "Message",
         "description": "Send a text message to the user",
-        "messagePlaceholder": "Enter message..."
+        "messagePlaceholder": "Enter message...",
+        "saveToVariable": "Save response to variable",
+        "saveToVariablePlaceholder": "Variable name",
+        "buttons": "Inline Buttons",
+        "addButton": "Add button",
+        "buttonText": "Button text",
+        "buttonTextPlaceholder": "Enter button text",
+        "buttonValue": "Button value",
+        "buttonValuePlaceholder": "Enter callback value",
+        "nodeButtons": {
+          "presetsLabel": "Button templates:",
+          "presets": {
+            "yes": "Yes",
+            "no": "No",
+            "cancel": "Cancel",
+            "back": "Back"
+          },
+          "newButtonText": "New button",
+          "newButtonPlaceholder": "Button text",
+          "variablePlaceholder": "Variable (callback_data)",
+          "customButtonLabel": "Custom button option"
+        }
       },
       "condition": {
         "name": "Condition",
