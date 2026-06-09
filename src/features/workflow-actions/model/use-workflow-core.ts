@@ -2,18 +2,18 @@
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
 import { addEdge, Connection } from '@xyflow/react';
-import type { AppNode, AppEdge } from '@/entities/workflow/model/types';
+import type { AppEdge, CustomAppNode } from '@/entities/workflow/model/types';
 import type { NodeDataUpdatePayload } from './context';
 
 interface UseWorkflowCoreProps {
-  setNodes: Dispatch<SetStateAction<AppNode[]>>;
+  setNodes: Dispatch<SetStateAction<CustomAppNode[]>>;
   setEdges: Dispatch<SetStateAction<AppEdge[]>>;
 }
 
 /**
  * Type-safe node update function that preserves node type
  */
-function updateNodeData<T extends AppNode>(node: T, newData: NodeDataUpdatePayload): T {
+function updateNodeData<T extends CustomAppNode>(node: T, newData: NodeDataUpdatePayload): T {
   return {
     ...node,
     data: {

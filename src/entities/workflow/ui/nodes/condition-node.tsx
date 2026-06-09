@@ -17,7 +17,6 @@ import { Button } from '@/shared/ui/button';
 
 import type { ConditionAppNode, ConditionNodeData } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { useWorkflowActions } from '@/features/workflow-actions';
 import { NodeInput } from './fields/node-input';
 
 type VariableType = ConditionNodeData['variable'];
@@ -50,7 +49,14 @@ const OPERATOR_OPTIONS: OperatorOption[] = [
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.condition;
-  const { onNodeUpdate, onNodeDelete } = useWorkflowActions();
+
+  const handleDelete = () => {
+    data.actions?.onNodeDelete(id);
+  };
+
+  const handleUpdate = (nodeId: string, payload: Partial<ConditionNodeData>) => {
+    data.actions?.onNodeUpdate(nodeId, payload);
+  };
 
   return (
     <BaseNode className="w-80">
@@ -67,7 +73,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={() => onNodeDelete(id)}
+          onClick={handleDelete}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -81,7 +87,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
           </Label>
           <Select
             value={data.variable ?? ''}
-            onValueChange={(val) => onNodeUpdate(id, { variable: val as VariableType })}
+            onValueChange={(val: string) => handleUpdate(id, { variable: val as VariableType })}
           >
             <SelectTrigger className="nodrag h-8 text-xs">
               <SelectValue />
@@ -103,7 +109,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
           </Label>
           <Select
             value={data.operator ?? ''}
-            onValueChange={(val) => onNodeUpdate(id, { operator: val as OperatorType })}
+            onValueChange={(val: string) => handleUpdate(id, { operator: val as OperatorType })}
           >
             <SelectTrigger className="nodrag h-8 text-xs">
               <SelectValue />
@@ -124,11 +130,12 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
             <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
               {t('nodes.condition.value') || 'Value'}
             </Label>
-            <NodeInput
+            <NodeInput<ConditionNodeData, 'value'>
               nodeId={id}
               field="value"
               initialValue={data.value ?? ''}
               placeholder={t('nodes.condition.valuePlaceholder') || 'e.g., "Buy"'}
+              onUpdate={handleUpdate}
             />
           </div>
         )}

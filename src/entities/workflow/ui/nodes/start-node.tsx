@@ -14,15 +14,12 @@ import {
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 
 import type { StartAppNode, StartNodeData } from '../../model/types';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { useWorkflowActions } from '@/features/workflow-actions';
-
-type TriggerType = StartNodeData['triggerType'];
 
 interface TriggerOption {
-  value: TriggerType;
+  value: StartNodeData['triggerType'];
   translationKey: 'message' | 'manual';
 }
 
@@ -33,13 +30,19 @@ const TRIGGER_OPTIONS: TriggerOption[] = [
 
 export const StartNode = memo(({ id, data }: NodeProps<StartAppNode>) => {
   const t = useTranslations('WorkflowEditor');
-  const config = WORKFLOW_NODES_CONFIG.start;
-  const { onNodeUpdate, onNodeDelete } = useWorkflowActions();
+
+  const handleDelete = () => {
+    data.actions?.onNodeDelete(id);
+  };
+
+  const handleUpdate = (payload: Partial<StartNodeData>) => {
+    data.actions?.onNodeUpdate(id, payload);
+  };
 
   return (
     <BaseNode className="w-64">
       <BaseNodeHeader className="bg-muted/30 border-b">
-        <div className={`rounded-sm border p-1 ${config.color}`}>
+        <div className={`rounded-sm border p-1 ${WORKFLOW_NODES_CONFIG.start.color}`}>
           <Play className="size-3.5" />
         </div>
         <BaseNodeHeaderTitle className="text-xs font-semibold">
@@ -49,7 +52,7 @@ export const StartNode = memo(({ id, data }: NodeProps<StartAppNode>) => {
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={() => onNodeDelete(id)}
+          onClick={handleDelete}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -63,7 +66,9 @@ export const StartNode = memo(({ id, data }: NodeProps<StartAppNode>) => {
 
           <Select
             value={data.triggerType ?? 'message'}
-            onValueChange={(val) => onNodeUpdate(id, { triggerType: val as TriggerType })}
+            onValueChange={(value) =>
+              handleUpdate({ triggerType: value as StartNodeData['triggerType'] })
+            }
           >
             <SelectTrigger className="nodrag h-8 text-xs">
               <SelectValue />

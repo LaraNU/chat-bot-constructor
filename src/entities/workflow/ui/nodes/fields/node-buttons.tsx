@@ -1,15 +1,17 @@
 'use client';
 
+import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Plus, Trash2, LayoutGrid } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { useWorkflowActions } from '@/features/workflow-actions';
 import type { InlineButton, MessageNodeData } from '../../../model/types';
+import { useNodeButtons } from '@/entities/workflow/lib/hooks';
 
 interface NodeButtonsProps {
   nodeId: string;
   buttons?: InlineButton[];
+  onUpdate: (nodeId: string, data: Partial<MessageNodeData>) => void;
 }
 
 const PRESET_VALUES = [
@@ -19,49 +21,17 @@ const PRESET_VALUES = [
   { value: 'back' },
 ] as const;
 
-export function NodeButtons({ nodeId, buttons = [] }: NodeButtonsProps) {
-  const { onNodeUpdate } = useWorkflowActions();
+function NodeButtonsComponent({ nodeId, buttons = [], onUpdate }: NodeButtonsProps) {
   const t = useTranslations('WorkflowEditor.nodes.message.nodeButtons');
 
-  const handleAddCustomButton = () => {
-    const newButton: InlineButton = {
-      id: crypto.randomUUID(),
-      text: t('newButtonText'),
-      value: 'button_' + (buttons.length + 1),
-    };
-    const updatePayload: Pick<MessageNodeData, 'buttons'> = {
-      buttons: [...buttons, newButton],
-    };
-    onNodeUpdate(nodeId, updatePayload);
-  };
-
-  const handleAddPresetButton = (presetValue: (typeof PRESET_VALUES)[number]['value']) => {
-    const newButton: InlineButton = {
-      id: crypto.randomUUID(),
-      text: t(`presets.${presetValue}`),
-      value: presetValue,
-    };
-    const updatePayload: Pick<MessageNodeData, 'buttons'> = {
-      buttons: [...buttons, newButton],
-    };
-    onNodeUpdate(nodeId, updatePayload);
-  };
-
-  const handleRemoveButton = (buttonId: string) => {
-    const updated = buttons.filter((b) => b.id !== buttonId);
-    const updatePayload: Pick<MessageNodeData, 'buttons'> = {
-      buttons: updated,
-    };
-    onNodeUpdate(nodeId, updatePayload);
-  };
-
-  const handleUpdateButton = (buttonId: string, fields: Partial<InlineButton>) => {
-    const updated = buttons.map((b) => (b.id === buttonId ? { ...b, ...fields } : b));
-    const updatePayload: Pick<MessageNodeData, 'buttons'> = {
-      buttons: updated,
-    };
-    onNodeUpdate(nodeId, updatePayload);
-  };
+  const { handleAddCustomButton, handleAddPresetButton, handleRemoveButton, handleUpdateButton } =
+    useNodeButtons({
+      nodeId,
+      buttons,
+      onUpdate,
+      translateNewButton: t('newButtonText'),
+      translatePreset: (key) => t(`presets.${key}`),
+    });
 
   return (
     <div className="space-y-3 pt-1">
@@ -94,9 +64,8 @@ export function NodeButtons({ nodeId, buttons = [] }: NodeButtonsProps) {
                 <Input
                   className="nodrag nowheel h-7 flex-1 px-2 text-[11px]"
                   placeholder={t('newButtonPlaceholder')}
-                  value={btn.text}
-                  onChange={(e) => handleUpdateButton(btn.id, { text: e.target.value })}
-                  onBlur={() => handleUpdateButton(btn.id, { text: btn.text.trim() })}
+                  defaultValue={btn.text}
+                  onBlur={(e) => handleUpdateButton(btn.id, { text: e.target.value.trim() })}
                 />
                 <Button
                   variant="ghost"
@@ -110,8 +79,8 @@ export function NodeButtons({ nodeId, buttons = [] }: NodeButtonsProps) {
               <Input
                 className="nodrag nowheel text-muted-foreground/80 bg-muted/20 h-6 px-2 text-[10px]"
                 placeholder={t('variablePlaceholder')}
-                value={btn.value}
-                onChange={(e) => handleUpdateButton(btn.id, { value: e.target.value.trim() })}
+                defaultValue={btn.value}
+                onBlur={(e) => handleUpdateButton(btn.id, { value: e.target.value.trim() })}
               />
             </div>
           ))}
@@ -125,9 +94,17 @@ export function NodeButtons({ nodeId, buttons = [] }: NodeButtonsProps) {
         className="border-muted-foreground/30 hover:border-muted-foreground/60 h-8 w-full border-dashed text-[11px]"
         onClick={handleAddCustomButton}
       >
-        <Plus className="mr-1.5 size-3" />
-        {t('customButtonLabel')}
+        <Plus className="mr-1.5 size-3" /> {t('customButtonLabel')}
       </Button>
     </div>
   );
 }
+
+export const NodeButtons = memo(NodeButtonsComponent, (prev, next) => {
+  if (prev.nodeId !== next.nodeId) return false;
+  if (prev.buttons?.length !== next.buttons?.length) return false;
+
+  return JSON.stringify(prev.buttons) === JSON.stringify(next.buttons);
+});
+
+NodeButtons.displayName = 'NodeButtons';

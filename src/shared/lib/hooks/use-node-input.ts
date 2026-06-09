@@ -2,15 +2,25 @@
 
 import { useState, KeyboardEvent } from 'react';
 
-interface UseNodeInputProps {
-  initialValue: string;
+type NodeInputField<T> = Extract<keyof T, string>;
+type NodeInputValue<T, K extends NodeInputField<T>> = T[K] extends string | undefined
+  ? string
+  : never;
+
+interface UseNodeInputProps<T extends object, K extends NodeInputField<T>> {
+  initialValue: NodeInputValue<T, K>;
   nodeId: string;
-  field: string;
-  onUpdate: (id: string, data: Record<string, string>) => void;
+  field: K;
+  onUpdate: (id: string, data: Partial<Record<K, string>>) => void;
 }
 
-export function useNodeInput({ initialValue, nodeId, field, onUpdate }: UseNodeInputProps) {
-  const [value, setValue] = useState(initialValue);
+export function useNodeInput<T extends object, K extends NodeInputField<T>>({
+  initialValue,
+  nodeId,
+  field,
+  onUpdate,
+}: UseNodeInputProps<T, K>) {
+  const [value, setValue] = useState<string>(initialValue);
 
   const commitChange = () => {
     const trimmedValue = value.trim();
@@ -21,7 +31,10 @@ export function useNodeInput({ initialValue, nodeId, field, onUpdate }: UseNodeI
     }
 
     if (trimmedValue !== initialValue) {
-      onUpdate(nodeId, { [field]: trimmedValue });
+      const updatePayload: Partial<Record<K, string>> = {};
+      updatePayload[field] = trimmedValue;
+
+      onUpdate(nodeId, updatePayload);
     }
   };
 
