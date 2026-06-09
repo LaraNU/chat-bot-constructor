@@ -113,6 +113,7 @@
         "name": "Сообщение",
         "description": "Отправить текст пользователю",
         "messagePlaceholder": "Введите текст сообщения...",
+        "shouldSaveResponse": "Сохранять ответ пользователя",
         "saveToVariable": "Сохранить ответ в переменную",
         "saveToVariablePlaceholder": "Имя переменной",
         "buttons": "Инлайн-кнопки",

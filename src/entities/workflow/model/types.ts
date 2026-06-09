@@ -38,6 +38,7 @@ export type InlineButton = {
 export type MessageNodeData = WorkflowNodeData & {
   label?: string;
   text: string;
+  shouldSaveResponse?: boolean;
   saveToVariable?: string;
   buttons?: InlineButton[];
 };

@@ -113,6 +113,7 @@
         "name": "Message",
         "description": "Send a text message to the user",
         "messagePlaceholder": "Enter message...",
+        "shouldSaveResponse": "Save user response",
         "saveToVariable": "Save response to variable",
         "saveToVariablePlaceholder": "Variable name",
         "buttons": "Inline Buttons",

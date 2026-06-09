@@ -23,6 +23,7 @@ const inlineButtonSchema = z.object({
 const messageNodeDataSchema = z.object({
   label: z.string().optional(),
   text: trimmedNonEmptyString('Message text cannot be empty'),
+  shouldSaveResponse: z.boolean().optional().default(false),
   saveToVariable: z
     .string()
     .transform((val) => val.trim())

@@ -2,16 +2,45 @@ import type { MessageAppNode } from '@/entities/workflow';
 import { sendTelegramMessage } from '@/shared/api/telegram/client';
 import type { NodeHandler, NodeHandlerParams, NodeHandlerResult } from './types';
 
-function hasSaveToVariableField(node: MessageAppNode): boolean {
-  return typeof node.data.saveToVariable === 'string' && node.data.saveToVariable.trim() !== '';
-}
-
 export const messageHandler: NodeHandler = {
   async handle(params: NodeHandlerParams): Promise<NodeHandlerResult> {
-    const { node, edgesBySource, nodesById, context, tempData } = params;
+    const { node, edgesBySource, context, tempData, initialNodeId } = params;
+
     const messageNode = node as MessageAppNode;
 
+    /**
+     * Если currentNodeId указывает на эту ноду,
+     * значит пользователь отвечает именно на неё.
+     */
+    const isResumingNode = initialNodeId === node.id;
+
+    if (isResumingNode) {
+      /**
+       * Сохраняем ответ пользователя только для нод,
+       * которые ожидают ввод текста.
+       */
+      if (messageNode.data.shouldSaveResponse) {
+        const variableKey = messageNode.data.saveToVariable;
+
+        if (variableKey) {
+          tempData.answers ??= {};
+
+          tempData.answers[variableKey] = context.userText;
+        }
+      }
+
+      const nextEdge = edgesBySource.get(node.id)?.[0];
+
+      return {
+        nextNodeId: nextEdge?.target ?? null,
+      };
+    }
+
+    /**
+     * Первое посещение ноды — отправляем сообщение.
+     */
     const textToSend = messageNode.data.text || 'Пустое сообщение';
+
     const buttons = messageNode.data.buttons || [];
 
     const replyMarkup =
@@ -30,32 +59,25 @@ export const messageHandler: NodeHandler = {
 
     await sendTelegramMessage(context.botToken, Number(context.chatId), textToSend, replyMarkup);
 
-    if (hasSaveToVariableField(messageNode)) {
-      const variableKey = messageNode.data.saveToVariable ?? '';
-      if (variableKey) {
-        if (!tempData.answers) tempData.answers = {};
-        tempData.answers[variableKey] = context.userText;
-      }
-    }
-
-    const nextEdge = edgesBySource.get(node.id)?.[0];
-    const nextNode = nextEdge ? nodesById.get(nextEdge.target) : undefined;
-
-    const shouldPause =
-      !nextNode ||
-      nextNode.type === 'message' ||
-      nextNode.type === 'condition' ||
-      buttons.length > 0;
-
-    if (shouldPause) {
+    /**
+     * Если ждём кнопку или текстовый ответ —
+     * останавливаем выполнение и сохраняем текущую ноду.
+     */
+    if (messageNode.data.shouldSaveResponse || buttons.length > 0) {
       return {
         nextNodeId: node.id,
         shouldStop: true,
       };
     }
 
+    /**
+     * Обычное сообщение без ожидания ответа —
+     * сразу переходим дальше.
+     */
+    const nextEdge = edgesBySource.get(node.id)?.[0];
+
     return {
-      nextNodeId: nextNode.id,
+      nextNodeId: nextEdge?.target ?? null,
     };
   },
 };

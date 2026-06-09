@@ -71,7 +71,10 @@ export async function runWorkflowEngine({
   tempData = { answers: {} },
 }: RunEngineParams): Promise<string | null> {
   const state = createWorkflowEngineState(nodes, edges);
-  let currentNodeId = getNextNodeId(initialNodeId, state);
+
+  const isResuming = initialNodeId !== null;
+
+  let currentNodeId = isResuming ? initialNodeId : getNextNodeId(null, state);
 
   while (currentNodeId) {
     const currentNode = state.nodesById.get(currentNodeId);
@@ -81,6 +84,7 @@ export async function runWorkflowEngine({
     }
 
     const nodeType = currentNode.type as WorkflowNodeType;
+
     const handler = getNodeHandler(nodeType);
 
     if (!handler) {
@@ -95,6 +99,7 @@ export async function runWorkflowEngine({
       edgesBySource: state.edgesBySource,
       context,
       tempData,
+      initialNodeId,
     });
 
     if (result.shouldStop) {

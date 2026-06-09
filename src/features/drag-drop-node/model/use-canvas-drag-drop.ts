@@ -15,6 +15,7 @@ function getDefaultNodeData(type: WorkflowNodeType): Record<string, unknown> {
     case 'message': {
       const data: MessageNodeData = {
         text: '',
+        shouldSaveResponse: false,
         saveToVariable: '',
         buttons: [],
       };

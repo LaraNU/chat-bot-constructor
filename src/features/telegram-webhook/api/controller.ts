@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/shared/lib/prisma';
 import type { AppNode, AppEdge } from '@/entities/workflow';
 import type { TelegramUpdate, UserContext } from '../model/types';
-import { getCurrentNodeId, saveUserSession } from '../lib/session';
+import { getUserSessionState, saveUserSession } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
 
 export async function handleTelegramWebhook(request: NextRequest): Promise<NextResponse> {
@@ -42,16 +42,21 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
       return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
     }
 
-    const initialNodeId = await getCurrentNodeId(context.botId, context.chatId, context.userText);
+    const { currentNodeId: initialNodeId, tempData } = await getUserSessionState(
+      context.botId,
+      context.chatId,
+      context.userText
+    );
 
     const finalNodeId = await runWorkflowEngine({
       nodes: flow.nodes as AppNode[],
       edges: flow.edges as AppEdge[],
       initialNodeId,
       context,
+      tempData,
     });
 
-    await saveUserSession(context.botId, context.chatId, finalNodeId);
+    await saveUserSession(context.botId, context.chatId, finalNodeId, tempData);
 
     return NextResponse.json({ success: true });
   } catch (error) {

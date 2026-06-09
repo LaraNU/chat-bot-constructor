@@ -46,6 +46,7 @@ export interface NodeHandlerParams {
   edgesBySource: Map<string, AppEdge[]>;
   context: UserContext;
   tempData: TempData;
+  initialNodeId: string | null;
 }
 
 /**
