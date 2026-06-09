@@ -11,26 +11,51 @@ interface RunEngineParams {
   tempData?: TempData;
 }
 
+interface WorkflowEngineState {
+  nodesById: Map<string, AppNode>;
+  edgesBySource: Map<string, AppEdge[]>;
+  startNodeId: string | null;
+}
+
+function createWorkflowEngineState(nodes: AppNode[], edges: AppEdge[]): WorkflowEngineState {
+  const nodesById = new Map<string, AppNode>();
+  const edgesBySource = new Map<string, AppEdge[]>();
+  let startNodeId: string | null = null;
+
+  for (const node of nodes) {
+    nodesById.set(node.id, node);
+
+    if (!startNodeId && node.type === 'start') {
+      startNodeId = node.id;
+    }
+  }
+
+  for (const edge of edges) {
+    const sourceEdges = edgesBySource.get(edge.source);
+
+    if (sourceEdges) {
+      sourceEdges.push(edge);
+    } else {
+      edgesBySource.set(edge.source, [edge]);
+    }
+  }
+
+  return {
+    nodesById,
+    edgesBySource,
+    startNodeId,
+  };
+}
+
 /**
  * Получить следующую ноду из стартовой позиции
  */
-function getNextNodeId(
-  currentId: string | null,
-  nodes: AppNode[],
-  edges: AppEdge[]
-): string | null {
-  let startNodeId: string | null = null;
-
-  if (currentId) {
-    startNodeId = currentId;
-  } else {
-    const startNode = nodes.find((n) => n.type === 'start');
-    startNodeId = startNode?.id ?? null;
-  }
+function getNextNodeId(currentId: string | null, state: WorkflowEngineState): string | null {
+  const startNodeId = currentId ?? state.startNodeId;
 
   if (!startNodeId) return null;
 
-  const nextEdge = edges.find((e) => e.source === startNodeId);
+  const nextEdge = state.edgesBySource.get(startNodeId)?.[0];
   return nextEdge?.target ?? null;
 }
 
@@ -45,10 +70,11 @@ export async function runWorkflowEngine({
   context,
   tempData = { answers: {} },
 }: RunEngineParams): Promise<string | null> {
-  let currentNodeId = getNextNodeId(initialNodeId, nodes, edges);
+  const state = createWorkflowEngineState(nodes, edges);
+  let currentNodeId = getNextNodeId(initialNodeId, state);
 
   while (currentNodeId) {
-    const currentNode = nodes.find((n) => n.id === currentNodeId);
+    const currentNode = state.nodesById.get(currentNodeId);
 
     if (!currentNode) {
       break;
@@ -65,6 +91,8 @@ export async function runWorkflowEngine({
       node: currentNode,
       edges,
       nodes,
+      nodesById: state.nodesById,
+      edgesBySource: state.edgesBySource,
       context,
       tempData,
     });

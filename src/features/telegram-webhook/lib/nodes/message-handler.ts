@@ -8,7 +8,7 @@ function hasSaveToVariableField(node: MessageAppNode): boolean {
 
 export const messageHandler: NodeHandler = {
   async handle(params: NodeHandlerParams): Promise<NodeHandlerResult> {
-    const { node, edges, nodes, context, tempData } = params;
+    const { node, edgesBySource, nodesById, context, tempData } = params;
     const messageNode = node as MessageAppNode;
 
     const textToSend = messageNode.data.text || 'Пустое сообщение';
@@ -38,8 +38,8 @@ export const messageHandler: NodeHandler = {
       }
     }
 
-    const nextEdge = edges.find((e) => e.source === node.id);
-    const nextNode = nextEdge ? nodes.find((n) => n.id === nextEdge.target) : undefined;
+    const nextEdge = edgesBySource.get(node.id)?.[0];
+    const nextNode = nextEdge ? nodesById.get(nextEdge.target) : undefined;
 
     const shouldPause =
       !nextNode ||

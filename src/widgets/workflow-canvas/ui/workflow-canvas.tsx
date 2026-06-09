@@ -63,6 +63,7 @@ export function WorkflowCanvas({ initialNodes, initialEdges }: WorkflowCanvasPro
         onDragOver={onDragOver}
         onConnect={onConnect}
         nodeTypes={NODE_TYPES}
+        onlyRenderVisibleElements
         fitView
       >
         <Background />

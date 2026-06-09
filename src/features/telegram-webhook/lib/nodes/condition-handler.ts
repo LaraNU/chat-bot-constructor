@@ -34,7 +34,7 @@ function compareValues(valueToCheck: string, value: string, operator: string): b
  */
 export const conditionHandler: NodeHandler = {
   async handle(params: NodeHandlerParams): Promise<NodeHandlerResult> {
-    const { node, edges, nodes, context, tempData } = params;
+    const { node, edgesBySource, nodesById, context, tempData } = params;
     const conditionNode = node as ConditionAppNode;
     const { variable, operator, value } = conditionNode.data;
 
@@ -54,11 +54,9 @@ export const conditionHandler: NodeHandler = {
     const isTrue = compareValues(valueToCheck, value, operator);
 
     const targetHandle = isTrue ? 'true' : 'false';
-    const conditionEdge = edges.find(
-      (e) => e.source === node.id && e.sourceHandle === targetHandle
-    );
+    const conditionEdge = edgesBySource.get(node.id)?.find((e) => e.sourceHandle === targetHandle);
 
-    const nextNode = conditionEdge ? nodes.find((n) => n.id === conditionEdge.target) : undefined;
+    const nextNode = conditionEdge ? nodesById.get(conditionEdge.target) : undefined;
 
     return {
       nextNodeId: nextNode?.id ?? null,

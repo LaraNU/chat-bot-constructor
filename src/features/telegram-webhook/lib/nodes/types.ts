@@ -42,6 +42,8 @@ export interface NodeHandlerParams {
   node: AppNode;
   edges: AppEdge[];
   nodes: AppNode[];
+  nodesById: Map<string, AppNode>;
+  edgesBySource: Map<string, AppEdge[]>;
   context: UserContext;
   tempData: TempData;
 }
