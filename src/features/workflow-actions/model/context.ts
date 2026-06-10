@@ -8,9 +8,11 @@ import type {
   EndNodeData,
 } from '@/entities/workflow/model/types';
 
-export type NodeDataUpdatePayload = Partial<
-  MessageNodeData & StartNodeData & ConditionNodeData & EndNodeData
->;
+export type NodeDataUpdatePayload =
+  | Partial<MessageNodeData>
+  | Partial<StartNodeData>
+  | Partial<ConditionNodeData>
+  | Partial<EndNodeData>;
 
 interface WorkflowActionsContextType {
   onNodeDelete: (id: string) => void;

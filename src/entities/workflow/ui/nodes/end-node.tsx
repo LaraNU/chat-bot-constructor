@@ -9,18 +9,24 @@ import {
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
-import { EndAppNode } from '../../model/types';
+import { EndAppNode, EndNodeData } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
 import { Label } from '@/shared/ui/label';
 import { Button } from '@/shared/ui/button';
 import { NodeTextarea } from './fields';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.end;
-  const { onNodeDelete } = useWorkflowActions();
+
+  const handleDelete = () => {
+    data.actions?.onNodeDelete(id);
+  };
+
+  const handleUpdate = (nodeId: string, payload: Partial<EndNodeData>) => {
+    data.actions?.onNodeUpdate(nodeId, payload);
+  };
 
   return (
     <BaseNode className="w-64">
@@ -37,7 +43,7 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={() => onNodeDelete(id)}
+          onClick={handleDelete}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -49,11 +55,12 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
             {t('nodes.end.description') || 'Exit Message'}
           </Label>
 
-          <NodeTextarea
+          <NodeTextarea<EndNodeData, 'message'>
             nodeId={id}
             field="message"
             initialValue={data.message ?? ''}
             placeholder={t('nodes.end.description') || 'Enter exit message (optional)...'}
+            onUpdate={handleUpdate}
           />
         </div>
       </BaseNodeContent>

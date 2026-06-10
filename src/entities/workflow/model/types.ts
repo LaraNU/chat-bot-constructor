@@ -1,20 +1,56 @@
-import { Node, Edge, BuiltInNode } from '@xyflow/react';
+import { Node, Edge } from '@xyflow/react';
 
-export type MessageNodeData = { label?: string; text: string };
-export type StartNodeData = { triggerType: 'manual' | 'message' };
-export type ConditionNodeData = {
+export type NodeDataUpdatePayload =
+  | Partial<MessageNodeData>
+  | Partial<StartNodeData>
+  | Partial<ConditionNodeData>
+  | Partial<EndNodeData>;
+
+export interface WorkflowNodeActionHandlers {
+  onNodeDelete: (id: string) => void;
+  onNodeUpdate: (id: string, data: NodeDataUpdatePayload) => void;
+}
+
+export interface WorkflowNodeData extends Record<string, unknown> {
+  actions?: WorkflowNodeActionHandlers;
+}
+
+export type StartNodeData = WorkflowNodeData & {
+  triggerType: 'manual' | 'message';
+};
+
+export type ConditionNodeData = WorkflowNodeData & {
   variable: 'message_text' | 'username' | 'callback_data';
   operator: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'exists';
   value: string;
 };
-export type EndNodeData = { message?: string };
+
+export type EndNodeData = WorkflowNodeData & {
+  message?: string;
+};
+
+export type InlineButton = {
+  id: string;
+  text: string;
+  value: string;
+};
+
+export type MessageNodeData = WorkflowNodeData & {
+  label?: string;
+  text: string;
+  shouldSaveResponse?: boolean;
+  saveToVariable?: string;
+  buttons?: InlineButton[];
+};
 
 export type MessageAppNode = Node<MessageNodeData, 'message'>;
 export type StartAppNode = Node<StartNodeData, 'start'>;
 export type ConditionAppNode = Node<ConditionNodeData, 'condition'>;
 export type EndAppNode = Node<EndNodeData, 'end'>;
 
-export type AppNode = MessageAppNode | StartAppNode | ConditionAppNode | EndAppNode | BuiltInNode;
+export type CustomAppNode = MessageAppNode | StartAppNode | ConditionAppNode | EndAppNode;
+export type AppNode = CustomAppNode;
+
 export type AppEdge = Edge;
 
 export type WorkflowNodeType = 'start' | 'message' | 'condition' | 'end';

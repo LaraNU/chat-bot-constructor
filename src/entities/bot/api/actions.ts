@@ -27,7 +27,7 @@ export async function createBotAction(formData: { name: string; description: str
       userId: user.id,
     });
 
-    revalidatePath('/[locale]/dashboard', 'page');
+    revalidatePath('/', 'page');
 
     return { success: true, data: newBot };
   } catch (error) {
@@ -61,5 +61,30 @@ export async function fetchBotsAction(limit: number, offset: number): Promise<Se
   } catch (error) {
     console.error('Error Server Action:', error);
     throw error;
+  }
+}
+
+export async function deleteBotAction(botId: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    await botService.deleteBot(botId);
+
+    revalidatePath('/', 'layout');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error Server Action:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete bot',
+    };
   }
 }

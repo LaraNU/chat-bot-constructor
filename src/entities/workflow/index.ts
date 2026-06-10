@@ -5,6 +5,7 @@ export { saveWorkflowAction } from './api/actions';
 export type {
   AppNode,
   AppEdge,
+  CustomAppNode,
   WorkflowNodeType,
   MessageAppNode,
   ConditionAppNode,

@@ -52,7 +52,21 @@ model UserSession {
   botId         String
   bot           Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
   
+  tempData       Json     @default("{}") 
+  createdAt      DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
   @@unique([botId, telegramChatId])
+}
+
+// Универсальная таблица ответов для ВСЕХ ботов в системе
+model BotResponse {
+  id             String   @id @default(uuid())
+  botId          String
+  telegramChatId String
+  createdAt      DateTime @default(now())
+
+  answers        Json
+  
+  @@index([botId, telegramChatId])
 }

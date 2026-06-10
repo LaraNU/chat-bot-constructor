@@ -1,26 +1,47 @@
 import { z } from 'zod';
 
+const trimmedNonEmptyString = (emptyErrorMessage: string) =>
+  z
+    .string()
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, { message: emptyErrorMessage });
+
 const startNodeDataSchema = z.object({
   triggerType: z.enum(['manual', 'message']),
 });
 
 const endNodeDataSchema = z.object({
-  message: z.string().optional(),
+  message: trimmedNonEmptyString('End message text cannot be empty'),
+});
+
+const inlineButtonSchema = z.object({
+  id: z.string().min(1, 'Button ID is required'),
+  text: trimmedNonEmptyString('Button text cannot be empty'),
+  value: trimmedNonEmptyString('Button value cannot be empty'),
 });
 
 const messageNodeDataSchema = z.object({
   label: z.string().optional(),
-  text: z.string().min(1, { message: 'Message text cannot be empty' }),
+  text: trimmedNonEmptyString('Message text cannot be empty'),
+  shouldSaveResponse: z.boolean().optional().default(false),
+  saveToVariable: z
+    .string()
+    .transform((val) => val.trim())
+    .optional(),
+  buttons: z.array(inlineButtonSchema).optional(),
 });
 
 const conditionNodeDataSchema = z.object({
   variable: z.enum(['message_text', 'username', 'callback_data']),
   operator: z.enum(['equals', 'contains', 'greaterThan', 'lessThan', 'exists']),
-  value: z.string(),
+  value: z
+    .string()
+    .transform((val) => val.trim())
+    .default(''),
 });
 
 const baseNodeSchema = z.object({
-  id: z.uuid({ message: 'Node ID must be a valid UUID' }),
+  id: z.string().min(1, 'Node ID is required'),
   position: z.object({
     x: z.number(),
     y: z.number(),
@@ -42,8 +63,8 @@ const appNodeSchema = z.discriminatedUnion('type', [
 
 const appEdgeSchema = z.object({
   id: z.string(),
-  source: z.uuid(),
-  target: z.uuid(),
+  source: z.string().min(1, 'Edge source is required'),
+  target: z.string().min(1, 'Edge target is required'),
   sourceHandle: z.string().nullable().optional(),
   targetHandle: z.string().nullable().optional(),
 });

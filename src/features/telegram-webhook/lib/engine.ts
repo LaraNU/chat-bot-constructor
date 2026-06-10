@@ -1,103 +1,113 @@
-import { sendTelegramMessage } from '@/shared/api/telegram/client';
-import type { AppNode, AppEdge } from '@/entities/workflow';
-import { isMessageNode, isConditionNode, isEndNode } from '../model/guards';
+import type { AppNode, AppEdge, WorkflowNodeType } from '@/entities/workflow';
 import type { UserContext } from '../model/types';
+import { getNodeHandler } from './nodes/registry';
+import type { TempData } from './nodes/types';
 
 interface RunEngineParams {
   nodes: AppNode[];
   edges: AppEdge[];
   initialNodeId: string | null;
   context: UserContext;
+  tempData?: TempData;
 }
 
+interface WorkflowEngineState {
+  nodesById: Map<string, AppNode>;
+  edgesBySource: Map<string, AppEdge[]>;
+  startNodeId: string | null;
+}
+
+function createWorkflowEngineState(nodes: AppNode[], edges: AppEdge[]): WorkflowEngineState {
+  const nodesById = new Map<string, AppNode>();
+  const edgesBySource = new Map<string, AppEdge[]>();
+  let startNodeId: string | null = null;
+
+  for (const node of nodes) {
+    nodesById.set(node.id, node);
+
+    if (!startNodeId && node.type === 'start') {
+      startNodeId = node.id;
+    }
+  }
+
+  for (const edge of edges) {
+    const sourceEdges = edgesBySource.get(edge.source);
+
+    if (sourceEdges) {
+      sourceEdges.push(edge);
+    } else {
+      edgesBySource.set(edge.source, [edge]);
+    }
+  }
+
+  return {
+    nodesById,
+    edgesBySource,
+    startNodeId,
+  };
+}
+
+/**
+ * Получить следующую ноду из стартовой позиции
+ */
+function getNextNodeId(currentId: string | null, state: WorkflowEngineState): string | null {
+  const startNodeId = currentId ?? state.startNodeId;
+
+  if (!startNodeId) return null;
+
+  const nextEdge = state.edgesBySource.get(startNodeId)?.[0];
+  return nextEdge?.target ?? null;
+}
+
+/**
+ * Основной движок для выполнения workflow'а
+ * Использует паттерн Strategy для обработки различных типов нод
+ */
 export async function runWorkflowEngine({
   nodes,
   edges,
   initialNodeId,
   context,
+  tempData = { answers: {} },
 }: RunEngineParams): Promise<string | null> {
-  const { botToken, chatId, userText, username } = context;
-  let currentId = initialNodeId;
-  let activeNode: AppNode | undefined = undefined;
+  const state = createWorkflowEngineState(nodes, edges);
 
-  if (!currentId) {
-    const startNode = nodes.find((n) => n.type === 'start');
-    if (startNode) {
-      const nextEdge = edges.find((e) => e.source === startNode.id);
-      activeNode = nextEdge ? nodes.find((n) => n.id === nextEdge.target) : undefined;
-    }
-  } else {
-    const nextEdge = edges.find((e) => e.source === currentId);
-    activeNode = nextEdge ? nodes.find((n) => n.id === nextEdge.target) : undefined;
-  }
+  const isResuming = initialNodeId !== null;
 
-  currentId = activeNode?.id ?? null;
+  let currentNodeId = isResuming ? initialNodeId : getNextNodeId(null, state);
 
-  while (activeNode) {
-    const node = activeNode;
+  while (currentNodeId) {
+    const currentNode = state.nodesById.get(currentNodeId);
 
-    if (isMessageNode(node)) {
-      const textToSend = node.data.text || 'Пустое сообщение';
-      await sendTelegramMessage(botToken, Number(chatId), textToSend);
-
-      const nextEdge = edges.find((e) => e.source === node.id);
-      const nextNode = nextEdge ? nodes.find((n) => n.id === nextEdge.target) : undefined;
-      const isNextNodeConditionOnText =
-        nextNode?.type === 'condition' &&
-        (nextNode.data as Record<string, unknown>).variable === 'message_text';
-
-      if (!nextNode || nextNode.type === 'message' || isNextNodeConditionOnText) {
-        currentId = node.id;
-        break;
-      }
-
-      activeNode = nextNode;
-      currentId = activeNode.id;
-      continue;
-    }
-
-    if (isConditionNode(node)) {
-      const { variable, operator, value } = node.data;
-      let isTrue = false;
-      let valueToCheck = '';
-
-      if (variable === 'message_text') valueToCheck = userText;
-      if (variable === 'username') valueToCheck = username;
-
-      if (operator === 'equals') isTrue = valueToCheck.toLowerCase() === value.toLowerCase();
-      if (operator === 'contains')
-        isTrue = valueToCheck.toLowerCase().includes(value.toLowerCase());
-
-      if (operator === 'lessThan' || operator === 'greaterThan') {
-        const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-
-        const compareResult = collator.compare(valueToCheck, value);
-
-        if (operator === 'lessThan') isTrue = compareResult < 0;
-        if (operator === 'greaterThan') isTrue = compareResult > 0;
-      }
-
-      if (operator === 'exists') isTrue = !!valueToCheck;
-
-      const targetHandle = isTrue ? 'true' : 'false';
-      const conditionEdge = edges.find(
-        (e) => e.source === node.id && e.sourceHandle === targetHandle
-      );
-
-      activeNode = conditionEdge ? nodes.find((n) => n.id === conditionEdge.target) : undefined;
-      currentId = activeNode?.id ?? null;
-      continue;
-    }
-
-    if (isEndNode(node)) {
-      const endText = node.data.message || 'Диалог завершен';
-      await sendTelegramMessage(botToken, Number(chatId), endText);
-      currentId = null;
+    if (!currentNode) {
       break;
     }
 
-    break;
+    const nodeType = currentNode.type as WorkflowNodeType;
+
+    const handler = getNodeHandler(nodeType);
+
+    if (!handler) {
+      break;
+    }
+
+    const result = await handler.handle({
+      node: currentNode,
+      edges,
+      nodes,
+      nodesById: state.nodesById,
+      edgesBySource: state.edgesBySource,
+      context,
+      tempData,
+      initialNodeId,
+    });
+
+    if (result.shouldStop) {
+      return result.nextNodeId;
+    }
+
+    currentNodeId = result.nextNodeId;
   }
 
-  return currentId;
+  return null;
 }

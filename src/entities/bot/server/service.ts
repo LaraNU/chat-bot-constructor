@@ -27,4 +27,11 @@ export const botService = {
 
     return await botRepository.create(data);
   },
+
+  async deleteBot(id: string): Promise<Bot> {
+    if (!id) {
+      throw new Error('Bot ID is required');
+    }
+    return await botRepository.delete(id);
+  },
 };

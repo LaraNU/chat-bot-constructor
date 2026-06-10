@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useTransition, memo } from 'react';
+import { useState, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { Controller, SubmitHandler, useForm, useWatch, Control } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm, useWatch, type Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { createBotAction } from '@/entities/bot';
+import { createBotAction } from '@/entities/bot/actions';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Spinner } from '@/shared/ui/spinner';
@@ -33,9 +32,7 @@ import { createBotSchema, type FormInputs } from '../model/validation';
 
 const DescriptionField = memo(({ control }: { control: Control<FormInputs> }) => {
   const t = useTranslations('createBot');
-
   const descriptionValue = useWatch({ control, name: 'description' });
-
   return (
     <Controller
       name="description"
@@ -63,14 +60,14 @@ const DescriptionField = memo(({ control }: { control: Control<FormInputs> }) =>
     />
   );
 });
-
 DescriptionField.displayName = 'DescriptionField';
 
 export function CreateBotModal() {
   const t = useTranslations('createBot');
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const { handleSubmit, control, reset } = useForm<FormInputs>({
     resolver: zodResolver(createBotSchema(t)),
@@ -80,14 +77,17 @@ export function CreateBotModal() {
     },
   });
 
-  const handleOpenChange = (open: boolean) => {
+  const handleOpenChange = (open: boolean): void => {
     setIsOpen(open);
     if (!open) reset();
   };
 
-  const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    startTransition(async () => {
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    setIsSubmitting(true);
+
+    try {
       const result = await createBotAction(data);
+
       if (result.success && result.data) {
         setIsOpen(false);
         reset();
@@ -95,7 +95,11 @@ export function CreateBotModal() {
       } else {
         toast.error(result.error || t('errors.createFailed'));
       }
-    });
+    } catch {
+      toast.error(t('errors.createFailed'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -106,6 +110,7 @@ export function CreateBotModal() {
           {t('trigger')}
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <form id="form-create-bot" onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
@@ -137,17 +142,17 @@ export function CreateBotModal() {
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline" disabled={isPending}>
+                <Button variant="outline" disabled={isSubmitting}>
                   {t('btnClose')}
                 </Button>
               </DialogClose>
               <Button
                 type="submit"
                 form="form-create-bot"
-                disabled={isPending}
+                disabled={isSubmitting}
                 data-testid="submit-create-bot-modal"
               >
-                {isPending && <Spinner data-icon="inline-start" />}
+                {isSubmitting && <Spinner data-icon="inline-start" />}
                 {t('btnSave')}
               </Button>
             </DialogFooter>

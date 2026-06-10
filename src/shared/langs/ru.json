@@ -40,9 +40,12 @@
   "BotCard": {
     "lastUpdated": "Последнее обновление",
     "edit": "Редактировать",
-    "delete": "Удалить",
+    "deleteBtn": "Удалить",
+    "cancelBtn": "Отмена",
+    "deleteTitle": "Подтверждение удаления",
     "deleteConfirmation": "Вы уверены, что хотите удалить этого бота? Это действие нельзя будет отменить",
     "deleteSuccess": "Бот успешно удалён",
+    "deleteError": "Не удалось удалить бота. Пожалуйста, попробуйте снова",
     "active": "Активный",
     "draft": "Черновик"
   },
@@ -109,7 +112,29 @@
       "message": {
         "name": "Сообщение",
         "description": "Отправить текст пользователю",
-        "messagePlaceholder": "Введите текст сообщения..."
+        "messagePlaceholder": "Введите текст сообщения...",
+        "shouldSaveResponse": "Сохранять ответ пользователя",
+        "saveToVariable": "Сохранить ответ в переменную",
+        "saveToVariablePlaceholder": "Имя переменной",
+        "buttons": "Инлайн-кнопки",
+        "addButton": "Добавить кнопку",
+        "buttonText": "Текст кнопки",
+        "buttonTextPlaceholder": "Введите текст кнопки",
+        "buttonValue": "Значение кнопки",
+        "buttonValuePlaceholder": "Введите callback значение",
+        "nodeButtons": {
+          "presetsLabel": "Шаблоны кнопок:",
+          "presets": {
+            "yes": "Да",
+            "no": "Нет",
+            "cancel": "Отмена",
+            "back": "Назад"
+          },
+          "newButtonText": "Новая кнопка",
+          "newButtonPlaceholder": "Текст на кнопке",
+          "variablePlaceholder": "Переменная (callback_data)",
+          "customButtonLabel": "Свой вариант кнопки"
+        }
       },
       "condition": {
         "name": "Условие",

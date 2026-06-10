@@ -4,6 +4,13 @@ export interface TelegramUpdate {
     from: { username?: string };
     text?: string;
   };
+  callback_query?: {
+    from: { username?: string };
+    message?: {
+      chat: { id: number };
+    };
+    data: string;
+  };
 }
 
 export interface UserContext {

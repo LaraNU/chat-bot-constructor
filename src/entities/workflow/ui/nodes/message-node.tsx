@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { ChangeEvent, memo, useCallback } from 'react';
 import { MessageSquare, Trash2 } from 'lucide-react';
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
@@ -14,15 +14,35 @@ import {
 import { Label } from '@/shared/ui/label';
 import { Button } from '@/shared/ui/button';
 
-import type { MessageAppNode } from '../../model/types';
+import type { MessageAppNode, MessageNodeData } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { useWorkflowActions } from '@/features/workflow-actions';
 import { NodeTextarea } from './fields/node-textarea';
+import { NodeInput } from './fields';
+import { NodeButtons } from './fields/node-buttons';
 
 export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.message;
-  const { onNodeDelete } = useWorkflowActions();
+
+  const handleDelete = useCallback(() => {
+    data.actions?.onNodeDelete(id);
+  }, [id, data.actions]);
+
+  const handleUpdate = useCallback(
+    (nodeId: string, payload: Partial<MessageNodeData>) => {
+      data.actions?.onNodeUpdate(nodeId, payload);
+    },
+    [data.actions]
+  );
+
+  const handleSaveResponseChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      handleUpdate(id, { shouldSaveResponse: event.target.checked });
+    },
+    [id, handleUpdate]
+  );
+
+  const shouldSaveResponse = data.shouldSaveResponse === true;
 
   return (
     <BaseNode className="w-64">
@@ -39,7 +59,7 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={() => onNodeDelete(id)}
+          onClick={handleDelete}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -51,12 +71,48 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
             {t('nodes.message.description') || 'Message Text'}
           </Label>
 
-          <NodeTextarea
+          <NodeTextarea<MessageNodeData, 'text'>
             nodeId={id}
             field="text"
             initialValue={data.text ?? ''}
             placeholder={t('nodes.message.description') || 'Enter message...'}
+            onUpdate={handleUpdate}
           />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              checked={shouldSaveResponse}
+              onChange={handleSaveResponseChange}
+              className="border-input text-primary focus-visible:ring-ring/50 size-4 rounded border bg-transparent focus-visible:ring-[3px]"
+            />
+            <span>{t('nodes.message.shouldSaveResponse') || 'Save user response'}</span>
+          </Label>
+
+          {shouldSaveResponse && (
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+                {t('nodes.message.saveToVariable') || 'Save response to variable'}
+              </Label>
+              <NodeInput<MessageNodeData, 'saveToVariable'>
+                nodeId={id}
+                field="saveToVariable"
+                initialValue={data.saveToVariable ?? ''}
+                placeholder={t('nodes.message.saveToVariablePlaceholder') || 'variable_name'}
+                className="h-8 text-xs"
+                onUpdate={handleUpdate}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5 border-t pt-2">
+          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+            {t('nodes.message.buttons') || 'Inline Buttons'}
+          </Label>
+          <NodeButtons nodeId={id} buttons={data.buttons} onUpdate={handleUpdate} />
         </div>
       </BaseNodeContent>
 

@@ -2,22 +2,25 @@
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
 import { addEdge, Connection } from '@xyflow/react';
-import type {
-  AppNode,
-  AppEdge,
-  MessageNodeData,
-  StartNodeData,
-  ConditionNodeData,
-  EndNodeData,
-} from '@/entities/workflow/model/types';
-
-export type NodeDataUpdatePayload = Partial<
-  MessageNodeData & StartNodeData & ConditionNodeData & EndNodeData
->;
+import type { AppEdge, CustomAppNode } from '@/entities/workflow/model/types';
+import type { NodeDataUpdatePayload } from './context';
 
 interface UseWorkflowCoreProps {
-  setNodes: Dispatch<SetStateAction<AppNode[]>>;
+  setNodes: Dispatch<SetStateAction<CustomAppNode[]>>;
   setEdges: Dispatch<SetStateAction<AppEdge[]>>;
+}
+
+/**
+ * Type-safe node update function that preserves node type
+ */
+function updateNodeData<T extends CustomAppNode>(node: T, newData: NodeDataUpdatePayload): T {
+  return {
+    ...node,
+    data: {
+      ...node.data,
+      ...newData,
+    },
+  } as T;
 }
 
 export const useWorkflowCore = ({ setNodes, setEdges }: UseWorkflowCoreProps) => {
@@ -32,17 +35,12 @@ export const useWorkflowCore = ({ setNodes, setEdges }: UseWorkflowCoreProps) =>
   const onNodeUpdate = useCallback(
     (id: string, newData: NodeDataUpdatePayload) => {
       setNodes((nds) =>
-        nds.map((node) =>
-          node.id === id
-            ? ({
-                ...node,
-                data: {
-                  ...node.data,
-                  ...newData,
-                },
-              } as AppNode)
-            : node
-        )
+        nds.map((node) => {
+          if (node.id === id) {
+            return updateNodeData(node, newData);
+          }
+          return node;
+        })
       );
     },
     [setNodes]
@@ -50,7 +48,7 @@ export const useWorkflowCore = ({ setNodes, setEdges }: UseWorkflowCoreProps) =>
 
   const onConnect = useCallback(
     (params: Connection) => {
-      setEdges((eds) => addEdge(params, eds) as AppEdge[]);
+      setEdges((eds) => addEdge(params, eds));
     },
     [setEdges]
   );
