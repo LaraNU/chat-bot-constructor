@@ -32,7 +32,7 @@ const messageNodeDataSchema = z.object({
 });
 
 const conditionNodeDataSchema = z.object({
-  variable: z.string().min(1, 'Variable is required'),
+  variable: z.enum(['message_text', 'username', 'callback_data']),
   operator: z.enum(['equals', 'contains', 'greaterThan', 'lessThan', 'exists']),
   value: z
     .string()

@@ -1,4 +1,4 @@
-import { Node, Edge, BuiltInNode } from '@xyflow/react';
+import { Node, Edge } from '@xyflow/react';
 
 export type NodeDataUpdatePayload =
   | Partial<MessageNodeData>
@@ -49,7 +49,7 @@ export type ConditionAppNode = Node<ConditionNodeData, 'condition'>;
 export type EndAppNode = Node<EndNodeData, 'end'>;
 
 export type CustomAppNode = MessageAppNode | StartAppNode | ConditionAppNode | EndAppNode;
-export type AppNode = CustomAppNode | BuiltInNode;
+export type AppNode = CustomAppNode;
 
 export type AppEdge = Edge;
 
