@@ -1,6 +1,6 @@
 import { prisma } from '@/shared/lib/prisma';
 import type { Bot } from '@prisma/client';
-import type { AppNode, AppEdge } from '@/entities/workflow/model/types';
+import { createDefaultFlow } from '@/entities/workflow/model';
 
 export const botRepository = {
   async findAllByUserId(userId: string): Promise<Bot[]> {
@@ -26,7 +26,7 @@ export const botRepository = {
   },
 
   async create(data: { name: string; description?: string; userId: string }): Promise<Bot> {
-    return await prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx) => {
       const bot = await tx.bot.create({
         data: {
           name: data.name,
@@ -35,11 +35,13 @@ export const botRepository = {
         },
       });
 
+      const flow = createDefaultFlow();
+
       await tx.flow.create({
         data: {
           botId: bot.id,
-          nodes: [] as AppNode[],
-          edges: [] as AppEdge[],
+          nodes: flow.nodes,
+          edges: flow.edges,
         },
       });
 

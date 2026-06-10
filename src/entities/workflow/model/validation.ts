@@ -6,9 +6,7 @@ const trimmedNonEmptyString = (emptyErrorMessage: string) =>
     .transform((val) => val.trim())
     .refine((val) => val.length > 0, { message: emptyErrorMessage });
 
-const startNodeDataSchema = z.object({
-  triggerType: z.enum(['manual', 'message']),
-});
+const startNodeDataSchema = z.object({});
 
 const endNodeDataSchema = z.object({
   message: trimmedNonEmptyString('End message text cannot be empty'),

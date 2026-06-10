@@ -15,9 +15,7 @@ export interface WorkflowNodeData extends Record<string, unknown> {
   actions?: WorkflowNodeActionHandlers;
 }
 
-export type StartNodeData = WorkflowNodeData & {
-  triggerType: 'manual' | 'message';
-};
+export type StartNodeData = WorkflowNodeData;
 
 export type ConditionNodeData = WorkflowNodeData & {
   variable: 'message_text' | 'username' | 'callback_data';

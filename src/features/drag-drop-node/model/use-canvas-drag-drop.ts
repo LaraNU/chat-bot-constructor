@@ -22,9 +22,7 @@ function getDefaultNodeData(type: WorkflowNodeType): Record<string, unknown> {
       return data;
     }
     case 'start': {
-      const data: StartNodeData = {
-        triggerType: 'manual',
-      };
+      const data: StartNodeData = {};
       return data;
     }
     case 'condition': {

@@ -101,13 +101,8 @@
     "description": "Перетащите узлы на холст",
     "nodes": {
       "start": {
-        "name": "Начало",
-        "description": "Точка входа в сценарий",
-        "triggerLabel": "Тип триггера",
-        "triggers": {
-          "message": "При первом сообщении",
-          "manual": "Ручной запуск"
-        }
+        "name": "Старт",
+        "description": "Диалог начинается после нажатия кнопки Start или команды /start в Telegram"
       },
       "message": {
         "name": "Сообщение",

@@ -102,12 +102,7 @@
     "nodes": {
       "start": {
         "name": "Start",
-        "description": "Entry point for your workflow",
-        "triggerLabel": "Trigger Type",
-        "triggers": {
-          "message": "On First Message",
-          "manual": "Manual Trigger"
-        }
+        "description": "Dialog starts after pressing the Start button or /start command in Telegram"
       },
       "message": {
         "name": "Message",
