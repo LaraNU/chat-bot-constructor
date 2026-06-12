@@ -8,6 +8,8 @@ export type {
   CustomAppNode,
   WorkflowNodeType,
   MessageAppNode,
+  QuestionAppNode,
+  ChoiceAppNode,
   ConditionAppNode,
   EndAppNode,
 } from './model/types';

@@ -1,6 +1,9 @@
 import type { AppNode, AppEdge, WorkflowNodeType } from '@/entities/workflow';
+
 import type { UserContext } from '../model/types';
+
 import { getNodeHandler } from './nodes/registry';
+
 import type { TempData } from './nodes/types';
 
 interface RunEngineParams {
@@ -20,6 +23,7 @@ interface WorkflowEngineState {
 function createWorkflowEngineState(nodes: AppNode[], edges: AppEdge[]): WorkflowEngineState {
   const nodesById = new Map<string, AppNode>();
   const edgesBySource = new Map<string, AppEdge[]>();
+
   let startNodeId: string | null = null;
 
   for (const node of nodes) {
@@ -48,27 +52,32 @@ function createWorkflowEngineState(nodes: AppNode[], edges: AppEdge[]): Workflow
 }
 
 /**
- * Получить следующую ноду из стартовой позиции
+ * Get next node from either currentId or the start node
  */
 function getNextNodeId(currentId: string | null, state: WorkflowEngineState): string | null {
   const startNodeId = currentId ?? state.startNodeId;
 
-  if (!startNodeId) return null;
+  if (!startNodeId) {
+    return null;
+  }
 
   const nextEdge = state.edgesBySource.get(startNodeId)?.[0];
+
   return nextEdge?.target ?? null;
 }
 
 /**
- * Основной движок для выполнения workflow'а
- * Использует паттерн Strategy для обработки различных типов нод
+ * Основной движок выполнения workflow
  */
 export async function runWorkflowEngine({
   nodes,
   edges,
   initialNodeId,
   context,
-  tempData = { answers: {} },
+  tempData = {
+    answers: {},
+    responses: [],
+  },
 }: RunEngineParams): Promise<string | null> {
   const state = createWorkflowEngineState(nodes, edges);
 

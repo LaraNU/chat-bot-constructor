@@ -14,7 +14,7 @@ import {
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 
 export const StartNode = memo(() => {
-  const t = useTranslations('WorkflowEditor');
+  const t = useTranslations('WorkflowEditor.nodes.start');
 
   return (
     <BaseNode className="w-64">
@@ -22,14 +22,14 @@ export const StartNode = memo(() => {
         <div className={`rounded-sm border p-1 ${WORKFLOW_NODES_CONFIG.start.color}`}>
           <Play className="size-3.5" />
         </div>
-        <BaseNodeHeaderTitle className="text-xs font-semibold">
-          {t('nodes.start.name')}
-        </BaseNodeHeaderTitle>
+        <BaseNodeHeaderTitle className="text-xs font-semibold">{t('name')}</BaseNodeHeaderTitle>
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-3 p-3">
         <div className="flex flex-col gap-1.5">
-          {t('nodes.start.description') || 'Начало диалога'}
+          <span className="text-muted-foreground/70 text-[10px] font-bold uppercase">
+            {t('description')}
+          </span>
         </div>
       </BaseNodeContent>
 

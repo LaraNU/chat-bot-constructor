@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/shared/lib/prisma';
+
 import type { AppNode, AppEdge } from '@/entities/workflow';
+
 import type { TelegramUpdate, UserContext } from '../model/types';
+
 import { getUserSessionState, saveUserSession } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
 
 export async function handleTelegramWebhook(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
+
     const botId = searchParams.get('botId');
     const botToken = searchParams.get('token');
 
@@ -16,8 +21,13 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
     }
 
     const update = (await request.json()) as TelegramUpdate;
+
     const callbackQuery = update.callback_query;
-    if (!update.message?.text && !callbackQuery) {
+
+    const hasMessage = Boolean(update.message?.text);
+    const hasCallback = Boolean(callbackQuery);
+
+    if (!hasMessage && !hasCallback) {
       return NextResponse.json({ success: true });
     }
 
@@ -30,14 +40,22 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
     const context: UserContext = {
       botId,
       botToken,
+
       chatId: chatId.toString(),
-      userText: callbackQuery ? callbackQuery.data : update.message!.text!,
+      userText: update.message?.text ?? '',
+      callbackData: callbackQuery?.data,
+
       username: callbackQuery
         ? (callbackQuery.from?.username ?? '')
-        : (update.message!.from?.username ?? ''),
+        : (update.message?.from?.username ?? ''),
     };
 
-    const flow = await prisma.flow.findUnique({ where: { botId } });
+    const flow = await prisma.flow.findUnique({
+      where: {
+        botId,
+      },
+    });
+
     if (!flow) {
       return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
     }
@@ -45,7 +63,7 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
     const { currentNodeId: initialNodeId, tempData } = await getUserSessionState(
       context.botId,
       context.chatId,
-      context.userText
+      context.userText || ''
     );
 
     const finalNodeId = await runWorkflowEngine({
@@ -58,9 +76,14 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
 
     await saveUserSession(context.botId, context.chatId, finalNodeId, tempData);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+    });
   } catch (error) {
     console.error('❌ Webhook Execution Error:', error);
-    return NextResponse.json({ success: true });
+
+    return NextResponse.json({
+      success: true,
+    });
   }
 }

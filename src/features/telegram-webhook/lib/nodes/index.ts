@@ -1,8 +1,3 @@
-/**
- * Экспорты для работы с обработчиками нод через паттерн Strategy
- */
-
-// Типы
 export type {
   TempData,
   ExecutionContext,
@@ -11,10 +6,10 @@ export type {
   NodeHandler,
 } from './types';
 
-// Обработчики
 export { messageHandler } from './message-handler';
 export { conditionHandler } from './condition-handler';
 export { endHandler } from './end-handler';
+export { questionHandler } from './question-handler';
+export { choiceHandler } from './choice-handler';
 
-// Реестр
 export { nodeHandlersRegistry, getNodeHandler } from './registry';

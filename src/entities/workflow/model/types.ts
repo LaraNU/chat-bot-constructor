@@ -18,40 +18,58 @@ export interface WorkflowNodeData extends Record<string, unknown> {
 export type StartNodeData = WorkflowNodeData;
 
 export type ConditionNodeData = WorkflowNodeData & {
-  variable: 'message_text' | 'username' | 'callback_data';
-  operator: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'exists';
+  questionNodeId: string;
+  operator: 'equals' | 'contains';
   value: string;
+
+  actions?: WorkflowNodeActionHandlers;
 };
 
 export type EndNodeData = WorkflowNodeData & {
   message?: string;
 };
 
-export type InlineButton = {
-  id: string;
+export type MessageNodeData = WorkflowNodeData & {
   text: string;
-  value: string;
+  attachmentIds?: string[];
 };
 
-export type MessageNodeData = WorkflowNodeData & {
-  label?: string;
+export type QuestionNodeData = WorkflowNodeData & {
   text: string;
-  shouldSaveResponse?: boolean;
-  saveToVariable?: string;
-  buttons?: InlineButton[];
+  answerLabel: string;
+  attachmentIds?: string[];
+};
+
+export type ChoiceButton = {
+  id: string;
+  text: string;
+};
+
+export type ChoiceNodeData = WorkflowNodeData & {
+  text: string;
+  buttons: ChoiceButton[];
+  attachmentIds?: string[];
 };
 
 export type MessageAppNode = Node<MessageNodeData, 'message'>;
 export type StartAppNode = Node<StartNodeData, 'start'>;
 export type ConditionAppNode = Node<ConditionNodeData, 'condition'>;
 export type EndAppNode = Node<EndNodeData, 'end'>;
+export type QuestionAppNode = Node<QuestionNodeData, 'question'>;
+export type ChoiceAppNode = Node<ChoiceNodeData, 'choice'>;
 
-export type CustomAppNode = MessageAppNode | StartAppNode | ConditionAppNode | EndAppNode;
+export type CustomAppNode =
+  | MessageAppNode
+  | StartAppNode
+  | ConditionAppNode
+  | EndAppNode
+  | QuestionAppNode
+  | ChoiceAppNode;
 export type AppNode = CustomAppNode;
 
 export type AppEdge = Edge;
 
-export type WorkflowNodeType = 'start' | 'message' | 'condition' | 'end';
+export type WorkflowNodeType = 'start' | 'message' | 'question' | 'choice' | 'condition' | 'end';
 
 declare global {
   /* eslint-disable-next-line @typescript-eslint/no-namespace */

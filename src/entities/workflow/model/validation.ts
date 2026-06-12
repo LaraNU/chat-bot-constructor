@@ -12,29 +12,34 @@ const endNodeDataSchema = z.object({
   message: trimmedNonEmptyString('End message text cannot be empty'),
 });
 
-const inlineButtonSchema = z.object({
-  id: z.string().min(1, 'Button ID is required'),
-  text: trimmedNonEmptyString('Button text cannot be empty'),
-  value: trimmedNonEmptyString('Button value cannot be empty'),
+const messageNodeDataSchema = z.object({
+  text: trimmedNonEmptyString('Message text cannot be empty'),
+  attachmentIds: z.array(z.string()).optional(),
 });
 
-const messageNodeDataSchema = z.object({
-  label: z.string().optional(),
-  text: trimmedNonEmptyString('Message text cannot be empty'),
-  shouldSaveResponse: z.boolean().optional().default(false),
-  saveToVariable: z
-    .string()
-    .transform((val) => val.trim())
-    .optional(),
-  buttons: z.array(inlineButtonSchema).optional(),
+const questionNodeDataSchema = z.object({
+  text: trimmedNonEmptyString('Question text cannot be empty'),
+  answerLabel: trimmedNonEmptyString('Answer label cannot be empty'),
+  attachmentIds: z.array(z.string()).optional(),
+});
+
+const choiceNodeDataSchema = z.object({
+  text: trimmedNonEmptyString('Choice text cannot be empty'),
+  buttons: z.array(
+    z.object({
+      id: z.string(),
+      text: trimmedNonEmptyString('Button text cannot be empty'),
+    })
+  ),
+  attachmentIds: z.array(z.string()).optional(),
 });
 
 const conditionNodeDataSchema = z.object({
-  variable: z.enum(['message_text', 'username', 'callback_data']),
-  operator: z.enum(['equals', 'contains', 'greaterThan', 'lessThan', 'exists']),
+  questionNodeId: z.string().min(1),
+  operator: z.enum(['equals', 'contains']),
   value: z
     .string()
-    .transform((val) => val.trim())
+    .transform((v) => v.trim())
     .default(''),
 });
 
@@ -57,6 +62,8 @@ const appNodeSchema = z.discriminatedUnion('type', [
   baseNodeSchema.extend({ type: z.literal('end'), data: endNodeDataSchema }),
   baseNodeSchema.extend({ type: z.literal('message'), data: messageNodeDataSchema }),
   baseNodeSchema.extend({ type: z.literal('condition'), data: conditionNodeDataSchema }),
+  baseNodeSchema.extend({ type: z.literal('question'), data: questionNodeDataSchema }),
+  baseNodeSchema.extend({ type: z.literal('choice'), data: choiceNodeDataSchema }),
 ]);
 
 const appEdgeSchema = z.object({
