@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { SaveWorkflowButton } from '@/features/save-workflow';
 import { PublishBotButton } from '@/features/publish-bot';
+import { Heading } from '@/shared/ui/typography';
 
 interface EditorHeaderProps {
   botId: string;
@@ -16,9 +17,9 @@ export const EditorHeader = memo(({ botId, botName, initialToken }: EditorHeader
 
   return (
     <div className="border-border bg-card flex items-center justify-between border-b p-4">
-      <h2 className="font-medium">
+      <Heading level={4}>
         {t('title')} {botName}
-      </h2>
+      </Heading>
       <div className="flex items-center gap-2">
         <SaveWorkflowButton botId={botId} />
         <PublishBotButton botId={botId} initialToken={initialToken} />
