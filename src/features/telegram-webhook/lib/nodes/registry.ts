@@ -7,6 +7,7 @@ import { questionHandler } from './question-handler';
 import { choiceHandler } from './choice-handler';
 import { conditionHandler } from './condition-handler';
 import { endHandler } from './end-handler';
+import { summaryHandler } from './summary-handler';
 
 const startHandler: NodeHandler = {
   async handle() {
@@ -28,6 +29,8 @@ const nodeHandlersMap = {
   condition: conditionHandler,
 
   end: endHandler,
+
+  summary: summaryHandler,
 } satisfies Record<WorkflowNodeType, NodeHandler>;
 
 export const nodeHandlersRegistry = nodeHandlersMap;

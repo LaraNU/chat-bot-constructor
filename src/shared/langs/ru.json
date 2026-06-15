@@ -138,6 +138,15 @@
         "valuePlaceholder": "Введите значение для проверки",
         "questionFallback": "Вопрос"
       },
+      "summary": {
+        "name": "Сводка",
+        "description": "Показать пользователю сводку его ответов перед завершением диалога",
+        "summaryTitle": "Название сводки",
+        "summaryTitlePlaceholder": "Например: Ваши ответы",
+        "includedFields": "Поля для включения",
+        "template": "Шаблон",
+        "templatePlaceholder": "Например: Имя: Имя пользователя"
+      },
       "end": {
         "name": "Конец",
         "description": "Завершение диалога",

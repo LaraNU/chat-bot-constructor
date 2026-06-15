@@ -3,7 +3,15 @@
 import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
 import { WORKFLOW_NODES_CONFIG } from '@/entities/workflow';
-import { Play, MessageSquare, GitBranch, StopCircle, ListChecks, CircleHelp } from 'lucide-react';
+import {
+  Play,
+  MessageSquare,
+  GitBranch,
+  StopCircle,
+  ListChecks,
+  CircleHelp,
+  ClipboardList,
+} from 'lucide-react';
 import { DragEvent } from 'react';
 
 const ICON_MAP = {
@@ -13,6 +21,7 @@ const ICON_MAP = {
   choice: ListChecks,
   branch: GitBranch,
   stop: StopCircle,
+  summary: ClipboardList,
 };
 
 export function NodesPalette() {

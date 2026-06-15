@@ -43,6 +43,12 @@ const conditionNodeDataSchema = z.object({
     .default(''),
 });
 
+const summaryNodeDataSchema = z.object({
+  introText: trimmedNonEmptyString('Summary intro text cannot be empty'),
+  includedQuestionIds: z.array(z.string()),
+  customTemplate: z.string().optional(),
+});
+
 const baseNodeSchema = z.object({
   id: z.string().min(1, 'Node ID is required'),
   position: z.object({
@@ -64,6 +70,7 @@ const appNodeSchema = z.discriminatedUnion('type', [
   baseNodeSchema.extend({ type: z.literal('condition'), data: conditionNodeDataSchema }),
   baseNodeSchema.extend({ type: z.literal('question'), data: questionNodeDataSchema }),
   baseNodeSchema.extend({ type: z.literal('choice'), data: choiceNodeDataSchema }),
+  baseNodeSchema.extend({ type: z.literal('summary'), data: summaryNodeDataSchema }),
 ]);
 
 const appEdgeSchema = z.object({

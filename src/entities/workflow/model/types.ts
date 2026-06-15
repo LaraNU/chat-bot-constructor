@@ -4,6 +4,7 @@ export type NodeDataUpdatePayload =
   | Partial<MessageNodeData>
   | Partial<StartNodeData>
   | Partial<ConditionNodeData>
+  | Partial<SummaryNodeData>
   | Partial<EndNodeData>;
 
 export interface WorkflowNodeActionHandlers {
@@ -51,6 +52,14 @@ export type ChoiceNodeData = WorkflowNodeData & {
   attachmentIds?: string[];
 };
 
+export type SummaryNodeData = WorkflowNodeData & {
+  introText?: string;
+  includedQuestionIds: string[];
+  customTemplate?: string;
+  actions?: WorkflowNodeActionHandlers;
+};
+
+export type SummaryAppNode = Node<SummaryNodeData, 'summary'>;
 export type MessageAppNode = Node<MessageNodeData, 'message'>;
 export type StartAppNode = Node<StartNodeData, 'start'>;
 export type ConditionAppNode = Node<ConditionNodeData, 'condition'>;
@@ -64,12 +73,20 @@ export type CustomAppNode =
   | ConditionAppNode
   | EndAppNode
   | QuestionAppNode
-  | ChoiceAppNode;
+  | ChoiceAppNode
+  | SummaryAppNode;
 export type AppNode = CustomAppNode;
 
 export type AppEdge = Edge;
 
-export type WorkflowNodeType = 'start' | 'message' | 'question' | 'choice' | 'condition' | 'end';
+export type WorkflowNodeType =
+  | 'start'
+  | 'message'
+  | 'question'
+  | 'choice'
+  | 'condition'
+  | 'end'
+  | 'summary';
 
 declare global {
   /* eslint-disable-next-line @typescript-eslint/no-namespace */

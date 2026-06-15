@@ -11,6 +11,7 @@ import type {
   ChoiceNodeData,
   StartNodeData,
   ConditionNodeData,
+  SummaryNodeData,
   EndNodeData,
 } from '@/entities/workflow/model/types';
 
@@ -55,6 +56,16 @@ function getDefaultNodeData(type: WorkflowNodeType): Record<string, unknown> {
         source: 'answer',
         operator: 'equals',
         value: '',
+      };
+
+      return data;
+    }
+
+    case 'summary': {
+      const data: SummaryNodeData = {
+        introText: '',
+        includedQuestionIds: [],
+        customTemplate: '',
       };
 
       return data;

@@ -138,6 +138,15 @@
         "valuePlaceholder": "Enter value to check...",
         "questionFallback": "Question"
       },
+      "summary": {
+        "name": "Summary",
+        "description": "Show the user a summary of their responses before ending the conversation",
+        "summaryTitle": "Summary title",
+        "summaryTitlePlaceholder": "For example: Your responses",
+        "includedFields": "Included fields",
+        "template": "Template",
+        "templatePlaceholder": "For example: Name: Username"
+      },
       "end": {
         "name": "End",
         "description": "End of the conversation",
