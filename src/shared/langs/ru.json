@@ -97,7 +97,8 @@
     "signInLink": "Войти"
   },
   "WorkflowEditor": {
-    "title": "Компоненты",
+    "title": "Редактор сценария для бота",
+    "plaletteTitle": "Компоненты",
     "description": "Перетащите узлы на холст",
     "nodes": {
       "start": {

@@ -34,7 +34,7 @@ export function NodesPalette() {
   return (
     <aside className="border-border bg-card flex w-64 flex-col border-r">
       <div className="border-border border-b p-4">
-        <h2 className="text-sm font-medium">{t('title')}</h2>
+        <h2 className="text-sm font-medium">{t('plaletteTitle')}</h2>
         <p className="text-muted-foreground mt-1 text-xs">{t('description')}</p>
       </div>
 

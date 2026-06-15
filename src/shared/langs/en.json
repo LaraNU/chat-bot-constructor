@@ -97,7 +97,8 @@
     "signInLink": "Sign in"
   },
   "WorkflowEditor": {
-    "title": "Components",
+    "title": "Editor for bot workflow",
+    "plaletteTitle": "Components",
     "description": "Drag nodes to the canvas",
     "nodes": {
       "start": {
