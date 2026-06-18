@@ -66,6 +66,7 @@ export function WorkflowCanvas({ initialNodes, initialEdges }: WorkflowCanvasPro
     () =>
       edges.map((edge) => ({
         ...edge,
+        type: 'custom',
         markerEnd: {
           type: MarkerType.Arrow,
           color: edge.selected ? '#2284c5' : '#94a3b8',

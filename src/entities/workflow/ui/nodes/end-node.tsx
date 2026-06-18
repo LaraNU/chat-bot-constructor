@@ -68,7 +68,7 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
 
           <CommitTextarea
             value={data.message ?? ''}
-            placeholder={t('exitMessagePlaceholder')}
+            placeholder={t('messagePlaceholder')}
             onCommit={handleMessageCommit}
           />
         </div>

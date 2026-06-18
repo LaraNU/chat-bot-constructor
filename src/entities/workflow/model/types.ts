@@ -61,7 +61,7 @@ export type CustomAppNode =
 
 export type AppNode = CustomAppNode;
 
-export type AppEdge = Edge<Record<string, never>, 'custom'>;
+export type AppEdge = Edge;
 
 export type WorkflowNodeType =
   | 'start'
