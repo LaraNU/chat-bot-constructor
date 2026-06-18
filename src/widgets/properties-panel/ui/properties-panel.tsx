@@ -1,5 +1,6 @@
 'use client';
 
+import { Heading } from '@/shared/ui/typography/heading';
 import { useTranslations } from 'next-intl';
 
 export function PropertiesPanel() {
@@ -8,7 +9,7 @@ export function PropertiesPanel() {
   return (
     <aside className="border-border bg-card flex w-72 flex-col border-l">
       <div className="border-border border-b p-4">
-        <h2 className="text-sm font-medium">{t('title')}</h2>
+        <Heading level={4}>{t('title')}</Heading>
         <p className="text-muted-foreground mt-1 text-xs">{t('description')}</p>
       </div>
       <div className="flex flex-1 items-center justify-center p-4">

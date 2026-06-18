@@ -10,9 +10,9 @@ export const endHandler: NodeHandler = {
 
     const endNode = node as EndAppNode;
 
-    const finalAnswers = tempData.answers ?? {};
+    const finalAnswers = tempData.responses ?? [];
 
-    if (Object.keys(finalAnswers).length > 0) {
+    if (finalAnswers.length > 0) {
       const serializedAnswers = JSON.parse(JSON.stringify(finalAnswers)) as Prisma.InputJsonValue;
 
       await prisma.botResponse.create({
@@ -24,12 +24,15 @@ export const endHandler: NodeHandler = {
       });
     }
 
-    tempData.answers = {};
+    tempData.responses = [];
 
-    const endText = endNode.data.message || 'Диалог завершен';
+    const endText = endNode.data.message || 'Dialog ended. Thank you!';
 
-    await sendTelegramMessage(context.botToken, Number(context.chatId), endText);
-
+    const chatId = Number(context.chatId);
+    if (isNaN(chatId)) {
+      throw new Error(`Invalid chatId: ${context.chatId}`);
+    }
+    await sendTelegramMessage(context.botToken, chatId, endText);
     return {
       nextNodeId: null,
     };

@@ -97,53 +97,56 @@
     "signInLink": "Sign in"
   },
   "WorkflowEditor": {
-    "title": "Components",
+    "title": "Editor for bot workflow",
+    "plaletteTitle": "Components",
     "description": "Drag nodes to the canvas",
     "nodes": {
       "start": {
         "name": "Start",
-        "description": "Entry point for your workflow",
-        "triggerLabel": "Trigger Type",
-        "triggers": {
-          "message": "On First Message",
-          "manual": "Manual Trigger"
-        }
+        "description": "Dialog starts after pressing the Start button or /start command in Telegram"
       },
       "message": {
         "name": "Message",
         "description": "Send a text message to the user",
-        "messagePlaceholder": "Enter message...",
-        "shouldSaveResponse": "Save user response",
-        "saveToVariable": "Save response to variable",
-        "saveToVariablePlaceholder": "Variable name",
-        "buttons": "Inline Buttons",
+        "messagePlaceholder": "Enter message..."
+      },
+      "question": {
+        "name": "Question",
+        "description": "Ask a question and save the user's response",
+        "questionPlaceholder": "Enter your question...",
+        "questionTitle": "Response variable name"
+      },
+      "choice": {
+        "name": "Choice",
+        "description": "Provide multiple options for the user to choose from",
+        "optionText": "Option text",
+        "optionTextPlaceholder": "Enter option text...",
+        "buttons": "Buttons",
         "addButton": "Add button",
-        "buttonText": "Button text",
-        "buttonTextPlaceholder": "Enter button text",
-        "buttonValue": "Button value",
-        "buttonValuePlaceholder": "Enter callback value",
-        "nodeButtons": {
-          "presetsLabel": "Button templates:",
-          "presets": {
-            "yes": "Yes",
-            "no": "No",
-            "cancel": "Cancel",
-            "back": "Back"
-          },
-          "newButtonText": "New button",
-          "newButtonPlaceholder": "Button text",
-          "variablePlaceholder": "Variable (callback_data)",
-          "customButtonLabel": "Custom button option"
-        }
+        "buttonTextPlaceholder": "Button text"
       },
       "condition": {
         "name": "Condition",
-        "description": "Split workflow logic",
-        "variable": "Variable",
-        "variablePlaceholder": "e.g., message_text",
-        "operator": "Operator",
+        "description": "Branch the conversation based on user responses or variables",
+        "question": "Question",
+        "selectQuestion": "Select a question",
+        "check": "Check",
+        "operators": {
+          "equals": "Equals (=)",
+          "contains": "Contains"
+        },
         "value": "Value",
-        "valuePlaceholder": "e.g., \"Buy\""
+        "valuePlaceholder": "Enter value to check...",
+        "questionFallback": "Question"
+      },
+      "summary": {
+        "name": "Summary",
+        "description": "Show the user a summary of their responses before ending the conversation",
+        "summaryTitle": "Summary title",
+        "summaryTitlePlaceholder": "For example: Your responses",
+        "includedFields": "Included fields",
+        "template": "Template",
+        "templatePlaceholder": "For example: Name: Username"
       },
       "end": {
         "name": "End",

@@ -3,6 +3,7 @@ import { BotList } from '@/widgets/bot-list';
 import { BotListFallback } from '@/widgets/bot-list';
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
+import { Heading } from '@/shared/ui/typography/heading';
 
 export async function DashboardPage() {
   const t = await getTranslations('HomePage');
@@ -12,9 +13,7 @@ export async function DashboardPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 data-testid="title-for-auth" className="text-2xl font-semibold tracking-tight">
-              {t('title')}
-            </h1>
+            <Heading level={2}>{t('title')}</Heading>
             <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
           </div>
           <CreateBotModal />

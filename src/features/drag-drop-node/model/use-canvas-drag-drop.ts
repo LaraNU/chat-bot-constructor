@@ -2,11 +2,16 @@
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
 import { useReactFlow } from '@xyflow/react';
+
 import type { CustomAppNode, WorkflowNodeType } from '@/entities/workflow';
+
 import type {
   MessageNodeData,
+  QuestionNodeData,
+  ChoiceNodeData,
   StartNodeData,
   ConditionNodeData,
+  SummaryNodeData,
   EndNodeData,
 } from '@/entities/workflow/model/types';
 
@@ -15,32 +20,64 @@ function getDefaultNodeData(type: WorkflowNodeType): Record<string, unknown> {
     case 'message': {
       const data: MessageNodeData = {
         text: '',
-        shouldSaveResponse: false,
-        saveToVariable: '',
+        attachmentIds: [],
+      };
+
+      return data;
+    }
+
+    case 'question': {
+      const data: QuestionNodeData = {
+        text: '',
+        answerLabel: '',
+      };
+
+      return data;
+    }
+
+    case 'choice': {
+      const data: ChoiceNodeData = {
+        text: '',
         buttons: [],
       };
+
       return data;
     }
+
     case 'start': {
-      const data: StartNodeData = {
-        triggerType: 'manual',
-      };
+      const data: StartNodeData = {};
+
       return data;
     }
+
     case 'condition': {
       const data: ConditionNodeData = {
-        variable: 'message_text',
+        questionNodeId: '',
         operator: 'equals',
         value: '',
       };
+
       return data;
     }
+
+    case 'summary': {
+      const data: SummaryNodeData = {
+        introText: '',
+        includedQuestionIds: [],
+        customTemplate: '',
+      };
+
+      return data;
+    }
+
     case 'end': {
       const data: EndNodeData = {
         message: '',
       };
+
       return data;
     }
+
     default:
       return {};
   }
@@ -59,7 +96,10 @@ export function useCanvasDragDrop(setNodes: Dispatch<SetStateAction<CustomAppNod
       event.preventDefault();
 
       const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType;
-      if (!type) return;
+
+      if (!type) {
+        return;
+      }
 
       const position = screenToFlowPosition({
         x: event.clientX,
@@ -73,7 +113,7 @@ export function useCanvasDragDrop(setNodes: Dispatch<SetStateAction<CustomAppNod
         data: getDefaultNodeData(type),
       } as CustomAppNode;
 
-      setNodes((nds) => nds.concat(newNode));
+      setNodes((nodes) => [...nodes, newNode]);
     },
     [screenToFlowPosition, setNodes]
   );

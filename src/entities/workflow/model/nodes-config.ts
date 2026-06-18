@@ -2,7 +2,7 @@ import type { WorkflowNodeType } from './types';
 
 export interface NodeConfig {
   translationKey: string;
-  iconName: 'play' | 'message' | 'branch' | 'stop';
+  iconName: 'play' | 'message' | 'branch' | 'stop' | 'question' | 'choice' | 'summary';
   color: string;
 }
 
@@ -17,10 +17,25 @@ export const WORKFLOW_NODES_CONFIG: Record<WorkflowNodeType, NodeConfig> = {
     iconName: 'message',
     color: 'bg-blue-500/15 text-blue-500 border-blue-500/30',
   },
+  question: {
+    translationKey: 'nodes.question',
+    iconName: 'question',
+    color: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30',
+  },
+  choice: {
+    translationKey: 'nodes.choice',
+    iconName: 'choice',
+    color: 'bg-purple-500/15 text-purple-500 border-purple-500/30',
+  },
   condition: {
     translationKey: 'nodes.condition',
     iconName: 'branch',
     color: 'bg-warning/15 text-warning border-warning/30',
+  },
+  summary: {
+    translationKey: 'nodes.summary',
+    iconName: 'summary',
+    color: 'bg-info/15 text-info border-info/30',
   },
   end: {
     translationKey: 'nodes.end',

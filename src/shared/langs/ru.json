@@ -97,53 +97,56 @@
     "signInLink": "Войти"
   },
   "WorkflowEditor": {
-    "title": "Компоненты",
+    "title": "Редактор сценария для бота",
+    "plaletteTitle": "Компоненты",
     "description": "Перетащите узлы на холст",
     "nodes": {
       "start": {
-        "name": "Начало",
-        "description": "Точка входа в сценарий",
-        "triggerLabel": "Тип триггера",
-        "triggers": {
-          "message": "При первом сообщении",
-          "manual": "Ручной запуск"
-        }
+        "name": "Старт",
+        "description": "Диалог начинается после нажатия кнопки Start или команды /start в Telegram"
       },
       "message": {
         "name": "Сообщение",
-        "description": "Отправить текст пользователю",
-        "messagePlaceholder": "Введите текст сообщения...",
-        "shouldSaveResponse": "Сохранять ответ пользователя",
-        "saveToVariable": "Сохранить ответ в переменную",
-        "saveToVariablePlaceholder": "Имя переменной",
-        "buttons": "Инлайн-кнопки",
+        "description": "Отправить сообщение пользователю",
+        "messagePlaceholder": "Введите текст сообщения..."
+      },
+      "question": {
+        "name": "Вопрос",
+        "description": "Текст вопроса",
+        "questionTitle": "Название ответа",
+        "questionPlaceholder": "Например: Имя пользователя"
+      },
+      "choice": {
+        "name": "Выбор",
+        "description": "Предложить пользователю выбор из нескольких вариантов и сохранить его ответ",
+        "optionText": "Текст сообщения",
+        "optionTextPlaceholder": "Введите сообщение",
+        "buttons": "Кнопки",
         "addButton": "Добавить кнопку",
-        "buttonText": "Текст кнопки",
-        "buttonTextPlaceholder": "Введите текст кнопки",
-        "buttonValue": "Значение кнопки",
-        "buttonValuePlaceholder": "Введите callback значение",
-        "nodeButtons": {
-          "presetsLabel": "Шаблоны кнопок:",
-          "presets": {
-            "yes": "Да",
-            "no": "Нет",
-            "cancel": "Отмена",
-            "back": "Назад"
-          },
-          "newButtonText": "Новая кнопка",
-          "newButtonPlaceholder": "Текст на кнопке",
-          "variablePlaceholder": "Переменная (callback_data)",
-          "customButtonLabel": "Свой вариант кнопки"
-        }
+        "buttonTextPlaceholder": "Текст кнопки"
       },
       "condition": {
         "name": "Условие",
-        "description": "Разделение логики",
-        "variable": "Переменная",
-        "variablePlaceholder": "например, message_text",
-        "operator": "Оператор",
+        "question": "Вопрос",
+        "selectQuestion": "Выберите вопрос",
+        "description": "Ответ на вопрос определяет дальнейший путь диалога",
+        "check": "Проверка",
+        "operators": {
+          "equals": "Равно (=)",
+          "contains": "Содержит"
+        },
         "value": "Значение",
-        "valuePlaceholder": "например, \"Купить\""
+        "valuePlaceholder": "Введите значение для проверки",
+        "questionFallback": "Вопрос"
+      },
+      "summary": {
+        "name": "Сводка",
+        "description": "Показать пользователю сводку его ответов перед завершением диалога",
+        "summaryTitle": "Название сводки",
+        "summaryTitlePlaceholder": "Например: Ваши ответы",
+        "includedFields": "Поля для включения",
+        "template": "Шаблон",
+        "templatePlaceholder": "Например: Имя: Имя пользователя"
       },
       "end": {
         "name": "Конец",

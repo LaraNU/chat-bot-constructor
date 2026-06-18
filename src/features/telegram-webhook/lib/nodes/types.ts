@@ -2,11 +2,28 @@ import type { AppNode, AppEdge } from '@/entities/workflow';
 import type { UserContext } from '../../model/types';
 
 /**
- * Временные данные, сохраняемые в течение выполнения workflow
+ * Ответ пользователя на конкретную message-ноду
+ */
+export interface SavedAnswer {
+  nodeId: string;
+  text?: string;
+  buttonId?: string;
+  buttonText?: string;
+}
+
+/**
+ * Временные данные выполнения workflow
  */
 export interface TempData {
-  answers: Record<string, string>;
-  [key: string]: Record<string, string> | string | number | boolean | null | undefined;
+  answers: Record<string, SavedAnswer>;
+
+  responses: Array<{
+    question: string;
+    answer: string;
+  }>;
+
+  uploadedFileId?: string;
+  uploadedFileType?: string;
 }
 
 /**
@@ -23,20 +40,12 @@ export interface ExecutionContext {
  * Результат выполнения обработчика ноды
  */
 export interface NodeHandlerResult {
-  /**
-   * ID следующей ноды, которую нужно выполнить.
-   * null если workflow должен завершиться
-   */
   nextNodeId: string | null;
-  /**
-   * Флаг, указывает ли обработчик, что это точка остановки
-   * (например, после отправки сообщения ждём ответа пользователя)
-   */
   shouldStop?: boolean;
 }
 
 /**
- * Параметры для обработчика ноды (для обратной совместимости)
+ * Параметры обработчика ноды
  */
 export interface NodeHandlerParams {
   node: AppNode;
@@ -49,9 +58,6 @@ export interface NodeHandlerParams {
   initialNodeId: string | null;
 }
 
-/**
- * Интерфейс для реализации стратегии обработки ноды
- */
 export interface NodeHandler {
   handle(params: NodeHandlerParams): Promise<NodeHandlerResult>;
 }

@@ -1,59 +1,76 @@
 import { Node, Edge } from '@xyflow/react';
 
-export type NodeDataUpdatePayload =
-  | Partial<MessageNodeData>
-  | Partial<StartNodeData>
-  | Partial<ConditionNodeData>
-  | Partial<EndNodeData>;
-
-export interface WorkflowNodeActionHandlers {
-  onNodeDelete: (id: string) => void;
-  onNodeUpdate: (id: string, data: NodeDataUpdatePayload) => void;
-}
-
-export interface WorkflowNodeData extends Record<string, unknown> {
-  actions?: WorkflowNodeActionHandlers;
-}
-
-export type StartNodeData = WorkflowNodeData & {
-  triggerType: 'manual' | 'message';
+export type StartNodeData = {
+  startCommand?: string;
 };
 
-export type ConditionNodeData = WorkflowNodeData & {
-  variable: 'message_text' | 'username' | 'callback_data';
-  operator: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'exists';
+export type ConditionNodeData = {
+  questionNodeId: string;
+  operator: 'equals' | 'contains';
   value: string;
 };
 
-export type EndNodeData = WorkflowNodeData & {
+export type EndNodeData = {
   message?: string;
 };
 
-export type InlineButton = {
+export type MessageNodeData = {
+  text: string;
+  attachmentIds?: string[];
+};
+
+export type QuestionNodeData = {
+  text: string;
+  answerLabel: string;
+  attachmentIds?: string[];
+};
+
+export type ChoiceButton = {
   id: string;
   text: string;
-  value: string;
 };
 
-export type MessageNodeData = WorkflowNodeData & {
-  label?: string;
+export type ChoiceNodeData = {
   text: string;
-  shouldSaveResponse?: boolean;
-  saveToVariable?: string;
-  buttons?: InlineButton[];
+  buttons: ChoiceButton[];
+  attachmentIds?: string[];
 };
 
+export type SummaryNodeData = {
+  introText?: string;
+  includedQuestionIds: string[];
+  customTemplate?: string;
+};
+
+export type SummaryAppNode = Node<SummaryNodeData, 'summary'>;
 export type MessageAppNode = Node<MessageNodeData, 'message'>;
 export type StartAppNode = Node<StartNodeData, 'start'>;
 export type ConditionAppNode = Node<ConditionNodeData, 'condition'>;
 export type EndAppNode = Node<EndNodeData, 'end'>;
+export type QuestionAppNode = Node<QuestionNodeData, 'question'>;
+export type ChoiceAppNode = Node<ChoiceNodeData, 'choice'>;
 
-export type CustomAppNode = MessageAppNode | StartAppNode | ConditionAppNode | EndAppNode;
+export type CustomAppNode =
+  | MessageAppNode
+  | StartAppNode
+  | ConditionAppNode
+  | EndAppNode
+  | QuestionAppNode
+  | ChoiceAppNode
+  | SummaryAppNode;
+
 export type AppNode = CustomAppNode;
 
 export type AppEdge = Edge;
 
-export type WorkflowNodeType = 'start' | 'message' | 'condition' | 'end';
+export type WorkflowNodeType =
+  | 'start'
+  | 'message'
+  | 'question'
+  | 'choice'
+  | 'condition'
+  | 'end'
+  | 'summary';
 
 declare global {
   /* eslint-disable-next-line @typescript-eslint/no-namespace */

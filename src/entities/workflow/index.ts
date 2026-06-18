@@ -8,7 +8,11 @@ export type {
   CustomAppNode,
   WorkflowNodeType,
   MessageAppNode,
+  QuestionAppNode,
+  ChoiceAppNode,
   ConditionAppNode,
   EndAppNode,
+  SummaryAppNode,
 } from './model/types';
 export { NODE_TYPES } from './ui/nodes/node-types';
+export { CustomEdge } from './ui/edge/custom-edge';

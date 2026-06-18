@@ -1,9 +1,8 @@
 'use client';
 
-import { memo } from 'react';
-import { GitBranch, Trash2 } from 'lucide-react';
-import { NodeProps, Handle, Position } from '@xyflow/react';
-import { useTranslations } from 'next-intl';
+import { memo, useCallback, useMemo } from 'react';
+import { GitBranch, Trash2, Frown, Smile } from 'lucide-react';
+import { Handle, Position, NodeProps, useStore } from '@xyflow/react';
 
 import {
   BaseNode,
@@ -11,64 +10,89 @@ import {
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
+
 import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Button } from '@/shared/ui/button';
 
-import type { ConditionAppNode, ConditionNodeData } from '../../model/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+
+import type {
+  AppNode,
+  ConditionAppNode,
+  ConditionNodeData,
+  QuestionAppNode,
+} from '../../model/types';
+
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { NodeInput } from './fields/node-input';
+import { CommitInput } from './fields';
+import { useTranslations } from 'next-intl';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
-type VariableType = ConditionNodeData['variable'];
-type OperatorType = ConditionNodeData['operator'];
-
-interface VariableOption {
-  value: VariableType;
-  translationKey: 'messageText' | 'username' | 'callbackData';
+function buildQuestionOptions(nodes: AppNode[], t: ReturnType<typeof useTranslations>) {
+  return nodes
+    .filter((node): node is QuestionAppNode => node.type === 'question')
+    .map((node) => ({
+      value: node.id,
+      label: node.data.text?.slice(0, 60) || t('questionFallback', { id: node.id.slice(0, 8) }),
+    }));
 }
-
-interface OperatorOption {
-  value: OperatorType;
-  translationKey: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'exists';
-}
-
-const VARIABLE_OPTIONS: VariableOption[] = [
-  { value: 'message_text', translationKey: 'messageText' },
-  { value: 'username', translationKey: 'username' },
-  { value: 'callback_data', translationKey: 'callbackData' },
-];
-
-const OPERATOR_OPTIONS: OperatorOption[] = [
-  { value: 'equals', translationKey: 'equals' },
-  { value: 'contains', translationKey: 'contains' },
-  { value: 'greaterThan', translationKey: 'greaterThan' },
-  { value: 'lessThan', translationKey: 'lessThan' },
-  { value: 'exists', translationKey: 'exists' },
-];
 
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
-  const t = useTranslations('WorkflowEditor');
   const config = WORKFLOW_NODES_CONFIG.condition;
+  const t = useTranslations('WorkflowEditor.nodes.condition');
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+
+  const nodes = useStore((state) => state.nodes as AppNode[]);
+
+  const availableQuestions = useMemo(() => buildQuestionOptions(nodes, t), [nodes, t]);
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
-  const handleUpdate = (nodeId: string, payload: Partial<ConditionNodeData>) => {
-    data.actions?.onNodeUpdate(nodeId, payload);
-  };
+  const handleUpdate = useCallback(
+    (nodeId: string, payload: Partial<ConditionNodeData>) => {
+      onNodeUpdate(nodeId, payload);
+    },
+    [onNodeUpdate]
+  );
+
+  const handleValueCommit = useCallback(
+    (value: string) => {
+      handleUpdate(id, { value });
+    },
+    [handleUpdate, id]
+  );
+
+  const handleQuestionChange = useCallback(
+    (value: string) => {
+      handleUpdate(id, {
+        questionNodeId: value,
+      });
+    },
+    [handleUpdate, id]
+  );
+
+  const handleOperatorChange = useCallback(
+    (value: string) => {
+      handleUpdate(id, {
+        operator: value as ConditionNodeData['operator'],
+      });
+    },
+    [handleUpdate, id]
+  );
 
   return (
-    <BaseNode className="w-80">
+    <BaseNode className="w-80 pb-5">
       <Handle type="target" position={Position.Top} />
 
       <BaseNodeHeader className="bg-muted/30 border-b">
         <div className={`rounded-sm border p-1 ${config.color}`}>
           <GitBranch className="size-3.5" />
         </div>
-        <BaseNodeHeaderTitle className="text-xs font-semibold">
-          {t('nodes.condition.name')}
-        </BaseNodeHeaderTitle>
+
+        <BaseNodeHeaderTitle className="text-xs font-semibold">{t('name')}</BaseNodeHeaderTitle>
+
         <Button
           variant="ghost"
           size="sm"
@@ -79,82 +103,75 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
         </Button>
       </BaseNodeHeader>
 
-      <BaseNodeContent className="space-y-3 p-3">
-        {/* Variable Select */}
+      <BaseNodeContent className="space-y-2 p-3">
         <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('nodes.condition.variable') || 'Variable'}
-          </Label>
-          <Select
-            value={data.variable ?? ''}
-            onValueChange={(val: string) => handleUpdate(id, { variable: val as VariableType })}
-          >
-            <SelectTrigger className="nodrag h-8 text-xs">
-              <SelectValue />
+          <Label className="mb-1 block text-[10px] font-bold uppercase">{t('question')}</Label>
+
+          <Select value={data.questionNodeId} onValueChange={handleQuestionChange}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder={t('selectQuestion')} />
             </SelectTrigger>
+
             <SelectContent>
-              {VARIABLE_OPTIONS.map(({ value, translationKey }) => (
-                <SelectItem key={value} value={value} className="text-xs">
-                  {t(`variables.${translationKey}`)}
+              {availableQuestions.map((question) => (
+                <SelectItem key={question.value} value={question.value}>
+                  {question.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Operator Select */}
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('nodes.condition.operator') || 'Operator'}
-          </Label>
-          <Select
-            value={data.operator ?? ''}
-            onValueChange={(val: string) => handleUpdate(id, { operator: val as OperatorType })}
-          >
-            <SelectTrigger className="nodrag h-8 text-xs">
+        <div>
+          <Label className="mb-1 block text-[10px] font-bold uppercase">{t('check')}</Label>
+
+          <Select value={data.operator} onValueChange={handleOperatorChange}>
+            <SelectTrigger className="h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
+
             <SelectContent>
-              {OPERATOR_OPTIONS.map(({ value, translationKey }) => (
-                <SelectItem key={value} value={value} className="text-xs">
-                  {t(`operators.${translationKey}`)}
-                </SelectItem>
-              ))}
+              <SelectItem value="equals">{t('operators.equals')}</SelectItem>
+
+              <SelectItem value="contains">{t('operators.contains')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Value Input */}
-        {data.operator !== 'exists' && (
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-              {t('nodes.condition.value') || 'Value'}
-            </Label>
-            <NodeInput<ConditionNodeData, 'value'>
-              nodeId={id}
-              field="value"
-              initialValue={data.value ?? ''}
-              placeholder={t('nodes.condition.valuePlaceholder') || 'e.g., "Buy"'}
-              onUpdate={handleUpdate}
-            />
-          </div>
-        )}
+        <div>
+          <Label className="mb-1 block text-[10px] font-bold uppercase">{t('value')}</Label>
+
+          <CommitInput
+            value={data.value}
+            placeholder={t('valuePlaceholder')}
+            onCommit={handleValueCommit}
+          />
+        </div>
       </BaseNodeContent>
 
       <Handle
         type="source"
-        position={Position.Bottom}
         id="true"
-        style={{ left: '25%' }}
-        className="!bg-success"
-      />
+        position={Position.Bottom}
+        className="!size-6 !border-0 !bg-white"
+        style={{
+          left: '25%',
+        }}
+      >
+        <Smile color="#439400" />
+      </Handle>
+
       <Handle
         type="source"
-        position={Position.Bottom}
         id="false"
-        style={{ left: '75%' }}
-        className="!bg-destructive"
-      />
+        position={Position.Bottom}
+        className="!size-6 !border-0 !bg-white"
+        style={{
+          left: '75%',
+        }}
+      >
+        <Frown color="#940000" />
+      </Handle>
     </BaseNode>
   );
 });
