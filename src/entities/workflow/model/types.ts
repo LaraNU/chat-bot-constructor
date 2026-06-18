@@ -1,41 +1,25 @@
 import { Node, Edge } from '@xyflow/react';
 
-export type NodeDataUpdatePayload =
-  | Partial<MessageNodeData>
-  | Partial<StartNodeData>
-  | Partial<ConditionNodeData>
-  | Partial<SummaryNodeData>
-  | Partial<EndNodeData>;
+export type StartNodeData = {
+  startCommand?: string;
+};
 
-export interface WorkflowNodeActionHandlers {
-  onNodeDelete: (id: string) => void;
-  onNodeUpdate: (id: string, data: NodeDataUpdatePayload) => void;
-}
-
-export interface WorkflowNodeData extends Record<string, unknown> {
-  actions?: WorkflowNodeActionHandlers;
-}
-
-export type StartNodeData = WorkflowNodeData;
-
-export type ConditionNodeData = WorkflowNodeData & {
+export type ConditionNodeData = {
   questionNodeId: string;
   operator: 'equals' | 'contains';
   value: string;
-
-  actions?: WorkflowNodeActionHandlers;
 };
 
-export type EndNodeData = WorkflowNodeData & {
+export type EndNodeData = {
   message?: string;
 };
 
-export type MessageNodeData = WorkflowNodeData & {
+export type MessageNodeData = {
   text: string;
   attachmentIds?: string[];
 };
 
-export type QuestionNodeData = WorkflowNodeData & {
+export type QuestionNodeData = {
   text: string;
   answerLabel: string;
   attachmentIds?: string[];
@@ -46,17 +30,16 @@ export type ChoiceButton = {
   text: string;
 };
 
-export type ChoiceNodeData = WorkflowNodeData & {
+export type ChoiceNodeData = {
   text: string;
   buttons: ChoiceButton[];
   attachmentIds?: string[];
 };
 
-export type SummaryNodeData = WorkflowNodeData & {
+export type SummaryNodeData = {
   introText?: string;
   includedQuestionIds: string[];
   customTemplate?: string;
-  actions?: WorkflowNodeActionHandlers;
 };
 
 export type SummaryAppNode = Node<SummaryNodeData, 'summary'>;
@@ -75,9 +58,10 @@ export type CustomAppNode =
   | QuestionAppNode
   | ChoiceAppNode
   | SummaryAppNode;
+
 export type AppNode = CustomAppNode;
 
-export type AppEdge = Edge;
+export type AppEdge = Edge<Record<string, never>, 'custom'>;
 
 export type WorkflowNodeType =
   | 'start'

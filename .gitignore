@@ -51,3 +51,5 @@ node_modules/
 /playwright/.auth/
 
 .doc*
+generate-tree.cjs
+project-structure.txt

@@ -21,19 +21,22 @@ import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 
 import { CommitTextarea } from './fields';
 
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+
 export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.end');
   const config = WORKFLOW_NODES_CONFIG.end;
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
   const handleMessageCommit = useCallback(
     (message: string) => {
-      data.actions?.onNodeUpdate(id, { message });
+      onNodeUpdate(id, { message });
     },
-    [data.actions, id]
+    [onNodeUpdate, id]
   );
 
   return (
@@ -60,12 +63,12 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
       <BaseNodeContent className="space-y-2 p-3">
         <div className="flex flex-col gap-1.5">
           <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('description') || 'Exit Message'}
+            {t('description')}
           </Label>
 
           <CommitTextarea
             value={data.message ?? ''}
-            placeholder={t('description') || 'Enter exit message (optional)...'}
+            placeholder={t('exitMessagePlaceholder')}
             onCommit={handleMessageCommit}
           />
         </div>

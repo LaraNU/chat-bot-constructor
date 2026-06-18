@@ -2,7 +2,9 @@
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
 import { addEdge, Connection } from '@xyflow/react';
+
 import type { AppEdge, CustomAppNode } from '@/entities/workflow/model/types';
+
 import type { NodeDataUpdatePayload } from './context';
 
 interface UseWorkflowCoreProps {
@@ -34,12 +36,12 @@ export const useWorkflowCore = ({ setNodes, setEdges }: UseWorkflowCoreProps) =>
 
   const onNodeUpdate = useCallback(
     (id: string, newData: NodeDataUpdatePayload) => {
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.id === id) {
-            return updateNodeData(node, newData);
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id !== id) {
+            return node;
           }
-          return node;
+          return updateNodeData(node, newData);
         })
       );
     },
@@ -47,8 +49,24 @@ export const useWorkflowCore = ({ setNodes, setEdges }: UseWorkflowCoreProps) =>
   );
 
   const onConnect = useCallback(
-    (params: Connection) => {
-      setEdges((eds) => addEdge(params, eds));
+    (connection: Connection) => {
+      setEdges((edges) =>
+        addEdge(
+          {
+            ...connection,
+            type: 'custom',
+            animated: false,
+          },
+          edges
+        )
+      );
+    },
+    [setEdges]
+  );
+
+  const onEdgeDelete = useCallback(
+    (edgeId: string) => {
+      setEdges((edges) => edges.filter((edge) => edge.id !== edgeId));
     },
     [setEdges]
   );
@@ -57,5 +75,6 @@ export const useWorkflowCore = ({ setNodes, setEdges }: UseWorkflowCoreProps) =>
     onNodeDelete,
     onNodeUpdate,
     onConnect,
+    onEdgeDelete,
   };
 };

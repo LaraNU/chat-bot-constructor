@@ -18,27 +18,29 @@ import { WORKFLOW_NODES_CONFIG } from '../..';
 
 import { CommitInput, CommitTextarea } from './fields';
 import { useTranslations } from 'next-intl';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.question;
   const t = useTranslations('WorkflowEditor.nodes.question');
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
   const handleTextCommit = useCallback(
     (text: string) => {
-      data.actions?.onNodeUpdate(id, { text });
+      onNodeUpdate(id, { text });
     },
-    [data.actions, id]
+    [onNodeUpdate, id]
   );
 
   const handleAnswerLabelCommit = useCallback(
     (answerLabel: string) => {
-      data.actions?.onNodeUpdate(id, { answerLabel });
+      onNodeUpdate(id, { answerLabel });
     },
-    [data.actions, id]
+    [onNodeUpdate, id]
   );
 
   return (

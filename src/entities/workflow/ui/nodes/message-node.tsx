@@ -19,20 +19,22 @@ import type { MessageAppNode } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { CommitTextarea } from './fields';
 import { useTranslations } from 'next-intl';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.message;
   const t = useTranslations('WorkflowEditor.nodes.message');
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
   const handleTextCommit = useCallback(
     (text: string) => {
-      data.actions?.onNodeUpdate(id, { text });
+      onNodeUpdate(id, { text });
     },
-    [data.actions, id]
+    [onNodeUpdate, id]
   );
 
   return (

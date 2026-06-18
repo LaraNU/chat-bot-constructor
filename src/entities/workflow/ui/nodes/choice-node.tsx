@@ -19,20 +19,22 @@ import type { ChoiceAppNode, ChoiceNodeData, ChoiceButton } from '../../model/ty
 import { CommitTextarea } from './fields';
 import { ChoiceButtonsEditorMemoized } from './fields';
 import { useTranslations } from 'next-intl';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.choice;
   const t = useTranslations('WorkflowEditor.nodes.choice');
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
   const handleUpdate = useCallback(
     (payload: Partial<ChoiceNodeData>) => {
-      data.actions?.onNodeUpdate(id, payload);
+      onNodeUpdate(id, payload);
     },
-    [data.actions, id]
+    [onNodeUpdate, id]
   );
 
   const handleTextCommit = useCallback(

@@ -22,10 +22,12 @@ import { AppNode, QuestionAppNode, SummaryAppNode, SummaryNodeData } from '../..
 import { getQuestionLabel } from '../../lib';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.summary;
   const t = useTranslations('WorkflowEditor.nodes.summary');
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
 
   const nodes = useStore((state) => state.nodes as AppNode[]);
 
@@ -35,11 +37,11 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
   );
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
   const handleUpdate = (payload: Partial<SummaryNodeData>) => {
-    data.actions?.onNodeUpdate(id, payload);
+    onNodeUpdate(id, payload);
   };
 
   const toggleQuestion = (questionId: string) => {

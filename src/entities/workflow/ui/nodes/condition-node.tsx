@@ -26,6 +26,7 @@ import type {
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { CommitInput } from './fields';
 import { useTranslations } from 'next-intl';
+import { useWorkflowActions } from '@/features/workflow-actions/model/context';
 
 function buildQuestionOptions(nodes: AppNode[], t: ReturnType<typeof useTranslations>) {
   return nodes
@@ -39,20 +40,21 @@ function buildQuestionOptions(nodes: AppNode[], t: ReturnType<typeof useTranslat
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.condition;
   const t = useTranslations('WorkflowEditor.nodes.condition');
+  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
 
   const nodes = useStore((state) => state.nodes as AppNode[]);
 
   const availableQuestions = useMemo(() => buildQuestionOptions(nodes, t), [nodes, t]);
 
   const handleDelete = () => {
-    data.actions?.onNodeDelete(id);
+    onNodeDelete(id);
   };
 
   const handleUpdate = useCallback(
     (nodeId: string, payload: Partial<ConditionNodeData>) => {
-      data.actions?.onNodeUpdate(nodeId, payload);
+      onNodeUpdate(nodeId, payload);
     },
-    [data.actions]
+    [onNodeUpdate]
   );
 
   const handleValueCommit = useCallback(

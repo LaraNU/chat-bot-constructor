@@ -53,7 +53,6 @@ function getDefaultNodeData(type: WorkflowNodeType): Record<string, unknown> {
     case 'condition': {
       const data: ConditionNodeData = {
         questionNodeId: '',
-        source: 'answer',
         operator: 'equals',
         value: '',
       };
