@@ -14,14 +14,14 @@ import type { ReactNode } from 'react';
 type BotCardProps = {
   id: string;
   name: string;
-  status?: 'active' | 'draft';
+  isPublished: boolean;
   updatedAt: string;
   description: string | null;
   deleteActionSlot?: ReactNode;
 };
 
 export const BotCard = memo(
-  ({ id, name, status = 'draft', updatedAt, description, deleteActionSlot }: BotCardProps) => {
+  ({ id, name, isPublished, updatedAt, description, deleteActionSlot }: BotCardProps) => {
     const t = useTranslations('BotCard');
     const formatter = useFormatter();
 
@@ -46,12 +46,14 @@ export const BotCard = memo(
         <CardContent>
           <div className="flex items-center justify-between">
             <Badge
-              variant={status === 'active' ? 'default' : 'secondary'}
+              variant={isPublished ? 'default' : 'secondary'}
               className={
-                status === 'active' ? 'bg-success/15 text-success hover:bg-success/20' : ''
+                isPublished
+                  ? 'bg-green-100 text-green-700 hover:bg-green-100'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-100'
               }
             >
-              {status === 'active' ? t('active') : t('draft')}
+              {isPublished ? t('active') : t('draft')}
             </Badge>
             <span className="text-muted-foreground text-xs">
               {t('lastUpdated')}{' '}

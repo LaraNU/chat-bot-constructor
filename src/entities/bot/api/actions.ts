@@ -9,6 +9,7 @@ export interface SerializedBot {
   name: string;
   description: string | null;
   updatedAt: string;
+  isPublished: boolean;
 }
 
 export async function createBotAction(formData: { name: string; description: string }) {
@@ -57,6 +58,7 @@ export async function fetchBotsAction(limit: number, offset: number): Promise<Se
       name: bot.name,
       description: bot.description,
       updatedAt: bot.updatedAt.toISOString(),
+      isPublished: Boolean(bot.token),
     }));
   } catch (error) {
     console.error('Error Server Action:', error);

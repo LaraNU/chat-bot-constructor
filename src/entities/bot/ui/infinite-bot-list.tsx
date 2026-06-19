@@ -19,6 +19,7 @@ const MemoizedBotItem = memo(
         name={bot.name}
         updatedAt={bot.updatedAt}
         description={bot.description}
+        isPublished={bot.isPublished}
         deleteActionSlot={<DeleteBotButton botId={bot.id} onSuccess={() => onDelete(bot.id)} />}
       />
     );
