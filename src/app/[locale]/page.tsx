@@ -19,7 +19,7 @@ export default async function Home({ params }: Props) {
 
   if (user) {
     return (
-      <ScopedIntlProvider scopes={['Metadata', 'createBot', 'BotCard', 'HomePage']}>
+      <ScopedIntlProvider scopes={['Metadata', 'createBot', 'BotCard', 'HomePage', 'BotFilters']}>
         <DashboardPage />
       </ScopedIntlProvider>
     );

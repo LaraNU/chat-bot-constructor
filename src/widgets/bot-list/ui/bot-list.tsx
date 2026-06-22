@@ -23,6 +23,7 @@ export const BotList = async () => {
     name: bot.name,
     description: bot.description,
     updatedAt: bot.updatedAt.toISOString(),
+    isPublished: Boolean(bot.token),
   }));
 
   return <InfiniteBotList initialBots={serializedBots} limit={BOTS_PER_PAGE} />;

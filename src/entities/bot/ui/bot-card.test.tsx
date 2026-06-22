@@ -39,7 +39,7 @@ describe('BotCard', () => {
       <BotCard
         id="bot-1"
         name="Support Bot"
-        status="active"
+        isPublished={true}
         updatedAt="2026-02-17T00:00:00.000Z"
         description="Answers FAQs"
       />
@@ -58,6 +58,7 @@ describe('BotCard', () => {
     render(
       <BotCard
         id="bot-2"
+        isPublished={false}
         name="Draft Bot"
         updatedAt="2026-02-17T00:00:00.000Z"
         description={null}
