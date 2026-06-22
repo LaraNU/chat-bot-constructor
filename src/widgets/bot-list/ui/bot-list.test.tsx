@@ -86,12 +86,14 @@ describe('BotList', () => {
     (botService.getPaginatedBots as Mock).mockResolvedValue([
       {
         id: 'bot-1',
+        isPublished: false,
         name: 'Bot One',
         description: 'First bot',
         updatedAt: new Date('2026-02-17T00:00:00.000Z'),
       },
       {
         id: 'bot-2',
+        isPublished: false,
         name: 'Bot Two',
         description: null,
         updatedAt: new Date('2026-02-16T00:00:00.000Z'),
@@ -109,12 +111,14 @@ describe('BotList', () => {
         initialBots: [
           {
             id: 'bot-1',
+            isPublished: false,
             name: 'Bot One',
             description: 'First bot',
             updatedAt: '2026-02-17T00:00:00.000Z',
           },
           {
             id: 'bot-2',
+            isPublished: false,
             name: 'Bot Two',
             description: null,
             updatedAt: '2026-02-16T00:00:00.000Z',
