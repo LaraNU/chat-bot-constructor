@@ -14,41 +14,35 @@ import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 
 import { WORKFLOW_NODES_CONFIG } from '../..';
-import type { ChoiceAppNode, ChoiceNodeData, ChoiceButton } from '../../model/types';
+import type { ChoiceAppNode, ChoiceButton } from '../../model/types';
 
 import { CommitTextarea } from './fields';
 import { ChoiceButtonsEditorMemoized } from './fields';
 import { useTranslations } from 'next-intl';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+import { useWorkflowStore } from '../../model/store';
 
 export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.choice;
   const t = useTranslations('WorkflowEditor.nodes.choice');
-  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+  const updateNode = useWorkflowStore((s) => s.updateNode);
 
   const handleDelete = () => {
-    onNodeDelete(id);
+    deleteNode(id);
   };
-
-  const handleUpdate = useCallback(
-    (payload: Partial<ChoiceNodeData>) => {
-      onNodeUpdate(id, payload);
-    },
-    [onNodeUpdate, id]
-  );
 
   const handleTextCommit = useCallback(
     (text: string) => {
-      handleUpdate({ text });
+      updateNode(id, { text });
     },
-    [handleUpdate]
+    [updateNode, id]
   );
 
   const handleButtonsUpdate = useCallback(
     (buttons: ChoiceButton[]) => {
-      handleUpdate({ buttons });
+      updateNode(id, { buttons });
     },
-    [handleUpdate]
+    [updateNode, id]
   );
 
   return (

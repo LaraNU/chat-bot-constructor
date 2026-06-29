@@ -17,24 +17,25 @@ import { Label } from '@/shared/ui/label';
 import type { MessageAppNode } from '../../model/types';
 
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { CommitTextarea } from './fields';
 import { useTranslations } from 'next-intl';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+import { useWorkflowStore } from '../../model/store';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 
 export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.message;
   const t = useTranslations('WorkflowEditor.nodes.message');
-  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+  const updateNode = useWorkflowStore((s) => s.updateNode);
 
   const handleDelete = () => {
-    onNodeDelete(id);
+    deleteNode(id);
   };
 
   const handleTextCommit = useCallback(
     (text: string) => {
-      onNodeUpdate(id, { text });
+      updateNode(id, { text });
     },
-    [onNodeUpdate, id]
+    [updateNode, id]
   );
 
   return (
@@ -58,10 +59,11 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
           {t('description')}
         </Label>
 
-        <CommitTextarea
+        <ControlledTextarea
           value={data.text}
           onCommit={handleTextCommit}
           placeholder={t('messagePlaceholder')}
+          className="max-h-[80px] resize-none overflow-y-auto"
         />
       </BaseNodeContent>
 

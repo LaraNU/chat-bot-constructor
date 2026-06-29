@@ -108,7 +108,8 @@
       "message": {
         "name": "Message",
         "description": "Send a text message to the user",
-        "messagePlaceholder": "Enter message..."
+        "messagePlaceholder": "Enter message...",
+        "messageLable": "Message text"
       },
       "question": {
         "name": "Question",
@@ -168,7 +169,7 @@
     }
   },
   "WorkflowCanvas": {
-    "saveButton": "Save Changes",
+    "saveButton": "Save",
     "savingButton": "Saving...",
     "messages": {
       "saveSuccess": "Workflow saved successfully!",

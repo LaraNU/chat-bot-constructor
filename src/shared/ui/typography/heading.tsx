@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 import { JSX } from 'react';
 
-type HeadingLevel = 1 | 2 | 3 | 4;
+type HeadingLevel = 1 | 2 | 3 | 4 | 5;
 
 interface HeadingProps {
   children: React.ReactNode;
@@ -14,6 +14,7 @@ const styles = {
   2: 'text-2xl font-semibold',
   3: 'text-xl font-semibold',
   4: 'text-lg font-medium',
+  5: 'text-lg font-medium',
 };
 
 export function Heading({ children, level = 2, className }: HeadingProps) {
