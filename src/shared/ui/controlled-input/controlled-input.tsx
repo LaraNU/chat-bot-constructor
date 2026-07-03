@@ -3,10 +3,11 @@
 import { memo } from 'react';
 
 import { cn } from '@/shared/lib/utils';
-import { useControlledField } from '@/shared/ui/controlled-field';
-import { Textarea } from '@/shared/ui/textarea';
+import { Input } from '@/shared/ui/input';
 
-interface ControlledTextareaProps {
+import { useControlledField } from '@/shared/ui/controlled-field';
+
+export interface ControlledInputProps {
   value: string;
   onCommit: (value: string) => void;
 
@@ -15,19 +16,16 @@ interface ControlledTextareaProps {
 
   trim?: boolean;
   allowEmpty?: boolean;
-
-  rows?: number;
 }
 
-function ControlledTextareaComponent({
+function ControlledInputComponent({
   value,
   onCommit,
   placeholder,
   className,
   trim,
   allowEmpty,
-  rows,
-}: ControlledTextareaProps) {
+}: ControlledInputProps) {
   const field = useControlledField({
     value,
     onCommit,
@@ -36,10 +34,9 @@ function ControlledTextareaComponent({
   });
 
   return (
-    <Textarea
+    <Input
       className={cn('nodrag nowheel', className)}
       value={field.value}
-      rows={rows}
       placeholder={placeholder}
       onChange={(e) => field.onChange(e.target.value)}
       onBlur={field.onBlur}
@@ -47,4 +44,4 @@ function ControlledTextareaComponent({
   );
 }
 
-export const ControlledTextarea = memo(ControlledTextareaComponent);
+export const ControlledInput = memo(ControlledInputComponent);

@@ -1,13 +1,12 @@
 'use client';
 
-import { Textarea } from '@/shared/ui/textarea';
-import { Heading } from '@/shared/ui/typography';
+import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { MessageAppNode } from '@/entities/workflow/model/types';
-
 import { useWorkflowStore } from '@/entities/workflow/model/store';
-import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
+
+import { PropertySection, PropertyTextarea } from '@/widgets/properties-panel/ui/fields';
 
 interface MessagePropertiesProps {
   node: MessageAppNode;
@@ -17,23 +16,21 @@ export function MessageProperties({ node }: MessagePropertiesProps) {
   const updateNode = useWorkflowStore((s) => s.updateNode);
   const t = useTranslations('WorkflowEditor.nodes.message');
 
-  const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    updateNode(node.id, {
-      text: e.target.value,
-    });
-  };
+  const handleTextCommit = useCallback(
+    (text: string) => {
+      updateNode(node.id, { text });
+    },
+    [updateNode, node.id]
+  );
 
   return (
-    <div className="space-y-2 p-4">
-      <Heading level={5}>{t('name')}</Heading>
-
-      <Textarea
-        className="[field-sizing:content] min-h-[80px] resize-none"
+    <PropertySection title={t('name')}>
+      <PropertyTextarea
         value={node.data.text}
         placeholder={t('messagePlaceholder')}
-        onChange={handleTextChange}
+        onCommit={handleTextCommit}
       />
       <p className="text-muted-foreground mt-1 text-xs">{t('description')}</p>
-    </div>
+    </PropertySection>
   );
 }

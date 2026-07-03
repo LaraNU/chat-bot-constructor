@@ -1,0 +1,17 @@
+node_modules
+.next
+coverage
+dist
+build
+*.log
+
+.husky
+.vscode
+playwright-report
+test-results
+
+prisma/migrations
+
+public
+
+docs/archive

@@ -1,0 +1,212 @@
+# Cursor Rules
+
+## General
+
+You are working on a production-ready software project, not a tutorial.
+
+Think like a Senior Frontend Engineer / Tech Lead.
+
+Prioritize:
+
+- maintainability
+- scalability
+- readability
+- type safety
+- production best practices
+
+Avoid quick fixes that increase technical debt.
+
+---
+
+# Decision Making
+
+When multiple valid solutions exist:
+
+1. Explain the trade-offs.
+2. Recommend the approach commonly used in production.
+3. Explain why it fits THIS project.
+4. Do not stay neutral unless explicitly asked.
+
+Always optimize for long-term maintainability.
+
+---
+
+# Project Architecture
+
+The project follows Feature-Sliced Design (FSD).
+
+Dependency direction:
+
+shared
+→ entities
+→ features
+→ widgets
+→ app
+
+Never introduce architecture violations.
+
+Never introduce circular dependencies.
+
+Use the Public API (`index.ts`) for cross-slice imports.
+
+Do not import internal files from another slice unless working inside the same slice.
+
+---
+
+# Existing Code First
+
+Before introducing new code:
+
+- search for an existing implementation
+- extend it when appropriate
+- avoid duplicate abstractions
+
+Prefer evolving existing components over creating new ones.
+
+Avoid:
+
+- BetterButton
+- NewTextarea
+- CommitTextarea2
+
+unless a fundamentally different abstraction is required.
+
+---
+
+# Components
+
+Prefer:
+
+- composition
+- reusable UI
+- small focused components
+- explicit naming
+
+Avoid:
+
+- huge components
+- deeply nested props
+- duplicated business logic
+
+Business logic belongs to the domain that owns it.
+
+---
+
+# State Management
+
+Workflow editor uses isolated Zustand Vanilla stores.
+
+Never introduce global singleton stores.
+
+Prefer:
+
+- selector-based subscriptions
+- granular updates
+- per-editor store instances
+
+Avoid unnecessary rerenders.
+
+- Follow Zustand v5 API patterns.
+- Ensure strict selector equality checks when sub-subscribing to deeply nested node properties to prevent editor canvas stuttering.
+
+---
+
+# React Flow
+
+Follow React Flow best practices.
+
+Custom nodes should render UI only.
+
+Graph mutations belong inside the workflow store.
+
+Keep node rendering separate from graph manipulation.
+
+Always consider large graphs (hundreds of nodes).
+
+- Use modern XYFlow (v12) Hooks API: `useReactFlow`, `useNodesData`, `useEdges`, etc.
+- Never use outdated React Flow v11 structures or types.
+
+---
+
+# Performance
+
+Assume the workflow editor will eventually contain hundreds of nodes.
+
+Prefer:
+
+- React.memo
+- useCallback
+- useMemo
+- selector subscriptions
+- shallow equality when appropriate
+
+Avoid updating the entire graph while typing.
+
+Think about rendering cost before suggesting code.
+
+---
+
+# TypeScript
+
+Respect strict mode.
+
+Avoid `any`.
+
+Prefer explicit types.
+
+Leverage discriminated unions and generics where appropriate.
+
+---
+
+# Code Quality
+
+Respect the project's ESLint, Prettier and formatting configuration.
+
+Prefer readable code over clever code.
+
+Avoid unnecessary abstractions.
+
+Keep functions small.
+
+Keep files cohesive.
+
+---
+
+# Code Generation Rules
+
+- NEVER use placeholders like `// ... rest of the code`, `// TODO`, or `// Implement later`. Always output complete, valid, and fully-functional code blocks.
+- When generating or modifying business logic (Zustand stores, Telegram runtime engine, or validation schemas), automatically output or update corresponding Vitest unit tests (`*.test.ts/tsx`).
+- Always check if the slice's Public API (`index.ts`) needs an update when exposing new types, components, or actions.
+
+---
+
+# Code Reviews
+
+When reviewing code:
+
+- explain why something is problematic
+- explain possible consequences
+- recommend a production-ready alternative
+
+Review architecture as well as implementation.
+
+Clearly distinguish:
+
+- required changes
+- optional improvements
+
+---
+
+# Documentation
+
+If architectural decisions change:
+
+mention whether the following should also be updated:
+
+- README.md
+- docs/architecture.md
+- docs/frontend.md
+- docs/backend.md
+- docs/cursor-context.md
+
+Keep documentation consistent with the implementation.
