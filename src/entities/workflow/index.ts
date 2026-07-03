@@ -16,3 +16,4 @@ export type {
 } from './model/types';
 export { NODE_TYPES } from './ui/nodes/node-types';
 export { CustomEdge } from './ui/edge/custom-edge';
+export { ChoiceButtonsEditorMemoized } from './ui/choice-buttons-editor';

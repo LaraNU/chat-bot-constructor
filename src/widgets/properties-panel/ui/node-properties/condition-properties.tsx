@@ -1,0 +1,107 @@
+'use client';
+
+import { useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+
+import type {
+  AppNode,
+  ConditionAppNode,
+  ConditionNodeData,
+  QuestionAppNode,
+} from '@/entities/workflow/model/types';
+import { useWorkflowStore, useWorkflowNodes } from '@/entities/workflow/model/store';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+
+import {
+  PropertyField,
+  PropertyInput,
+  PropertySection,
+} from '@/widgets/properties-panel/ui/fields';
+
+function buildQuestionOptions(nodes: AppNode[], t: ReturnType<typeof useTranslations>) {
+  return nodes
+    .filter((workflowNode): workflowNode is QuestionAppNode => workflowNode.type === 'question')
+    .map((questionNode) => ({
+      value: questionNode.id,
+      label:
+        questionNode.data.text?.slice(0, 60) ||
+        t('questionFallback', { id: questionNode.id.slice(0, 8) }),
+    }));
+}
+
+interface ConditionPropertiesProps {
+  node: ConditionAppNode;
+}
+
+export function ConditionProperties({ node }: ConditionPropertiesProps) {
+  const t = useTranslations('WorkflowEditor.nodes.condition');
+  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const nodes = useWorkflowNodes();
+
+  const availableQuestions = useMemo(() => buildQuestionOptions(nodes, t), [nodes, t]);
+
+  const handleQuestionChange = useCallback(
+    (questionNodeId: string) => {
+      updateNode(node.id, { questionNodeId });
+    },
+    [updateNode, node.id]
+  );
+
+  const handleOperatorChange = useCallback(
+    (operator: string) => {
+      updateNode(node.id, {
+        operator: operator as ConditionNodeData['operator'],
+      });
+    },
+    [updateNode, node.id]
+  );
+
+  const handleValueCommit = useCallback(
+    (value: string) => {
+      updateNode(node.id, { value });
+    },
+    [updateNode, node.id]
+  );
+
+  return (
+    <PropertySection title={t('name')}>
+      <PropertyField label={t('question')}>
+        <Select value={node.data.questionNodeId} onValueChange={handleQuestionChange}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder={t('selectQuestion')} />
+          </SelectTrigger>
+
+          <SelectContent>
+            {availableQuestions.map((question) => (
+              <SelectItem key={question.value} value={question.value}>
+                {question.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </PropertyField>
+
+      <PropertyField label={t('check')}>
+        <Select value={node.data.operator} onValueChange={handleOperatorChange}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="equals">{t('operators.equals')}</SelectItem>
+            <SelectItem value="contains">{t('operators.contains')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </PropertyField>
+
+      <PropertyField label={t('value')}>
+        <PropertyInput
+          value={node.data.value}
+          placeholder={t('valuePlaceholder')}
+          onCommit={handleValueCommit}
+        />
+      </PropertyField>
+    </PropertySection>
+  );
+}

@@ -17,7 +17,7 @@ import { WORKFLOW_NODES_CONFIG } from '../..';
 import type { ChoiceAppNode, ChoiceButton } from '../../model/types';
 
 import { CommitTextarea } from './fields';
-import { ChoiceButtonsEditorMemoized } from './fields';
+import { ChoiceButtonsEditorMemoized } from '../choice-buttons-editor';
 import { useTranslations } from 'next-intl';
 import { useWorkflowStore } from '../../model/store';
 
