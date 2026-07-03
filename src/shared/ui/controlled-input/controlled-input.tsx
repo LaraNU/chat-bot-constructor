@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useCallback, type KeyboardEvent } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 import { Input } from '@/shared/ui/input';
@@ -33,6 +33,12 @@ function ControlledInputComponent({
     allowEmpty,
   });
 
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.currentTarget.blur();
+    }
+  }, []);
+
   return (
     <Input
       className={cn('nodrag nowheel', className)}
@@ -40,6 +46,7 @@ function ControlledInputComponent({
       placeholder={placeholder}
       onChange={(e) => field.onChange(e.target.value)}
       onBlur={field.onBlur}
+      onKeyDown={handleKeyDown}
     />
   );
 }

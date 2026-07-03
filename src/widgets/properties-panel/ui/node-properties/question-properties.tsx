@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { QuestionAppNode } from '@/entities/workflow/model/types';
-import { useWorkflowStore } from '@/entities/workflow/model/store';
+import { useUpdateNode } from '@/entities/workflow/model/store';
 
 import {
   PropertyField,
@@ -19,7 +19,7 @@ interface QuestionPropertiesProps {
 
 export function QuestionProperties({ node }: QuestionPropertiesProps) {
   const t = useTranslations('WorkflowEditor.nodes.question');
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const updateNode = useUpdateNode();
 
   const handleTextCommit = useCallback(
     (text: string) => {

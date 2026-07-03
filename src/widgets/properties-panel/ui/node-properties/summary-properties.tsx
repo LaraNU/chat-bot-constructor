@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { getQuestionLabel } from '@/entities/workflow/lib';
 import type { QuestionAppNode, SummaryAppNode } from '@/entities/workflow/model/types';
-import { useWorkflowStore, useWorkflowNodes } from '@/entities/workflow/model/store';
+import { useUpdateNode, useWorkflowNodes } from '@/entities/workflow/model/store';
 
 import { Checkbox } from '@/shared/ui/checkbox';
 import { Label } from '@/shared/ui/label';
@@ -22,7 +22,7 @@ interface SummaryPropertiesProps {
 
 export function SummaryProperties({ node }: SummaryPropertiesProps) {
   const t = useTranslations('WorkflowEditor.nodes.summary');
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const updateNode = useUpdateNode();
   const nodes = useWorkflowNodes();
 
   const questions = useMemo(

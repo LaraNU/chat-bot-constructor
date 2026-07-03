@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { MessageAppNode } from '@/entities/workflow/model/types';
-import { useWorkflowStore } from '@/entities/workflow/model/store';
+import { useUpdateNode } from '@/entities/workflow/model/store';
 
 import { PropertySection, PropertyTextarea } from '@/widgets/properties-panel/ui/fields';
 
@@ -13,7 +13,7 @@ interface MessagePropertiesProps {
 }
 
 export function MessageProperties({ node }: MessagePropertiesProps) {
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const updateNode = useUpdateNode();
   const t = useTranslations('WorkflowEditor.nodes.message');
 
   const handleTextCommit = useCallback(

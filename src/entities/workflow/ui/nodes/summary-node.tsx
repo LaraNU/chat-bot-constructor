@@ -15,7 +15,7 @@ import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { Checkbox } from '@/shared/ui/checkbox';
 
-import { CommitTextarea } from './fields/commit-textarea';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 
 import { AppNode, QuestionAppNode, SummaryAppNode, SummaryNodeData } from '../../model/types';
 
@@ -80,7 +80,7 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
             {t('summaryTitle')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.introText ?? ''}
             placeholder={t('summaryTitlePlaceholder')}
             onCommit={(value) =>
@@ -121,7 +121,7 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
             {t('template')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.customTemplate ?? ''}
             placeholder={t('templatePlaceholder')}
             onCommit={(value) =>

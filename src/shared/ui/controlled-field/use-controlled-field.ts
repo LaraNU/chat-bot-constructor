@@ -26,18 +26,20 @@ export function useControlledField({
   }, []);
 
   const onBlur = useCallback(() => {
-    setEditing(false);
-
     const next = trim ? draft.trim() : draft;
 
     if (!allowEmpty && next === '') {
       setDraft(value);
+      setEditing(false);
       return;
     }
 
     if (next !== value) {
       onCommit(next);
     }
+
+    setDraft(next);
+    setEditing(false);
   }, [allowEmpty, draft, onCommit, trim, value]);
 
   return {

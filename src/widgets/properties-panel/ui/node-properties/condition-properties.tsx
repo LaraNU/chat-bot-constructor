@@ -3,13 +3,9 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
-import type {
-  AppNode,
-  ConditionAppNode,
-  ConditionNodeData,
-  QuestionAppNode,
-} from '@/entities/workflow/model/types';
-import { useWorkflowStore, useWorkflowNodes } from '@/entities/workflow/model/store';
+import { buildQuestionOptions } from '@/entities/workflow/lib';
+import type { ConditionAppNode, ConditionNodeData } from '@/entities/workflow/model/types';
+import { useUpdateNode, useWorkflowNodes } from '@/entities/workflow/model/store';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
@@ -19,27 +15,19 @@ import {
   PropertySection,
 } from '@/widgets/properties-panel/ui/fields';
 
-function buildQuestionOptions(nodes: AppNode[], t: ReturnType<typeof useTranslations>) {
-  return nodes
-    .filter((workflowNode): workflowNode is QuestionAppNode => workflowNode.type === 'question')
-    .map((questionNode) => ({
-      value: questionNode.id,
-      label:
-        questionNode.data.text?.slice(0, 60) ||
-        t('questionFallback', { id: questionNode.id.slice(0, 8) }),
-    }));
-}
-
 interface ConditionPropertiesProps {
   node: ConditionAppNode;
 }
 
 export function ConditionProperties({ node }: ConditionPropertiesProps) {
   const t = useTranslations('WorkflowEditor.nodes.condition');
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const updateNode = useUpdateNode();
   const nodes = useWorkflowNodes();
 
-  const availableQuestions = useMemo(() => buildQuestionOptions(nodes, t), [nodes, t]);
+  const availableQuestions = useMemo(
+    () => buildQuestionOptions(nodes, (id) => t('questionFallback', { id })),
+    [nodes, t]
+  );
 
   const handleQuestionChange = useCallback(
     (questionNodeId: string) => {

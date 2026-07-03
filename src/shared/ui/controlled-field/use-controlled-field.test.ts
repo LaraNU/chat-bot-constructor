@@ -145,4 +145,49 @@ describe('useControlledField', () => {
 
     expect(onCommit).not.toHaveBeenCalled();
   });
+
+  it('syncs displayed value from external updates when not editing', () => {
+    const onCommit = vi.fn();
+
+    const { result, rerender } = renderHook(
+      ({ value }: { value: string }) =>
+        useControlledField({
+          value,
+          onCommit,
+        }),
+      {
+        initialProps: { value: 'hello' },
+      }
+    );
+
+    expect(result.current.value).toBe('hello');
+
+    rerender({ value: 'updated externally' });
+
+    expect(result.current.value).toBe('updated externally');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('does not overwrite in-progress draft when external value changes while editing', () => {
+    const onCommit = vi.fn();
+
+    const { result, rerender } = renderHook(
+      ({ value }: { value: string }) =>
+        useControlledField({
+          value,
+          onCommit,
+        }),
+      {
+        initialProps: { value: 'hello' },
+      }
+    );
+
+    act(() => {
+      result.current.onChange('draft value');
+    });
+
+    rerender({ value: 'updated externally' });
+
+    expect(result.current.value).toBe('draft value');
+  });
 });

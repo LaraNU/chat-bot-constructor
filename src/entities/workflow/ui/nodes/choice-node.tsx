@@ -16,7 +16,7 @@ import { Label } from '@/shared/ui/label';
 import { WORKFLOW_NODES_CONFIG } from '../..';
 import type { ChoiceAppNode, ChoiceButton } from '../../model/types';
 
-import { CommitTextarea } from './fields';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 import { ChoiceButtonsEditorMemoized } from '../choice-buttons-editor';
 import { useTranslations } from 'next-intl';
 import { useWorkflowStore } from '../../model/store';
@@ -67,7 +67,7 @@ export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
             {t('optionText')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.text ?? ''}
             placeholder={t('optionTextPlaceholder')}
             onCommit={handleTextCommit}

@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/ui/button';
 
 import type { ChoiceButton } from '../../model/types';
-import { CommitInput } from '../nodes/fields/commit-input';
+import { ControlledInput } from '@/shared/ui/controlled-input';
 
 interface ChoiceButtonsEditorProps {
   buttons?: ChoiceButton[];
@@ -52,7 +52,7 @@ function ChoiceButtonsEditor({ buttons = [], onUpdate }: ChoiceButtonsEditorProp
     <div className="space-y-2">
       {buttons.map((button) => (
         <div key={button.id} className="flex items-center gap-2">
-          <CommitInput
+          <ControlledInput
             value={button.text}
             placeholder={t('buttonTextPlaceholder')}
             onCommit={(text) => updateButtonText(button.id, text)}

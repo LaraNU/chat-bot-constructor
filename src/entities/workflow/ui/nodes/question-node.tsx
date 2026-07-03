@@ -16,7 +16,8 @@ import { Label } from '@/shared/ui/label';
 import { QuestionAppNode } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../..';
 
-import { CommitInput, CommitTextarea } from './fields';
+import { ControlledInput } from '@/shared/ui/controlled-input';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 import { useTranslations } from 'next-intl';
 import { useWorkflowStore } from '../../model/store';
 
@@ -67,7 +68,7 @@ export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
             {t('description')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.text}
             onCommit={handleTextCommit}
             placeholder={t('questionPlaceholder')}
@@ -79,7 +80,7 @@ export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
             {t('questionTitle')}
           </Label>
 
-          <CommitInput
+          <ControlledInput
             value={data.answerLabel}
             placeholder={t('questionPlaceholder')}
             onCommit={handleAnswerLabelCommit}

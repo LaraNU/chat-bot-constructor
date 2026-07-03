@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { ChoiceAppNode, ChoiceButton } from '@/entities/workflow/model/types';
-import { useWorkflowStore } from '@/entities/workflow/model/store';
+import { useUpdateNode } from '@/entities/workflow/model/store';
 import { ChoiceButtonsEditorMemoized } from '@/entities/workflow';
 
 import {
@@ -19,7 +19,9 @@ interface ChoicePropertiesProps {
 
 export function ChoiceProperties({ node }: ChoicePropertiesProps) {
   const t = useTranslations('WorkflowEditor.nodes.choice');
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const updateNode = useUpdateNode();
+
+  const buttons = useMemo(() => node.data.buttons ?? [], [node.data.buttons]);
 
   const handleTextCommit = useCallback(
     (text: string) => {
@@ -46,10 +48,7 @@ export function ChoiceProperties({ node }: ChoicePropertiesProps) {
       </PropertyField>
 
       <PropertyField label={t('buttons')}>
-        <ChoiceButtonsEditorMemoized
-          buttons={node.data.buttons ?? []}
-          onUpdate={handleButtonsUpdate}
-        />
+        <ChoiceButtonsEditorMemoized buttons={buttons} onUpdate={handleButtonsUpdate} />
       </PropertyField>
     </PropertySection>
   );
