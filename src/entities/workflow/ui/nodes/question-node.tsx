@@ -16,31 +16,34 @@ import { Label } from '@/shared/ui/label';
 import { QuestionAppNode } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../..';
 
-import { CommitInput, CommitTextarea } from './fields';
+import { ControlledInput } from '@/shared/ui/controlled-input';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 import { useTranslations } from 'next-intl';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+import { useWorkflowStore } from '../../model/store';
 
 export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.question;
   const t = useTranslations('WorkflowEditor.nodes.question');
-  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+  const updateNode = useWorkflowStore((s) => s.updateNode);
 
   const handleDelete = () => {
-    onNodeDelete(id);
+    deleteNode(id);
   };
 
   const handleTextCommit = useCallback(
     (text: string) => {
-      onNodeUpdate(id, { text });
+      updateNode(id, { text });
     },
-    [onNodeUpdate, id]
+    [updateNode, id]
   );
 
   const handleAnswerLabelCommit = useCallback(
     (answerLabel: string) => {
-      onNodeUpdate(id, { answerLabel });
+      updateNode(id, { answerLabel });
     },
-    [onNodeUpdate, id]
+    [updateNode, id]
   );
 
   return (
@@ -65,7 +68,7 @@ export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
             {t('description')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.text}
             onCommit={handleTextCommit}
             placeholder={t('questionPlaceholder')}
@@ -77,7 +80,7 @@ export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
             {t('questionTitle')}
           </Label>
 
-          <CommitInput
+          <ControlledInput
             value={data.answerLabel}
             placeholder={t('questionPlaceholder')}
             onCommit={handleAnswerLabelCommit}

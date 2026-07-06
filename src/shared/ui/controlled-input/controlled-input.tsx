@@ -1,12 +1,13 @@
 'use client';
 
-import { memo, KeyboardEvent, useCallback } from 'react';
+import { memo, useCallback, type KeyboardEvent } from 'react';
 
+import { cn } from '@/shared/lib/utils';
 import { Input } from '@/shared/ui/input';
 
-import { useCommitField } from '@/entities/workflow/lib';
+import { useControlledField } from '@/shared/ui/controlled-field';
 
-interface CommitInputProps {
+export interface ControlledInputProps {
   value: string;
   onCommit: (value: string) => void;
 
@@ -17,15 +18,15 @@ interface CommitInputProps {
   allowEmpty?: boolean;
 }
 
-function CommitInputComponent({
+function ControlledInputComponent({
   value,
   onCommit,
   placeholder,
   className,
   trim,
   allowEmpty,
-}: CommitInputProps) {
-  const field = useCommitField({
+}: ControlledInputProps) {
+  const field = useControlledField({
     value,
     onCommit,
     trim,
@@ -40,14 +41,14 @@ function CommitInputComponent({
 
   return (
     <Input
-      className={`nodrag nowheel ${className ?? ''}`}
+      className={cn('nodrag nowheel', className)}
       value={field.value}
       placeholder={placeholder}
-      onChange={(event) => field.setValue(event.target.value)}
-      onBlur={field.commit}
+      onChange={(e) => field.onChange(e.target.value)}
+      onBlur={field.onBlur}
       onKeyDown={handleKeyDown}
     />
   );
 }
 
-export const CommitInput = memo(CommitInputComponent);
+export const ControlledInput = memo(ControlledInputComponent);

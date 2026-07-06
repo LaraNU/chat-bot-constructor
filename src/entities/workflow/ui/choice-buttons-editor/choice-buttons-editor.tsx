@@ -1,22 +1,23 @@
 'use client';
 
+import { memo, useCallback } from 'react';
 import { nanoid } from 'nanoid';
 import { Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/shared/ui/button';
 
-import type { ChoiceButton } from '../../../model/types';
-import { useTranslations } from 'next-intl';
-import { memo, useCallback } from 'react';
-import { CommitInput } from './commit-input';
+import type { ChoiceButton } from '../../model/types';
+import { ControlledInput } from '@/shared/ui/controlled-input';
 
-interface Props {
+interface ChoiceButtonsEditorProps {
   buttons?: ChoiceButton[];
   onUpdate: (buttons: ChoiceButton[]) => void;
 }
 
-function ChoiceButtonsEditor({ buttons = [], onUpdate }: Props) {
+function ChoiceButtonsEditor({ buttons = [], onUpdate }: ChoiceButtonsEditorProps) {
   const t = useTranslations('WorkflowEditor.nodes.choice');
+
   const addButton = useCallback(() => {
     onUpdate([
       ...buttons,
@@ -51,7 +52,7 @@ function ChoiceButtonsEditor({ buttons = [], onUpdate }: Props) {
     <div className="space-y-2">
       {buttons.map((button) => (
         <div key={button.id} className="flex items-center gap-2">
-          <CommitInput
+          <ControlledInput
             value={button.text}
             placeholder={t('buttonTextPlaceholder')}
             onCommit={(text) => updateButtonText(button.id, text)}

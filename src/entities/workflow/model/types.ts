@@ -72,6 +72,15 @@ export type WorkflowNodeType =
   | 'end'
   | 'summary';
 
+export type NodeDataUpdatePayload =
+  | Partial<MessageNodeData>
+  | Partial<StartNodeData>
+  | Partial<ConditionNodeData>
+  | Partial<EndNodeData>
+  | Partial<QuestionNodeData>
+  | Partial<ChoiceNodeData>
+  | Partial<SummaryNodeData>;
+
 declare global {
   /* eslint-disable-next-line @typescript-eslint/no-namespace */
   namespace PrismaJson {

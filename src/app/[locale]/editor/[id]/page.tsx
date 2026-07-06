@@ -30,7 +30,6 @@ export default async function EditorPage({ params }: EditorPageProps) {
     <ScopedIntlProvider scopes={['WorkflowEditor', 'WorkflowCanvas', 'PropertiesPanel']}>
       <WorkflowEditorPage
         botId={id}
-        botName={bot?.name ?? 'Unknown Bot'}
         initialNodes={initialNodes}
         initialEdges={initialEdges}
         initialToken={initialToken}

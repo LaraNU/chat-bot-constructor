@@ -15,19 +15,21 @@ import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { Checkbox } from '@/shared/ui/checkbox';
 
-import { CommitTextarea } from './fields/commit-textarea';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 
 import { AppNode, QuestionAppNode, SummaryAppNode, SummaryNodeData } from '../../model/types';
 
 import { getQuestionLabel } from '../../lib';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+import { useWorkflowStore } from '../../model/store';
 
 export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.summary;
   const t = useTranslations('WorkflowEditor.nodes.summary');
-  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+  const updateNode = useWorkflowStore((s) => s.updateNode);
 
   const nodes = useStore((state) => state.nodes as AppNode[]);
 
@@ -37,11 +39,11 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
   );
 
   const handleDelete = () => {
-    onNodeDelete(id);
+    deleteNode(id);
   };
 
   const handleUpdate = (payload: Partial<SummaryNodeData>) => {
-    onNodeUpdate(id, payload);
+    updateNode(id, payload);
   };
 
   const toggleQuestion = (questionId: string) => {
@@ -78,7 +80,7 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
             {t('summaryTitle')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.introText ?? ''}
             placeholder={t('summaryTitlePlaceholder')}
             onCommit={(value) =>
@@ -119,7 +121,7 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
             {t('template')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.customTemplate ?? ''}
             placeholder={t('templatePlaceholder')}
             onCommit={(value) =>

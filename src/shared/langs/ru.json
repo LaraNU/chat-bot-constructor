@@ -108,7 +108,8 @@
       "message": {
         "name": "Сообщение",
         "description": "Отправить сообщение пользователю",
-        "messagePlaceholder": "Введите текст сообщения..."
+        "messagePlaceholder": "Введите текст сообщения...",
+        "messageLable": "Текст сообщения"
       },
       "question": {
         "name": "Вопрос",
@@ -168,7 +169,7 @@
     }
   },
   "WorkflowCanvas": {
-    "saveButton": "Сохранить изменения",
+    "saveButton": "Сохранить",
     "savingButton": "Сохранение...",
     "messages": {
       "saveSuccess": "Сценарий успешно сохранён!",

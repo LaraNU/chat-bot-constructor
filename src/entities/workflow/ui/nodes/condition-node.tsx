@@ -16,45 +16,36 @@ import { Button } from '@/shared/ui/button';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
-import type {
-  AppNode,
-  ConditionAppNode,
-  ConditionNodeData,
-  QuestionAppNode,
-} from '../../model/types';
+import type { AppNode, ConditionAppNode, ConditionNodeData } from '../../model/types';
 
+import { buildQuestionOptions } from '../../lib';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-import { CommitInput } from './fields';
+import { ControlledInput } from '@/shared/ui/controlled-input';
 import { useTranslations } from 'next-intl';
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
-
-function buildQuestionOptions(nodes: AppNode[], t: ReturnType<typeof useTranslations>) {
-  return nodes
-    .filter((node): node is QuestionAppNode => node.type === 'question')
-    .map((node) => ({
-      value: node.id,
-      label: node.data.text?.slice(0, 60) || t('questionFallback', { id: node.id.slice(0, 8) }),
-    }));
-}
+import { useWorkflowStore } from '../../model/store';
 
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
   const config = WORKFLOW_NODES_CONFIG.condition;
   const t = useTranslations('WorkflowEditor.nodes.condition');
-  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+  const updateNode = useWorkflowStore((s) => s.updateNode);
 
   const nodes = useStore((state) => state.nodes as AppNode[]);
 
-  const availableQuestions = useMemo(() => buildQuestionOptions(nodes, t), [nodes, t]);
+  const availableQuestions = useMemo(
+    () => buildQuestionOptions(nodes, (id) => t('questionFallback', { id })),
+    [nodes, t]
+  );
 
   const handleDelete = () => {
-    onNodeDelete(id);
+    deleteNode(id);
   };
 
   const handleUpdate = useCallback(
     (nodeId: string, payload: Partial<ConditionNodeData>) => {
-      onNodeUpdate(nodeId, payload);
+      updateNode(nodeId, payload);
     },
-    [onNodeUpdate]
+    [updateNode]
   );
 
   const handleValueCommit = useCallback(
@@ -141,7 +132,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
         <div>
           <Label className="mb-1 block text-[10px] font-bold uppercase">{t('value')}</Label>
 
-          <CommitInput
+          <ControlledInput
             value={data.value}
             placeholder={t('valuePlaceholder')}
             onCommit={handleValueCommit}

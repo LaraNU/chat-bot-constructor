@@ -19,24 +19,25 @@ import { useTranslations } from 'next-intl';
 import { EndAppNode } from '../../model/types';
 import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 
-import { CommitTextarea } from './fields';
+import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 
-import { useWorkflowActions } from '@/features/workflow-actions/model/context';
+import { useWorkflowStore } from '../../model/store';
 
 export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.end');
   const config = WORKFLOW_NODES_CONFIG.end;
-  const { onNodeDelete, onNodeUpdate } = useWorkflowActions();
+  const deleteNode = useWorkflowStore((s) => s.deleteNode);
+  const updateNode = useWorkflowStore((s) => s.updateNode);
 
   const handleDelete = () => {
-    onNodeDelete(id);
+    deleteNode(id);
   };
 
   const handleMessageCommit = useCallback(
     (message: string) => {
-      onNodeUpdate(id, { message });
+      updateNode(id, { message });
     },
-    [onNodeUpdate, id]
+    [updateNode, id]
   );
 
   return (
@@ -66,7 +67,7 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
             {t('description')}
           </Label>
 
-          <CommitTextarea
+          <ControlledTextarea
             value={data.message ?? ''}
             placeholder={t('messagePlaceholder')}
             onCommit={handleMessageCommit}
