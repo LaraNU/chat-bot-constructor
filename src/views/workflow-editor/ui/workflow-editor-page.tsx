@@ -22,7 +22,10 @@ export function WorkflowEditorPage({ botId, initialNodes, initialEdges, initialT
   return (
     <WorkflowStoreProvider nodes={initialNodes as CustomAppNode[]} edges={initialEdges}>
       <ReactFlowProvider>
-        <div className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden">
+        <div
+          className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden"
+          data-testid="editor-root"
+        >
           <NodesPalette />
 
           <main className="text-card-foreground relative flex flex-1 flex-col">
