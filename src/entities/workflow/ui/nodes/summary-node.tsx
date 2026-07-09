@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from 'react';
 import { Handle, NodeProps, Position, useStore } from '@xyflow/react';
-import { ClipboardList, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 import {
   BaseNode,
@@ -12,24 +12,22 @@ import {
 } from '@/shared/ui/base-node';
 
 import { Button } from '@/shared/ui/button';
-import { Label } from '@/shared/ui/label';
 import { Checkbox } from '@/shared/ui/checkbox';
+import { Label } from '@/shared/ui/label';
+import { EditorField } from '@/shared/ui/editor-field';
 
 import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 
-import { AppNode, QuestionAppNode, SummaryAppNode, SummaryNodeData } from '../../model/types';
+import { AppNode, QuestionAppNode, SummaryAppNode } from '../../model/types';
 
 import { getQuestionLabel } from '../../lib';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { useTranslations } from 'next-intl';
-import { useWorkflowStore } from '../../model/store';
+import { useNodeMutations } from '../../model/store';
+import { WorkflowNodeIcon } from '../workflow-node-icon';
 
 export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
-  const config = WORKFLOW_NODES_CONFIG.summary;
   const t = useTranslations('WorkflowEditor.nodes.summary');
-
-  const deleteNode = useWorkflowStore((s) => s.deleteNode);
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const { remove, patch } = useNodeMutations<SummaryAppNode['data']>(id);
 
   const nodes = useStore((state) => state.nodes as AppNode[]);
 
@@ -38,14 +36,6 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
     [nodes]
   );
 
-  const handleDelete = () => {
-    deleteNode(id);
-  };
-
-  const handleUpdate = (payload: Partial<SummaryNodeData>) => {
-    updateNode(id, payload);
-  };
-
   const toggleQuestion = (questionId: string) => {
     const current = data.includedQuestionIds ?? [];
 
@@ -53,9 +43,7 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
       ? current.filter((id) => id !== questionId)
       : [...current, questionId];
 
-    handleUpdate({
-      includedQuestionIds: next,
-    });
+    patch({ includedQuestionIds: next });
   };
 
   return (
@@ -63,39 +51,25 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
       <Handle type="target" position={Position.Top} />
 
       <BaseNodeHeader className="border-b bg-violet-50">
-        <div className={`rounded-sm border p-1 ${config.color}`}>
-          <ClipboardList className="size-3.5" />
-        </div>
+        <WorkflowNodeIcon type="summary" />
 
         <BaseNodeHeaderTitle>{t('name')}</BaseNodeHeaderTitle>
 
-        <Button variant="ghost" size="sm" onClick={handleDelete}>
+        <Button variant="ghost" size="sm" onClick={remove}>
           <Trash2 className="size-3.5" />
         </Button>
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-2 p-3">
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('summaryTitle')}
-          </Label>
-
+        <EditorField label={t('summaryTitle')}>
           <ControlledTextarea
             value={data.introText ?? ''}
             placeholder={t('summaryTitlePlaceholder')}
-            onCommit={(value) =>
-              handleUpdate({
-                introText: value,
-              })
-            }
+            onCommit={(value) => patch({ introText: value })}
           />
-        </div>
+        </EditorField>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('includedFields')}
-          </Label>
-
+        <EditorField label={t('includedFields')}>
           <div className="bg-card/50 space-y-3 rounded-md border p-3">
             {questions.map((question) => {
               const checkboxId = `question-${id}-${question.id}`;
@@ -114,23 +88,15 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
               );
             })}
           </div>
-        </div>
+        </EditorField>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('template')}
-          </Label>
-
+        <EditorField label={t('template')}>
           <ControlledTextarea
             value={data.customTemplate ?? ''}
             placeholder={t('templatePlaceholder')}
-            onCommit={(value) =>
-              handleUpdate({
-                customTemplate: value,
-              })
-            }
+            onCommit={(value) => patch({ customTemplate: value })}
           />
-        </div>
+        </EditorField>
       </BaseNodeContent>
 
       <Handle type="source" position={Position.Bottom} />

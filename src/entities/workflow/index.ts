@@ -1,4 +1,16 @@
 export type { WorkflowPayload, workflowSchema } from './model/validation';
+export {
+  validateWorkflow,
+  validateGraphStructure,
+  validateNodeConnections,
+  validateNodeData,
+} from './lib/validation';
+export type {
+  ValidationIssue,
+  ValidationResult,
+  ValidationSeverity,
+  WorkflowGraph,
+} from './lib/validation';
 export { WORKFLOW_NODES_CONFIG } from './model/nodes-config';
 export { workflowService } from './server/service';
 export { saveWorkflowAction } from './api/actions';
@@ -17,3 +29,4 @@ export type {
 export { NODE_TYPES } from './ui/nodes/node-types';
 export { CustomEdge } from './ui/edge/custom-edge';
 export { ChoiceButtonsEditorMemoized } from './ui/choice-buttons-editor';
+export { WorkflowNodeIcon } from './ui/workflow-node-icon';

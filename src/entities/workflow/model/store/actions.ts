@@ -15,3 +15,5 @@ export const useConnectNodes = () => useWorkflowStore((state) => state.connectNo
 export const useDeleteEdge = () => useWorkflowStore((state) => state.deleteEdge);
 
 export const useNodesChange = () => useWorkflowStore((state) => state.onNodesChange);
+
+export const useMarkClean = () => useWorkflowStore((state) => state.markClean);

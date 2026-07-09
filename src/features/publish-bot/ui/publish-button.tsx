@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 import { Rocket } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
@@ -16,9 +14,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog';
-import { publishBotAction } from '../api/actions';
+
+import { usePublishBot } from '../model/use-publish-bot';
 
 interface PublishBotButtonProps {
   botId: string;
@@ -27,36 +25,17 @@ interface PublishBotButtonProps {
 
 export function PublishBotButton({ botId, initialToken }: PublishBotButtonProps) {
   const t = useTranslations('WorkflowCanvas.publishDialog');
-  const [isOpen, setIsOpen] = useState(false);
-  const [token, setToken] = useState(initialToken || '');
-  const [isPending, startTransition] = useTransition();
 
-  const handlePublish = () => {
-    if (!token.trim()) {
-      toast.error('Please enter a valid Bot Token');
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await publishBotAction({ botId, token: token.trim() });
-
-      if (result.success) {
-        toast.success(t('publishSuccess'));
-        setIsOpen(false);
-      } else {
-        toast.error(result.error || t('publishError'));
-      }
-    });
-  };
+  const { isDialogOpen, setIsDialogOpen, token, setToken, isPending, openDialog, publish } =
+    usePublishBot({ botId, initialToken });
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Rocket className="mr-1.5 size-3.5" />
-          {t('publishBtn')}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Button variant="outline" onClick={openDialog}>
+        <Rocket className="mr-1.5 size-3.5" />
+        {t('publishBtn')}
+      </Button>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t('publishTitle')}</DialogTitle>
@@ -81,10 +60,15 @@ export function PublishBotButton({ botId, initialToken }: PublishBotButtonProps)
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={() => setIsOpen(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsDialogOpen(false)}
+            disabled={isPending}
+          >
             {t('cancelBtn')}
           </Button>
-          <Button size="sm" onClick={handlePublish} disabled={isPending}>
+          <Button size="sm" onClick={publish} disabled={isPending}>
             {isPending && <Spinner data-icon="inline-start" />}
             {t('launchBtn')}
           </Button>
