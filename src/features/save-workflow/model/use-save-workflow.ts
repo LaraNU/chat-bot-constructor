@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { saveWorkflowAction, validateWorkflow } from '@/entities/workflow';
-import { useWorkflowEdges, useWorkflowNodes } from '@/entities/workflow/model/store';
+import { useMarkClean, useWorkflowEdges, useWorkflowNodes } from '@/entities/workflow/model/store';
 
 type UseSaveWorkflowParams = {
   botId: string;
@@ -30,6 +30,7 @@ export function useSaveWorkflow({ botId }: UseSaveWorkflowParams): UseSaveWorkfl
   const t = useTranslations('WorkflowCanvas');
   const nodes = useWorkflowNodes();
   const edges = useWorkflowEdges();
+  const markClean = useMarkClean();
   const [isLoading, setIsLoading] = useState(false);
 
   const save = useCallback(async () => {
@@ -40,6 +41,7 @@ export function useSaveWorkflow({ botId }: UseSaveWorkflowParams): UseSaveWorkfl
       const result = await saveWorkflowAction({ botId, nodes, edges });
 
       if (result.success) {
+        markClean();
         if (validation.isValid) {
           toast.success(t('messages.saveSuccess'));
         } else {
@@ -53,7 +55,7 @@ export function useSaveWorkflow({ botId }: UseSaveWorkflowParams): UseSaveWorkfl
     } finally {
       setIsLoading(false);
     }
-  }, [nodes, edges, botId, t]);
+  }, [nodes, edges, botId, markClean, t]);
 
   return { isLoading, save };
 }

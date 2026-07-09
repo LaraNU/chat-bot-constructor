@@ -187,6 +187,7 @@
       "cancelBtn": "Cancel",
       "publishSuccess": "Bot published successfully!",
       "publishError": "Failed to publish bot. Please try again.",
+      "unsavedChanges": "Save your workflow before publishing.",
       "validationFailed": "Fix {count} error(s) before publishing.",
       "tokenRequired": "Please enter a valid Bot Token."
     }

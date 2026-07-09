@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { validateWorkflow } from '@/entities/workflow';
 import type { ValidationResult } from '@/entities/workflow';
-import { useWorkflowEdges, useWorkflowNodes } from '@/entities/workflow/model/store';
+import { useIsDirty, useWorkflowEdges, useWorkflowNodes } from '@/entities/workflow/model/store';
 
 import { publishBotAction } from '../api/actions';
 
@@ -51,6 +51,7 @@ export function usePublishBot({ botId, initialToken }: UsePublishBotParams): Use
 
   const nodes = useWorkflowNodes();
   const edges = useWorkflowEdges();
+  const isDirty = useIsDirty();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [token, setToken] = useState(initialToken ?? '');
@@ -58,6 +59,11 @@ export function usePublishBot({ botId, initialToken }: UsePublishBotParams): Use
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
   const openDialog = useCallback(() => {
+    if (isDirty) {
+      toast.warning(t('unsavedChanges'));
+      return;
+    }
+
     const result = validateWorkflow({ nodes, edges });
 
     setValidationResult(result);
@@ -68,7 +74,7 @@ export function usePublishBot({ botId, initialToken }: UsePublishBotParams): Use
     }
 
     setIsDialogOpen(true);
-  }, [nodes, edges, t]);
+  }, [isDirty, nodes, edges, t]);
 
   const publish = useCallback(() => {
     if (!token.trim()) {

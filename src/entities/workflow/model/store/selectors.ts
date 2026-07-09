@@ -4,6 +4,8 @@ export const useWorkflowNodes = () => useWorkflowStore((state) => state.nodes);
 
 export const useWorkflowEdges = () => useWorkflowStore((state) => state.edges);
 
+export const useIsDirty = () => useWorkflowStore((state) => state.isDirty);
+
 export const useSelectedNodeId = () => useWorkflowStore((state) => state.selectedNodeId);
 
 export const useSelectedNode = () =>
