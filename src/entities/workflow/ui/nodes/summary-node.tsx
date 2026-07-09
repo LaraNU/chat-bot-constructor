@@ -12,8 +12,9 @@ import {
 } from '@/shared/ui/base-node';
 
 import { Button } from '@/shared/ui/button';
-import { Label } from '@/shared/ui/label';
 import { Checkbox } from '@/shared/ui/checkbox';
+import { Label } from '@/shared/ui/label';
+import { EditorField } from '@/shared/ui/editor-field';
 
 import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 
@@ -60,23 +61,15 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-2 p-3">
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('summaryTitle')}
-          </Label>
-
+        <EditorField label={t('summaryTitle')}>
           <ControlledTextarea
             value={data.introText ?? ''}
             placeholder={t('summaryTitlePlaceholder')}
             onCommit={(value) => patch({ introText: value })}
           />
-        </div>
+        </EditorField>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('includedFields')}
-          </Label>
-
+        <EditorField label={t('includedFields')}>
           <div className="bg-card/50 space-y-3 rounded-md border p-3">
             {questions.map((question) => {
               const checkboxId = `question-${id}-${question.id}`;
@@ -95,19 +88,15 @@ export const SummaryNode = memo(({ id, data }: NodeProps<SummaryAppNode>) => {
               );
             })}
           </div>
-        </div>
+        </EditorField>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('template')}
-          </Label>
-
+        <EditorField label={t('template')}>
           <ControlledTextarea
             value={data.customTemplate ?? ''}
             placeholder={t('templatePlaceholder')}
             onCommit={(value) => patch({ customTemplate: value })}
           />
-        </div>
+        </EditorField>
       </BaseNodeContent>
 
       <Handle type="source" position={Position.Bottom} />

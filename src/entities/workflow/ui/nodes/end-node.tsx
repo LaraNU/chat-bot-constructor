@@ -11,8 +11,8 @@ import {
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
 
-import { Label } from '@/shared/ui/label';
 import { Button } from '@/shared/ui/button';
+import { EditorField } from '@/shared/ui/editor-field';
 
 import { useTranslations } from 'next-intl';
 
@@ -45,17 +45,13 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-2 p-3">
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('description')}
-          </Label>
-
+        <EditorField label={t('description')}>
           <ControlledTextarea
             value={data.message ?? ''}
             placeholder={t('messagePlaceholder')}
             onCommit={commit('message')}
           />
-        </div>
+        </EditorField>
       </BaseNodeContent>
     </BaseNode>
   );

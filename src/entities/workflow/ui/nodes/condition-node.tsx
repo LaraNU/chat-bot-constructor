@@ -11,8 +11,8 @@ import {
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
 
-import { Label } from '@/shared/ui/label';
 import { Button } from '@/shared/ui/button';
+import { EditorField } from '@/shared/ui/editor-field';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
@@ -69,11 +69,9 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-2 p-3">
-        <div className="flex flex-col gap-1.5">
-          <Label className="mb-1 block text-[10px] font-bold uppercase">{t('question')}</Label>
-
+        <EditorField label={t('question')}>
           <Select value={data.questionNodeId} onValueChange={handleQuestionChange}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="nodrag nowheel h-8 text-xs">
               <SelectValue placeholder={t('selectQuestion')} />
             </SelectTrigger>
 
@@ -85,33 +83,28 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </EditorField>
 
-        <div>
-          <Label className="mb-1 block text-[10px] font-bold uppercase">{t('check')}</Label>
-
+        <EditorField label={t('check')}>
           <Select value={data.operator} onValueChange={handleOperatorChange}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="nodrag nowheel h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
 
             <SelectContent>
               <SelectItem value="equals">{t('operators.equals')}</SelectItem>
-
               <SelectItem value="contains">{t('operators.contains')}</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </EditorField>
 
-        <div>
-          <Label className="mb-1 block text-[10px] font-bold uppercase">{t('value')}</Label>
-
+        <EditorField label={t('value')}>
           <ControlledInput
             value={data.value}
             placeholder={t('valuePlaceholder')}
             onCommit={commit('value')}
           />
-        </div>
+        </EditorField>
       </BaseNodeContent>
 
       <Handle

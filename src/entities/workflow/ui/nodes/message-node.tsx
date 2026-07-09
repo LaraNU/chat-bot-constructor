@@ -12,7 +12,7 @@ import {
 } from '@/shared/ui/base-node';
 
 import { Button } from '@/shared/ui/button';
-import { Label } from '@/shared/ui/label';
+import { EditorField } from '@/shared/ui/editor-field';
 
 import type { MessageAppNode } from '../../model/types';
 
@@ -40,16 +40,14 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
       </BaseNodeHeader>
 
       <BaseNodeContent className="p-3">
-        <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-          {t('description')}
-        </Label>
-
-        <ControlledTextarea
-          value={data.text}
-          onCommit={commit('text')}
-          placeholder={t('messagePlaceholder')}
-          className="max-h-[80px] resize-none overflow-y-auto"
-        />
+        <EditorField label={t('description')}>
+          <ControlledTextarea
+            value={data.text}
+            onCommit={commit('text')}
+            placeholder={t('messagePlaceholder')}
+            className="max-h-[80px] resize-none overflow-y-auto"
+          />
+        </EditorField>
       </BaseNodeContent>
 
       <Handle type="source" position={Position.Bottom} />

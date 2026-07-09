@@ -11,7 +11,7 @@ import {
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
 import { Button } from '@/shared/ui/button';
-import { Label } from '@/shared/ui/label';
+import { EditorField } from '@/shared/ui/editor-field';
 
 import { QuestionAppNode } from '../../model/types';
 
@@ -40,29 +40,21 @@ export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
       </BaseNodeHeader>
 
       <BaseNodeContent className="space-y-2 p-3">
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('description')}
-          </Label>
-
+        <EditorField label={t('description')}>
           <ControlledTextarea
             value={data.text}
             onCommit={commit('text')}
             placeholder={t('questionPlaceholder')}
           />
-        </div>
+        </EditorField>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-muted-foreground/70 text-[10px] font-bold uppercase">
-            {t('questionTitle')}
-          </Label>
-
+        <EditorField label={t('questionTitle')}>
           <ControlledInput
             value={data.answerLabel}
             placeholder={t('questionPlaceholder')}
             onCommit={commit('answerLabel')}
           />
-        </div>
+        </EditorField>
       </BaseNodeContent>
 
       <Handle type="source" position={Position.Bottom} />
