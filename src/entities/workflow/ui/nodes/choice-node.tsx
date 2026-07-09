@@ -1,8 +1,10 @@
 'use client';
 
 import { memo, useCallback } from 'react';
+
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { ListChecks, Trash2 } from 'lucide-react';
+
+import { Trash2 } from 'lucide-react';
 
 import {
   BaseNode,
@@ -10,39 +12,34 @@ import {
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
+
 import { Button } from '@/shared/ui/button';
+
 import { Label } from '@/shared/ui/label';
 
-import { WORKFLOW_NODES_CONFIG } from '../..';
 import type { ChoiceAppNode, ChoiceButton } from '../../model/types';
 
 import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
+
 import { ChoiceButtonsEditorMemoized } from '../choice-buttons-editor';
+
 import { useTranslations } from 'next-intl';
-import { useWorkflowStore } from '../../model/store';
+
+import { useNodeMutations } from '../../model/store';
+
+import { WorkflowNodeIcon } from '../workflow-node-icon';
 
 export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
-  const config = WORKFLOW_NODES_CONFIG.choice;
   const t = useTranslations('WorkflowEditor.nodes.choice');
-  const deleteNode = useWorkflowStore((s) => s.deleteNode);
-  const updateNode = useWorkflowStore((s) => s.updateNode);
 
-  const handleDelete = () => {
-    deleteNode(id);
-  };
-
-  const handleTextCommit = useCallback(
-    (text: string) => {
-      updateNode(id, { text });
-    },
-    [updateNode, id]
-  );
+  const { remove, commit, patch } = useNodeMutations<ChoiceAppNode['data']>(id);
 
   const handleButtonsUpdate = useCallback(
     (buttons: ChoiceButton[]) => {
-      updateNode(id, { buttons });
+      patch({ buttons });
     },
-    [updateNode, id]
+
+    [patch]
   );
 
   return (
@@ -50,13 +47,11 @@ export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
       <Handle type="target" position={Position.Top} />
 
       <BaseNodeHeader className="border-b bg-green-50">
-        <div className={`rounded-sm border p-1 ${config.color}`}>
-          <ListChecks className="size-3.5" />
-        </div>
+        <WorkflowNodeIcon type="choice" />
 
         <BaseNodeHeaderTitle className="text-xs font-semibold">{t('name')}</BaseNodeHeaderTitle>
 
-        <Button variant="ghost" size="sm" onClick={handleDelete}>
+        <Button variant="ghost" size="sm" onClick={remove}>
           <Trash2 className="size-3.5" />
         </Button>
       </BaseNodeHeader>
@@ -70,7 +65,7 @@ export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
           <ControlledTextarea
             value={data.text ?? ''}
             placeholder={t('optionTextPlaceholder')}
-            onCommit={handleTextCommit}
+            onCommit={commit('text')}
           />
         </div>
 

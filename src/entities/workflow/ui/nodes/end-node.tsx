@@ -1,7 +1,7 @@
 'use client';
 
-import { memo, useCallback } from 'react';
-import { Square, Trash2 } from 'lucide-react';
+import { memo } from 'react';
+import { Trash2 } from 'lucide-react';
 import { NodeProps, Handle, Position } from '@xyflow/react';
 
 import {
@@ -17,37 +17,20 @@ import { Button } from '@/shared/ui/button';
 import { useTranslations } from 'next-intl';
 
 import { EndAppNode } from '../../model/types';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
-
 import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
-
-import { useWorkflowStore } from '../../model/store';
+import { useNodeMutations } from '../../model/store';
+import { WorkflowNodeIcon } from '../workflow-node-icon';
 
 export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.end');
-  const config = WORKFLOW_NODES_CONFIG.end;
-  const deleteNode = useWorkflowStore((s) => s.deleteNode);
-  const updateNode = useWorkflowStore((s) => s.updateNode);
-
-  const handleDelete = () => {
-    deleteNode(id);
-  };
-
-  const handleMessageCommit = useCallback(
-    (message: string) => {
-      updateNode(id, { message });
-    },
-    [updateNode, id]
-  );
+  const { remove, commit } = useNodeMutations<EndAppNode['data']>(id);
 
   return (
     <BaseNode className="w-64">
       <Handle type="target" position={Position.Top} />
 
       <BaseNodeHeader className="bg-muted/30 border-b">
-        <div className={`rounded-sm border p-1 ${config.color}`}>
-          <Square className="size-3.5" />
-        </div>
+        <WorkflowNodeIcon type="end" />
 
         <BaseNodeHeaderTitle className="text-xs font-semibold">{t('name')}</BaseNodeHeaderTitle>
 
@@ -55,7 +38,7 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={handleDelete}
+          onClick={remove}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -70,7 +53,7 @@ export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
           <ControlledTextarea
             value={data.message ?? ''}
             placeholder={t('messagePlaceholder')}
-            onCommit={handleMessageCommit}
+            onCommit={commit('message')}
           />
         </div>
       </BaseNodeContent>

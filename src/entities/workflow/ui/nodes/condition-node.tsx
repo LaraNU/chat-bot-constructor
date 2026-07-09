@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useMemo } from 'react';
-import { GitBranch, Trash2, Frown, Smile } from 'lucide-react';
+import { Trash2, Frown, Smile } from 'lucide-react';
 import { Handle, Position, NodeProps, useStore } from '@xyflow/react';
 
 import {
@@ -19,16 +19,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { AppNode, ConditionAppNode, ConditionNodeData } from '../../model/types';
 
 import { buildQuestionOptions } from '../../lib';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
 import { ControlledInput } from '@/shared/ui/controlled-input';
 import { useTranslations } from 'next-intl';
-import { useWorkflowStore } from '../../model/store';
+import { useNodeMutations } from '../../model/store';
+import { WorkflowNodeIcon } from '../workflow-node-icon';
 
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
-  const config = WORKFLOW_NODES_CONFIG.condition;
   const t = useTranslations('WorkflowEditor.nodes.condition');
-  const deleteNode = useWorkflowStore((s) => s.deleteNode);
-  const updateNode = useWorkflowStore((s) => s.updateNode);
+  const { remove, patch, commit } = useNodeMutations<ConditionAppNode['data']>(id);
 
   const nodes = useStore((state) => state.nodes as AppNode[]);
 
@@ -37,40 +35,18 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
     [nodes, t]
   );
 
-  const handleDelete = () => {
-    deleteNode(id);
-  };
-
-  const handleUpdate = useCallback(
-    (nodeId: string, payload: Partial<ConditionNodeData>) => {
-      updateNode(nodeId, payload);
-    },
-    [updateNode]
-  );
-
-  const handleValueCommit = useCallback(
-    (value: string) => {
-      handleUpdate(id, { value });
-    },
-    [handleUpdate, id]
-  );
-
   const handleQuestionChange = useCallback(
     (value: string) => {
-      handleUpdate(id, {
-        questionNodeId: value,
-      });
+      patch({ questionNodeId: value });
     },
-    [handleUpdate, id]
+    [patch]
   );
 
   const handleOperatorChange = useCallback(
     (value: string) => {
-      handleUpdate(id, {
-        operator: value as ConditionNodeData['operator'],
-      });
+      patch({ operator: value as ConditionNodeData['operator'] });
     },
-    [handleUpdate, id]
+    [patch]
   );
 
   return (
@@ -78,9 +54,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
       <Handle type="target" position={Position.Top} />
 
       <BaseNodeHeader className="bg-muted/30 border-b">
-        <div className={`rounded-sm border p-1 ${config.color}`}>
-          <GitBranch className="size-3.5" />
-        </div>
+        <WorkflowNodeIcon type="condition" />
 
         <BaseNodeHeaderTitle className="text-xs font-semibold">{t('name')}</BaseNodeHeaderTitle>
 
@@ -88,7 +62,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
           variant="ghost"
           size="sm"
           className="hover:bg-destructive/10 hover:text-destructive h-6 w-6 p-0"
-          onClick={handleDelete}
+          onClick={remove}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -135,7 +109,7 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
           <ControlledInput
             value={data.value}
             placeholder={t('valuePlaceholder')}
-            onCommit={handleValueCommit}
+            onCommit={commit('value')}
           />
         </div>
       </BaseNodeContent>

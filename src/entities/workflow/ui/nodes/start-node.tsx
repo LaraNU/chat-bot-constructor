@@ -1,7 +1,6 @@
 'use client';
 
 import { memo } from 'react';
-import { Play } from 'lucide-react';
 import { Handle, Position } from '@xyflow/react';
 import { useTranslations } from 'next-intl';
 
@@ -11,7 +10,8 @@ import {
   BaseNodeHeader,
   BaseNodeHeaderTitle,
 } from '@/shared/ui/base-node';
-import { WORKFLOW_NODES_CONFIG } from '../../model/nodes-config';
+
+import { WorkflowNodeIcon } from '../workflow-node-icon';
 
 export const StartNode = memo(() => {
   const t = useTranslations('WorkflowEditor.nodes.start');
@@ -19,9 +19,7 @@ export const StartNode = memo(() => {
   return (
     <BaseNode className="w-64">
       <BaseNodeHeader className="bg-muted/30 border-b">
-        <div className={`rounded-sm border p-1 ${WORKFLOW_NODES_CONFIG.start.color}`}>
-          <Play className="size-3.5" />
-        </div>
+        <WorkflowNodeIcon type="start" />
         <BaseNodeHeaderTitle className="text-xs font-semibold">{t('name')}</BaseNodeHeaderTitle>
       </BaseNodeHeader>
 

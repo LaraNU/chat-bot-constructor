@@ -2,28 +2,10 @@
 
 import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
-import { WORKFLOW_NODES_CONFIG } from '@/entities/workflow';
-import {
-  Play,
-  MessageSquare,
-  GitBranch,
-  StopCircle,
-  ListChecks,
-  CircleHelp,
-  ClipboardList,
-} from 'lucide-react';
+import { WORKFLOW_NODES_CONFIG, WorkflowNodeIcon } from '@/entities/workflow';
+import type { WorkflowNodeType } from '@/entities/workflow';
 import { DragEvent } from 'react';
 import { Heading } from '@/shared/ui/typography';
-
-const ICON_MAP = {
-  play: Play,
-  message: MessageSquare,
-  question: CircleHelp,
-  choice: ListChecks,
-  branch: GitBranch,
-  stop: StopCircle,
-  summary: ClipboardList,
-};
 
 export function NodesPalette() {
   const t = useTranslations('WorkflowEditor');
@@ -41,8 +23,6 @@ export function NodesPalette() {
 
       <div className="space-y-2 p-3">
         {Object.entries(WORKFLOW_NODES_CONFIG).map(([type, config]) => {
-          const Icon = ICON_MAP[config.iconName];
-
           return (
             type !== 'start' && (
               <div
@@ -54,11 +34,7 @@ export function NodesPalette() {
                 onDragStart={(event) => onDragStart(event, type)}
                 draggable
               >
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-md border ${config.color}`}
-                >
-                  <Icon className="h-4 w-4" />
-                </div>
+                <WorkflowNodeIcon type={type as WorkflowNodeType} size="md" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{t(`${config.translationKey}.name`)}</p>
                   <p className="text-muted-foreground truncate text-xs">
