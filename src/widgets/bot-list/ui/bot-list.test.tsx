@@ -11,8 +11,10 @@ type initialBotsMock = {
   description: string | null;
   id: string;
   userId: string;
+  token: string | null;
   createdAt: Date;
   updatedAt: Date;
+  flow: { updatedAt: Date; snapshot: { createdAt: Date } | null } | null;
 };
 
 vi.mock('next-intl/server', () => ({
@@ -86,17 +88,23 @@ describe('BotList', () => {
     (botService.getPaginatedBots as Mock).mockResolvedValue([
       {
         id: 'bot-1',
-        isPublished: false,
         name: 'Bot One',
         description: 'First bot',
+        token: null,
+        userId: 'user-1',
+        createdAt: new Date('2026-02-17T00:00:00.000Z'),
         updatedAt: new Date('2026-02-17T00:00:00.000Z'),
+        flow: null,
       },
       {
         id: 'bot-2',
-        isPublished: false,
         name: 'Bot Two',
         description: null,
+        token: null,
+        userId: 'user-1',
+        createdAt: new Date('2026-02-16T00:00:00.000Z'),
         updatedAt: new Date('2026-02-16T00:00:00.000Z'),
+        flow: null,
       },
     ]);
 
@@ -111,14 +119,14 @@ describe('BotList', () => {
         initialBots: [
           {
             id: 'bot-1',
-            isPublished: false,
+            status: 'draft',
             name: 'Bot One',
             description: 'First bot',
             updatedAt: '2026-02-17T00:00:00.000Z',
           },
           {
             id: 'bot-2',
-            isPublished: false,
+            status: 'draft',
             name: 'Bot Two',
             description: null,
             updatedAt: '2026-02-16T00:00:00.000Z',

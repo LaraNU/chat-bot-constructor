@@ -47,12 +47,14 @@ describe('botService', () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(botRepository.findAllByUserId).mockResolvedValue([mockCreatedBot]);
+      vi.mocked(botRepository.findAllByUserId).mockResolvedValue([
+        { ...mockCreatedBot, token: null },
+      ]);
 
       const result = await botService.getAllBots(mockUserId);
 
       expect(botRepository.findAllByUserId).toHaveBeenCalledWith(mockUserId);
-      expect(result).toEqual([mockCreatedBot]);
+      expect(result).toEqual([{ ...mockCreatedBot, token: null }]);
     });
 
     test('should create a bot with valid data', async () => {
@@ -65,6 +67,7 @@ describe('botService', () => {
       const mockCreatedBot = {
         ...newBot,
         id: 'uuid-1234',
+        token: null as string | null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

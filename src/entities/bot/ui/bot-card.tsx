@@ -10,18 +10,19 @@ import { Logo } from '@/shared/ui/icons/logo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Link } from '@/i18n/navigation';
 import type { ReactNode } from 'react';
+import type { BotStatus } from '../model/types';
 
 type BotCardProps = {
   id: string;
   name: string;
-  isPublished: boolean;
+  status: BotStatus;
   updatedAt: string;
   description: string | null;
   deleteActionSlot?: ReactNode;
 };
 
 export const BotCard = memo(
-  ({ id, name, isPublished, updatedAt, description, deleteActionSlot }: BotCardProps) => {
+  ({ id, name, status, updatedAt, description, deleteActionSlot }: BotCardProps) => {
     const t = useTranslations('BotCard');
     const formatter = useFormatter();
 
@@ -44,16 +45,22 @@ export const BotCard = memo(
         </CardHeader>
 
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-2">
             <Badge
-              variant={isPublished ? 'default' : 'secondary'}
+              variant={status !== 'draft' ? 'default' : 'secondary'}
               className={
-                isPublished
+                status === 'published'
                   ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-100'
+                  : status === 'published_with_changes'
+                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-100'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-100'
               }
             >
-              {isPublished ? t('active') : t('draft')}
+              {status === 'published'
+                ? t('active')
+                : status === 'published_with_changes'
+                  ? t('publishedWithChanges')
+                  : t('draft')}
             </Badge>
             <span className="text-muted-foreground text-xs">
               {t('lastUpdated')}{' '}

@@ -2,6 +2,13 @@ import { prisma } from '@/shared/lib/prisma';
 import type { Bot } from '@prisma/client';
 import { createDefaultFlow } from '@/entities/workflow/model';
 
+export type BotWithPublishInfo = Bot & {
+  flow: {
+    updatedAt: Date;
+    snapshot: { createdAt: Date } | null;
+  } | null;
+};
+
 export const botRepository = {
   async findAllByUserId(userId: string): Promise<Bot[]> {
     return prisma.bot.findMany({
@@ -16,12 +23,24 @@ export const botRepository = {
     });
   },
 
-  async findPaginatedByUserId(userId: string, limit: number, offset: number): Promise<Bot[]> {
+  async findPaginatedByUserId(
+    userId: string,
+    limit: number,
+    offset: number
+  ): Promise<BotWithPublishInfo[]> {
     return prisma.bot.findMany({
       where: { userId },
       take: limit,
       skip: offset,
       orderBy: { createdAt: 'desc' },
+      include: {
+        flow: {
+          select: {
+            updatedAt: true,
+            snapshot: { select: { createdAt: true } },
+          },
+        },
+      },
     });
   },
 

@@ -1,6 +1,7 @@
 import { botService } from '@/entities/bot/server/service';
 import { createClient } from '@/shared/lib/supabase/server';
 import { InfiniteBotList, BOTS_PER_PAGE } from '@/entities/bot';
+import { getBotStatus } from '@/entities/bot/model/types';
 import { getTranslations } from 'next-intl/server';
 
 export const BotList = async () => {
@@ -23,7 +24,11 @@ export const BotList = async () => {
     name: bot.name,
     description: bot.description,
     updatedAt: bot.updatedAt.toISOString(),
-    isPublished: Boolean(bot.token),
+    status: getBotStatus({
+      token: bot.token,
+      flowUpdatedAt: bot.flow?.updatedAt ?? null,
+      snapshotCreatedAt: bot.flow?.snapshot?.createdAt ?? null,
+    }),
   }));
 
   return <InfiniteBotList initialBots={serializedBots} limit={BOTS_PER_PAGE} />;
