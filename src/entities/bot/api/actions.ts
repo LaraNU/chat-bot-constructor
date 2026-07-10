@@ -2,6 +2,7 @@
 
 import { createClient } from '@/shared/lib/supabase/server';
 import { botService } from '../server/service';
+import { getBotStatus, type BotStatus } from '../model/types';
 import { revalidatePath } from 'next/cache';
 
 export interface SerializedBot {
@@ -9,7 +10,7 @@ export interface SerializedBot {
   name: string;
   description: string | null;
   updatedAt: string;
-  isPublished: boolean;
+  status: BotStatus;
 }
 
 export async function createBotAction(formData: { name: string; description: string }) {
@@ -58,7 +59,11 @@ export async function fetchBotsAction(limit: number, offset: number): Promise<Se
       name: bot.name,
       description: bot.description,
       updatedAt: bot.updatedAt.toISOString(),
-      isPublished: Boolean(bot.token),
+      status: getBotStatus({
+        token: bot.token,
+        flowUpdatedAt: bot.flow?.updatedAt ?? null,
+        snapshotCreatedAt: bot.flow?.snapshot?.createdAt ?? null,
+      }),
     }));
   } catch (error) {
     console.error('Error Server Action:', error);

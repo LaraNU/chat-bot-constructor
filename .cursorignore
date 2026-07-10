@@ -10,8 +10,6 @@ build
 playwright-report
 test-results
 
-prisma/migrations
-
 public
 
 docs/archive

@@ -22,9 +22,10 @@ describe('workflowService', () => {
     const mockWorkflow: Flow = {
       id: 'flow-id',
       botId: mockBotId,
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       nodes: [
         { id: '1', type: 'start', data: { triggerType: 'manual' }, position: { x: 0, y: 0 } },
-      ] as AppNode[],
+      ] as unknown as AppNode[],
       edges: [] as AppEdge[],
     };
 
@@ -40,6 +41,7 @@ describe('workflowService', () => {
     const mockWorkflow: Flow = {
       id: 'flow-id',
       botId: mockBotId,
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       nodes: [] as AppNode[],
       edges: [] as AppEdge[],
     };

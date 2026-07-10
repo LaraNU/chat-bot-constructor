@@ -47,7 +47,8 @@
     "deleteSuccess": "Bot deleted successfully",
     "deleteError": "Failed to delete bot. Please try again",
     "active": "Published",
-    "draft": "Draft"
+    "draft": "Draft",
+    "publishedWithChanges": "Published · unsaved changes"
   },
   "SignUpForm": {
     "title": "Sign Up",

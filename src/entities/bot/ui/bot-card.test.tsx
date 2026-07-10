@@ -22,6 +22,7 @@ describe('BotCard', () => {
       const dictionary: Record<string, string> = {
         active: 'Active',
         draft: 'Draft',
+        publishedWithChanges: 'Published · unsaved changes',
         lastUpdated: 'Last updated',
         edit: 'Edit',
         delete: 'Delete',
@@ -34,12 +35,12 @@ describe('BotCard', () => {
     });
   });
 
-  test('renders bot details and edit link for active bot', () => {
+  test('renders bot details and edit link for published bot', () => {
     render(
       <BotCard
         id="bot-1"
         name="Support Bot"
-        isPublished={true}
+        status="published"
         updatedAt="2026-02-17T00:00:00.000Z"
         description="Answers FAQs"
       />
@@ -48,22 +49,33 @@ describe('BotCard', () => {
     expect(screen.getByText('Support Bot')).toBeInTheDocument();
     expect(screen.getByText('Answers FAQs')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
-
     expect(screen.getByText('Last updated 17.02.2026')).toBeInTheDocument();
-
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/editor/bot-1');
   });
 
-  test('shows draft label when status is not active', () => {
+  test('shows draft label for draft bots', () => {
     render(
       <BotCard
         id="bot-2"
-        isPublished={false}
+        status="draft"
         name="Draft Bot"
         updatedAt="2026-02-17T00:00:00.000Z"
         description={null}
       />
     );
     expect(screen.getByText('Draft')).toBeInTheDocument();
+  });
+
+  test('shows published_with_changes badge for bots with unsaved changes', () => {
+    render(
+      <BotCard
+        id="bot-3"
+        status="published_with_changes"
+        name="Stale Bot"
+        updatedAt="2026-02-17T00:00:00.000Z"
+        description={null}
+      />
+    );
+    expect(screen.getByText('Published · unsaved changes')).toBeInTheDocument();
   });
 });

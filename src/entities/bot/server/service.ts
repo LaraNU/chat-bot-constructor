@@ -1,4 +1,4 @@
-import { botRepository } from './repository';
+import { botRepository, type BotWithPublishInfo } from './repository';
 import { createBotSchema } from '../model/types';
 import type { Bot } from '@prisma/client';
 
@@ -14,7 +14,11 @@ export const botService = {
     return await botRepository.findById(id);
   },
 
-  async getPaginatedBots(userId: string, limit: number, offset: number): Promise<Bot[]> {
+  async getPaginatedBots(
+    userId: string,
+    limit: number,
+    offset: number
+  ): Promise<BotWithPublishInfo[]> {
     return await botRepository.findPaginatedByUserId(userId, limit, offset);
   },
 
