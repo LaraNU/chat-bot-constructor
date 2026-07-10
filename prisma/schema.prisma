@@ -28,7 +28,7 @@ model Bot {
   sessions  UserSession[]
 }
 
-// Модель Потока
+// Модель Потока (черновик)
 model Flow {
   id        String   @id @default(uuid())
 
@@ -37,9 +37,32 @@ model Flow {
 
   /// [WorkflowEdges]
   edges     Json     // Массив связей React Flow
-  
+
+  updatedAt DateTime @default(now()) @updatedAt
+
   botId     String   @unique // Ссылка на бота
   bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  snapshot  FlowSnapshot?
+}
+
+// Опубликованный снимок потока
+// Создаётся/обновляется только при Publish, webhook читает отсюда.
+// Черновик (Flow) и снимок хранятся раздельно — изменения черновика
+// не влияют на работающего бота до следующей публикации.
+model FlowSnapshot {
+  id        String   @id @default(uuid())
+
+  /// [WorkflowNodes]
+  nodes     Json
+
+  /// [WorkflowEdges]
+  edges     Json
+
+  createdAt DateTime @default(now())
+
+  flowId    String   @unique
+  flow      Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
 }
 
 // Модель Сессии

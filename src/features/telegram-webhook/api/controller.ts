@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { prisma } from '@/shared/lib/prisma';
-
 import type { AppNode, AppEdge } from '@/entities/workflow';
+import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
 
 import type { TelegramUpdate, UserContext } from '../model/types';
 
@@ -50,14 +49,21 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
         : (update.message?.from?.username ?? ''),
     };
 
-    const flow = await prisma.flow.findUnique({
-      where: {
-        botId,
-      },
-    });
+    // Webhook reads exclusively from the published snapshot — never from the draft.
+    // If no snapshot exists the invariant (token → snapshot) is violated: this is a
+    // data integrity error, not a graceful degradation scenario.
+    const snapshot = await flowSnapshotRepository.findByBotId(botId);
 
-    if (!flow) {
-      return NextResponse.json({ error: 'Flow not found' }, { status: 404 });
+    if (!snapshot) {
+      console.error(
+        `[webhook] Invariant violation: bot "${botId}" has no published FlowSnapshot. ` +
+          `Data migration may be incomplete or the bot was never published via the new flow.`
+      );
+
+      return NextResponse.json(
+        { error: 'Published workflow snapshot not found.' },
+        { status: 500 }
+      );
     }
 
     const { currentNodeId: initialNodeId, tempData } = await getUserSessionState(
@@ -67,8 +73,8 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
     );
 
     const finalNodeId = await runWorkflowEngine({
-      nodes: flow.nodes as AppNode[],
-      edges: flow.edges as AppEdge[],
+      nodes: snapshot.nodes as AppNode[],
+      edges: snapshot.edges as AppEdge[],
       initialNodeId,
       context,
       tempData,
@@ -76,14 +82,10 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
 
     await saveUserSession(context.botId, context.chatId, finalNodeId, tempData);
 
-    return NextResponse.json({
-      success: true,
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('❌ Webhook Execution Error:', error);
 
-    return NextResponse.json({
-      success: true,
-    });
+    return NextResponse.json({ success: true });
   }
 }
