@@ -1,5 +1,6 @@
 import { botRepository, type BotWithPublishInfo } from './repository';
 import { createBotSchema } from '../model/types';
+import { NotFoundError } from '@/shared/api/errors';
 import type { Bot } from '@prisma/client';
 
 export const botService = {
@@ -12,6 +13,22 @@ export const botService = {
       throw new Error('Bot ID is required');
     }
     return await botRepository.findById(id);
+  },
+
+  /**
+   * Single source of truth for verifying that `botId` belongs to `userId`.
+   * Throws the same `NotFoundError` whether the bot does not exist or belongs
+   * to a different user, so callers cannot use the response to enumerate
+   * other users' bot ids.
+   */
+  async assertBotOwnership(userId: string, botId: string): Promise<Bot> {
+    const bot = await botRepository.findById(botId);
+
+    if (!bot || bot.userId !== userId) {
+      throw new NotFoundError('Bot not found');
+    }
+
+    return bot;
   },
 
   async getPaginatedBots(

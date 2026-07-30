@@ -21,3 +21,10 @@ export class UnauthorizedError extends ApiError {
     this.name = 'UnauthorizedError';
   }
 }
+
+export class NotFoundError extends ApiError {
+  constructor(message = 'Not found') {
+    super(message, 404);
+    this.name = 'NotFoundError';
+  }
+}

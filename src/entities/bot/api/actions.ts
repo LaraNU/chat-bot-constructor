@@ -82,6 +82,7 @@ export async function deleteBotAction(botId: string) {
       return { success: false, error: 'Unauthorized' };
     }
 
+    await botService.assertBotOwnership(user.id, botId);
     await botService.deleteBot(botId);
 
     revalidatePath('/', 'layout');

@@ -1,5 +1,12 @@
 #!/bin/sh
 COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Если сообщение начинается со слова Merge/merge, пропускаем все проверки
+if echo "$COMMIT_MSG" | grep -iq "^merge"; then
+  echo "ℹ️ Merge commit detected. Skipping format check."
+  exit 0
+fi
 
 # Получаем название текущей ветки
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
