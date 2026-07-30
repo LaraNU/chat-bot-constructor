@@ -2,6 +2,8 @@ import { botRepository } from './repository';
 import { vi, beforeEach, describe, test, expect } from 'vitest';
 import { botService } from './service';
 import { createClient } from '@/shared/lib/supabase/server';
+import { NotFoundError } from '@/shared/api/errors';
+import type { Bot } from '@prisma/client';
 
 vi.mock('@/shared/lib/supabase/server', () => ({
   createClient: vi.fn(),
@@ -11,6 +13,7 @@ vi.mock('./repository', () => ({
   botRepository: {
     create: vi.fn(),
     findAllByUserId: vi.fn(),
+    findById: vi.fn(),
   },
 }));
 
@@ -92,6 +95,65 @@ describe('botService', () => {
       );
 
       expect(botRepository.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('assertBotOwnership', () => {
+    const mockBotId = 'bot-uuid-1234';
+
+    const mockBot: Bot = {
+      id: mockBotId,
+      name: 'Owned Bot',
+      description: null,
+      userId: mockUserId,
+      token: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    test('should return the bot when it belongs to the requesting user', async () => {
+      vi.mocked(botRepository.findById).mockResolvedValue(mockBot);
+
+      const result = await botService.assertBotOwnership(mockUserId, mockBotId);
+
+      expect(botRepository.findById).toHaveBeenCalledWith(mockBotId);
+      expect(result).toEqual(mockBot);
+    });
+
+    test('should throw NotFoundError when the bot belongs to another user', async () => {
+      vi.mocked(botRepository.findById).mockResolvedValue({
+        ...mockBot,
+        userId: 'another-user-id',
+      });
+
+      await expect(botService.assertBotOwnership(mockUserId, mockBotId)).rejects.toThrow(
+        NotFoundError
+      );
+    });
+
+    test('should throw NotFoundError when the bot does not exist', async () => {
+      vi.mocked(botRepository.findById).mockResolvedValue(null);
+
+      await expect(botService.assertBotOwnership(mockUserId, mockBotId)).rejects.toThrow(
+        NotFoundError
+      );
+    });
+
+    test('should not leak whether the bot is missing or owned by someone else', async () => {
+      vi.mocked(botRepository.findById).mockResolvedValue(null);
+      const notFoundMessage = await botService
+        .assertBotOwnership(mockUserId, mockBotId)
+        .catch((error: Error) => error.message);
+
+      vi.mocked(botRepository.findById).mockResolvedValue({
+        ...mockBot,
+        userId: 'another-user-id',
+      });
+      const otherOwnerMessage = await botService
+        .assertBotOwnership(mockUserId, mockBotId)
+        .catch((error: Error) => error.message);
+
+      expect(notFoundMessage).toBe(otherOwnerMessage);
     });
   });
 });
