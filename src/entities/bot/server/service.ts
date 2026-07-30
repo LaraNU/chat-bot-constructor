@@ -8,13 +8,6 @@ export const botService = {
     return await botRepository.findAllByUserId(userId);
   },
 
-  async getBotById(id: string): Promise<Bot | null> {
-    if (!id) {
-      throw new Error('Bot ID is required');
-    }
-    return await botRepository.findById(id);
-  },
-
   /**
    * Single source of truth for verifying that `botId` belongs to `userId`.
    * Throws the same `NotFoundError` whether the bot does not exist or belongs
