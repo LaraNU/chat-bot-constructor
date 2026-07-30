@@ -1,0 +1,102 @@
+---
+description: Frontend development rules for React, Next.js App Router, TypeScript, component design, and next-intl.
+globs: src/**/*.ts, src/**/*.tsx
+alwaysApply: false
+---
+
+# Frontend Development
+
+## React Components
+
+Prefer:
+
+- composition
+- small focused components
+- reusable UI
+- explicit naming
+- clear component responsibilities
+
+Avoid:
+
+- giant components
+- duplicated business logic
+- deeply nested prop drilling
+- unnecessary abstractions
+
+Keep presentation components focused on rendering and user interaction.
+
+Business logic should remain in the domain, feature, entity, or application layer that owns it.
+
+## Next.js
+
+The project uses Next.js App Router.
+
+Respect the separation between:
+
+- Server Components
+- Client Components
+- server-side logic
+- client-side interactions
+
+Do not add `"use client"` unless the component actually requires client-side behavior.
+
+Prefer Server Components by default when client-side interactivity is not required.
+
+## TypeScript
+
+The project uses strict TypeScript.
+
+Prefer:
+
+- explicit domain types
+- discriminated unions
+- generics when they improve type safety
+- type inference when the resulting code remains clear
+
+Avoid:
+
+- `any`
+- unsafe type assertions
+- unnecessary casts
+- duplicated type definitions
+
+Prefer making invalid states unrepresentable through the type system.
+
+## Internationalization
+
+User-facing strings must never be hardcoded in UI components.
+
+Use `next-intl`:
+
+- `useTranslations()` in Client Components
+- `getTranslations()` from `next-intl/server` in Server Components
+
+Translation files:
+
+- `@shared/langs/en.json`
+- `@shared/langs/ru.json`
+
+When adding user-facing text:
+
+1. Check whether an existing translation key can be reused.
+2. If no suitable key exists, add the required keys to the translation files.
+3. Follow the existing translation key naming conventions.
+
+This applies to:
+
+- UI labels
+- buttons
+- validation messages
+- property panels
+- error messages
+- user-facing notifications
+
+## UI Stack
+
+The project uses:
+
+- Tailwind CSS
+- Radix UI
+- CVA
+
+Reuse existing UI primitives and project conventions before introducing new components.

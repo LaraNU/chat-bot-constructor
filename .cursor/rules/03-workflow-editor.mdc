@@ -1,0 +1,107 @@
+---
+description: Workflow domain, isolated Zustand stores, workflow actions, state ownership, graph mutations, and workflow editor performance.
+globs: src/entities/workflow/**/*, src/features/workflow-actions/**/*, src/widgets/workflow-canvas/**/*, src/widgets/properties-panel/**/*, src/widgets/nodes-palette/**/*, src/widgets/editor-header/**/*, src/views/workflow-editor/**/*
+alwaysApply: false
+---
+
+# Workflow Editor
+
+The workflow editor is a core product domain.
+
+The workflow architecture is distributed across:
+
+- `src/entities/workflow` — workflow domain, state, selectors, mutations, validation, persistence, and workflow types
+- `src/features/workflow-actions` — user interactions and feature-level workflow operations
+- `src/widgets/workflow-canvas` — workflow canvas composition
+- `src/widgets/properties-panel` — node property editing UI
+- `src/widgets/nodes-palette` — node creation UI
+- `src/widgets/editor-header` — editor-level UI
+- `src/views/workflow-editor` — page-level editor composition
+
+## Store Architecture
+
+The workflow editor uses isolated Zustand Vanilla Stores.
+
+Each editor instance owns its own store.
+
+Stores are created using `createStore()` and provided through React Context.
+
+There must be no global singleton workflow store.
+
+Store Factory:
+
+`src/entities/workflow/model/store/workflow-store.ts`
+
+## State Ownership
+
+Keep responsibilities separated:
+
+- `entities/workflow` owns workflow state and domain-level graph mutations
+- `features/workflow-actions` owns user interactions and feature-level workflows
+- widgets compose UI and connect user interactions to the appropriate actions
+- presentation components should not contain workflow domain logic
+
+Do not move domain logic into UI components for convenience.
+
+Do not duplicate workflow mutations across widgets or features.
+
+## Existing Workflow APIs
+
+Before adding a new workflow operation:
+
+1. Search `src/entities/workflow` for an existing mutation or domain operation.
+2. Search `src/features/workflow-actions` for an existing feature-level action.
+3. Extend the existing implementation when the responsibility matches.
+4. Avoid creating parallel implementations of the same workflow operation.
+
+## State Updates
+
+Prefer granular state updates.
+
+When changing a single node or edge:
+
+- update only the affected entity
+- preserve references for unaffected entities
+- avoid recreating the entire graph unnecessarily
+
+Do not update the entire graph state on every property-panel keystroke.
+
+## Performance
+
+The workflow editor is expected to support workflows containing hundreds of nodes.
+
+Consider:
+
+- selector granularity
+- subscription scope
+- rerender frequency
+- object and array recreation
+- graph update cost
+
+Prefer selector-based subscriptions and granular updates.
+
+Use appropriate equality checks when subscribing to deeply nested node properties.
+
+Avoid subscribing UI components to the entire workflow store when only a small part of the state is required.
+
+## Editor and Runtime Separation
+
+The workflow editor produces a serializable workflow representation.
+
+Published workflows are executed by the Telegram runtime.
+
+Do not couple workflow editor state or UI components to Telegram runtime execution.
+
+The runtime must not depend on React Flow presentation components or editor-specific UI state.
+
+## Workflow Changes
+
+When changing workflow data structures, consider all affected parts of the system:
+
+- editor state
+- persistence
+- published workflow snapshots
+- workflow validation
+- Telegram runtime execution
+
+Do not change the workflow contract in one layer without checking its consumers.

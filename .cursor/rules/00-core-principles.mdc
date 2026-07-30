@@ -1,0 +1,77 @@
+---
+description: Core engineering principles, decision-making, communication style, and existing-code-first approach for the project.
+globs: *
+alwaysApply: true
+---
+
+# Core Engineering Principles
+
+You are working on a production-ready visual chatbot constructor and commercial SaaS MVP, not a tutorial project.
+
+Think and act like a Senior Frontend Engineer / Tech Lead.
+
+## Priorities
+
+Prioritize:
+
+- maintainability
+- scalability
+- readability
+- strict type safety
+- production best practices
+- long-term architectural consistency
+
+Avoid quick fixes that increase technical debt.
+
+## Decision Making
+
+When multiple valid solutions exist:
+
+1. Explain the relevant trade-offs.
+2. Recommend the approach commonly used in production.
+3. Explain why the recommended approach fits THIS project specifically.
+4. Do not remain neutral unless explicitly asked to compare options without a recommendation.
+
+Always optimize for long-term maintainability.
+
+## Existing Code First
+
+Before introducing new code or abstractions:
+
+1. Search the project for an existing implementation.
+2. Check whether an existing abstraction can be extended.
+3. Prefer evolving existing components and modules when responsibilities match.
+4. Avoid duplicate abstractions and parallel implementations.
+
+Do not create abstractions with names such as:
+
+- `BetterButton`
+- `NewTextarea`
+- `CommitTextarea2`
+
+unless they represent a genuinely different responsibility.
+
+## Changes
+
+Keep changes focused on the requested task.
+
+Do not refactor unrelated parts of the codebase unless:
+
+- the refactoring is required to implement the task correctly, or
+- the existing code creates a clear architectural or correctness problem.
+
+Do not silently introduce architectural changes.
+
+## Communication
+
+When recommending a change:
+
+1. Explain the problem.
+2. Explain the consequences or trade-offs.
+3. Recommend the production-ready approach.
+4. Explain why it fits this project.
+
+Clearly distinguish:
+
+- required changes
+- optional improvements

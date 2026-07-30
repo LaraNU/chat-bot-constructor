@@ -1,0 +1,146 @@
+---
+description: Telegram webhook feature, workflow runtime execution, engine, sessions, node handlers, registry, and published workflow snapshots.
+globs: src/features/telegram-webhook/**/*, src/app/api/webhook/**/*, src/entities/bot/**/*, src/entities/workflow/**/*.tsx, src/entities/workflow/**/*.ts
+alwaysApply: false
+---
+
+# Telegram Runtime
+
+The Telegram runtime executes published chatbot workflows in response to Telegram updates.
+
+The runtime is implemented primarily in:
+
+`src/features/telegram-webhook`
+
+The HTTP webhook entry point is:
+
+`src/app/api/webhook/route.ts`
+
+## Runtime Architecture
+
+The Telegram runtime includes:
+
+- webhook controller
+- execution engine
+- session handling
+- node handlers
+- node handler registry
+- runtime types and guards
+
+The main runtime components include:
+
+- `engine.ts`
+- `session.ts`
+- `lib/nodes/registry.ts`
+- node-specific handlers
+
+## Editor and Runtime Separation
+
+The workflow editor and Telegram runtime are separate systems.
+
+The editor is responsible for:
+
+- editing workflows
+- managing draft state
+- rendering the visual graph
+- validating workflows
+- publishing workflows
+
+The runtime is responsible for:
+
+- receiving Telegram updates
+- loading the published workflow
+- managing execution state
+- executing workflow nodes
+- interacting with Telegram
+
+Do not couple runtime execution logic to:
+
+- React components
+- React Flow components
+- React Flow instance state
+- editor-only Zustand state
+- browser-specific UI concerns
+
+## Published Workflow
+
+The editor produces a serializable workflow representation.
+
+The editable workflow is stored as a draft.
+
+Published workflows are represented by a published workflow snapshot.
+
+The Telegram runtime executes the published workflow snapshot rather than the editor's current unsaved state.
+
+When changing workflow data structures, check compatibility between:
+
+- editable workflow data
+- persisted workflow data
+- published workflow snapshots
+- runtime execution
+
+Do not assume that changing the editor representation automatically updates the runtime contract.
+
+## Execution Engine
+
+The execution engine is responsible for orchestrating workflow execution.
+
+Keep the engine independent from:
+
+- React
+- React Flow
+- UI components
+- editor-specific state
+
+Do not put Telegram execution logic into React Flow node components.
+
+## Node Handlers
+
+Node execution behavior belongs to dedicated runtime handlers.
+
+The runtime uses a node registry to resolve the appropriate handler for a workflow node.
+
+When adding a new executable node:
+
+1. Check the existing node handler structure.
+2. Reuse existing runtime types and utilities.
+3. Implement the handler in the appropriate runtime module.
+4. Register the handler in the node registry.
+5. Add or update tests for the runtime behavior.
+
+Do not duplicate execution logic between node handlers.
+
+## Session State
+
+Telegram conversation/session state must remain separate from editor workflow state.
+
+Do not store runtime execution state in the workflow editor's Zustand store.
+
+Do not make runtime execution depend on the current browser session or editor instance.
+
+## Webhook Entry Point
+
+The Next.js webhook route is an HTTP entry point into the Telegram runtime.
+
+Keep the route handler focused on:
+
+- receiving the webhook request
+- validating/parsing the request
+- resolving the appropriate bot/runtime context
+- invoking the runtime
+
+Do not put the full workflow execution engine inside the Next.js route handler.
+
+## Runtime Changes
+
+When modifying runtime behavior, consider:
+
+- published workflow compatibility
+- node handler registry
+- session state
+- execution flow
+- error handling
+- Telegram API interactions
+- persistence requirements
+
+Prefer changes that preserve the separation between the webhook transport layer and the runtime execution engine.

@@ -1,0 +1,114 @@
+---
+description: TypeScript quality, code generation, testing, and code review standards.
+globs: src/**/*.ts, src/**/*.tsx
+alwaysApply: false
+---
+
+# Code Quality
+
+Follow the project's existing:
+
+- ESLint configuration
+- Prettier configuration
+- TypeScript configuration
+- naming conventions
+- folder structure
+
+Prefer readable code over clever code.
+
+Keep:
+
+- functions small and focused
+- files cohesive
+- responsibilities explicit
+- abstractions justified
+
+Avoid:
+
+- unnecessary abstractions
+- duplicated business logic
+- premature optimization
+- unrelated refactoring
+- clever code that reduces readability
+
+## Code Generation
+
+When generating or modifying code:
+
+- provide complete, valid implementations
+- never use placeholders such as `// ... rest of the code`
+- never leave `// TODO` or `// Implement later` in place of requested functionality
+- preserve existing project conventions
+- do not silently change unrelated behavior
+
+## Testing
+
+The project uses:
+
+- Vitest
+- React Testing Library
+- Playwright
+
+When adding or modifying meaningful business behavior, add or update relevant tests.
+
+Prioritize tests for:
+
+- Zustand store behavior
+- workflow mutations
+- workflow validation
+- node creation
+- node cloning
+- workflow serialization
+- Telegram runtime engine
+- Telegram node handlers
+- Zod validation schemas
+- non-trivial domain logic
+
+Tests should verify behavior rather than implementation details.
+
+Do not create tests solely to increase coverage numbers.
+
+## React Testing
+
+Use React Testing Library for meaningful user-facing component behavior.
+
+Avoid testing implementation details that do not affect user behavior.
+
+## End-to-End Testing
+
+Use Playwright for critical end-to-end user flows.
+
+Prefer E2E tests for flows such as:
+
+- authentication
+- creating a workflow
+- editing a workflow
+- publishing a bot
+- critical Telegram bot flows
+
+## Public API
+
+When adding new types, components, actions, or other cross-slice exports:
+
+1. Check the slice Public API.
+2. Update `index.ts` when the item should be publicly exposed.
+3. Do not bypass the Public API with internal imports.
+
+## Code Reviews
+
+When reviewing code:
+
+- explain why something is problematic
+- explain possible consequences
+- recommend a production-ready alternative
+- review architecture as well as implementation
+
+Clearly distinguish:
+
+### Required Changes
+
+Issues that should be fixed before merging.
+
+### Optional Improvements
+
+Non-blocking improvements that may be addressed later.
