@@ -1,0 +1,124 @@
+---
+description: XYFlow / React Flow v12 integration, custom nodes and edges, canvas rendering, graph interaction, and performance.
+globs: src/widgets/workflow-canvas/**/*, src/entities/workflow/**/*.tsx, src/entities/workflow/**/*.ts, src/features/workflow-actions/**/*.tsx, src/features/workflow-actions/**/*.ts
+alwaysApply: false
+---
+
+# XYFlow / React Flow Rules
+
+The project uses modern XYFlow / React Flow v12 APIs.
+
+## API
+
+Use the current XYFlow v12 APIs and Hooks.
+
+Prefer modern APIs such as:
+
+- `useReactFlow`
+- `useNodesData`
+- `useEdges`
+- other current v12 APIs
+
+Never introduce outdated React Flow v11 APIs, structures, or types.
+
+## Custom Nodes
+
+Custom node components should primarily be responsible for rendering node UI.
+
+Keep node presentation separate from workflow graph manipulation.
+
+Do not put complex workflow mutations directly inside presentational node components.
+
+When a node interaction changes workflow state:
+
+1. Identify the appropriate workflow action or mutation.
+2. Reuse the existing workflow API when possible.
+3. Keep the node component focused on presentation and interaction.
+
+## Custom Edges
+
+Custom edge components should primarily handle:
+
+- edge rendering
+- edge-specific UI
+- edge interaction
+
+Do not introduce dependencies from the `entities` layer into the `features` layer.
+
+In particular, do not make an entity-level React Flow component import feature-level actions.
+
+If an edge requires feature-level behavior:
+
+- pass the required handler through an appropriate higher-level component, or
+- use an architecture that preserves FSD dependency direction.
+
+Do not bypass FSD boundaries to access feature actions.
+
+## Graph Mutations
+
+Graph mutations belong to the workflow state/domain layer or the appropriate workflow feature action.
+
+Do not duplicate graph mutation logic between:
+
+- React Flow callbacks
+- custom nodes
+- custom edges
+- widgets
+- feature actions
+- workflow store
+
+Prefer centralized, predictable mutation APIs.
+
+## React Flow and Workflow Store
+
+React Flow is responsible for visualizing and interacting with the graph.
+
+The workflow store is responsible for owning the application's workflow state and domain mutations.
+
+Do not treat the React Flow instance as the primary source of truth for persistent workflow state.
+
+Keep the React Flow representation synchronized with the workflow state according to the existing architecture.
+
+## Performance
+
+The canvas must support workflows containing hundreds of nodes.
+
+Pay attention to:
+
+- component rerenders
+- Zustand selector scope
+- React Flow subscriptions
+- node and edge collection recreation
+- unnecessary graph updates
+- expensive calculations during interaction
+
+Prefer:
+
+- `React.memo` when it prevents meaningful rerenders
+- `useCallback` when referential stability matters
+- `useMemo` when computation or referential stability justifies it
+- granular Zustand selectors
+- appropriate selector equality
+
+Do not add memoization mechanically.
+
+Avoid:
+
+- subscribing components to the entire workflow state
+- recreating large node or edge collections unnecessarily
+- updating the entire graph while typing in property panels
+- unnecessary React Flow instance updates
+
+## Large Graphs
+
+Always consider the cost of an operation on a graph containing hundreds of nodes.
+
+Before implementing a graph operation, consider whether it:
+
+- recreates the entire nodes array
+- recreates the entire edges array
+- causes all nodes to rerender
+- triggers unnecessary store subscriptions
+- performs expensive work on every keystroke
+
+Prefer targeted updates whenever possible.

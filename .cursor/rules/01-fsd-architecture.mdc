@@ -1,0 +1,92 @@
+---
+description: Feature-Sliced Design architecture, layer boundaries, slice responsibilities, dependency direction, and Public API rules.
+globs: src/**
+alwaysApply: true
+---
+
+# Feature-Sliced Design Architecture
+
+The project strictly follows Feature-Sliced Design (FSD).
+
+## Layer Dependency Direction
+
+The dependency direction is:
+
+`shared` → `entities` → `features` → `widgets` → `app`
+
+A lower layer must never import from a higher layer.
+
+Never introduce:
+
+- layer violations
+- circular dependencies
+- hidden cross-layer dependencies
+- dependency rule bypasses
+
+## Layer Responsibilities
+
+### shared
+
+Contains reusable technical infrastructure, generic UI, utilities, configuration, and common functionality.
+
+### entities
+
+Contains domain entities, domain models, and domain-specific logic.
+
+### features
+
+Contains user interactions and business use cases.
+
+### widgets
+
+Composes entities and features into larger UI blocks.
+
+### app
+
+Contains application-level composition, providers, routing, global configuration, and application setup.
+
+## Business Logic
+
+Business logic must stay in the layer and slice that owns the corresponding responsibility.
+
+Do not move business logic into presentation components merely for convenience.
+
+## Public API
+
+Use the Public API (`index.ts`) for cross-slice imports.
+
+Prefer:
+
+`@/entities/workflow`
+
+over:
+
+`@/entities/workflow/model/...`
+
+Do not import internal implementation files from another slice.
+
+If a required export is missing:
+
+1. Check whether it should be exposed through the slice Public API.
+2. Add the export when appropriate.
+3. Do not bypass the Public API by importing internal files.
+
+## Existing Architecture
+
+Before creating a new module:
+
+1. Identify the correct FSD layer.
+2. Identify the correct slice.
+3. Search for existing functionality.
+4. Extend an existing abstraction when responsibilities match.
+
+Do not introduce a new abstraction solely to avoid modifying an existing one.
+
+## Architecture Reviews
+
+When reviewing or modifying code, check both:
+
+- implementation correctness
+- architectural correctness
+
+A solution that works but violates FSD is not considered production-ready.
