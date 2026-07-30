@@ -4,6 +4,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 import { workflowService } from '../server/service';
 import type { AppEdge, AppNode } from '../model/types';
 import { UnauthorizedError, ValidationError } from '@/shared/api/errors';
+import { botService } from '@/entities/bot/server';
 import { revalidatePath } from 'next/cache';
 
 type SaveWorkflowProps = {
@@ -29,6 +30,7 @@ export async function saveWorkflowAction(workflowData: SaveWorkflowProps) {
       throw new UnauthorizedError();
     }
 
+    await botService.assertBotOwnership(user.id, botId);
     const newWorkflow = await workflowService.saveWorkflow(botId, nodes, edges);
 
     revalidatePath(`/[locale]/editor/${botId}`, 'page');
