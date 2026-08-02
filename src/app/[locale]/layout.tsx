@@ -66,7 +66,7 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
           <ScopedIntlProvider scopes={['Header']}>
             <Header />
           </ScopedIntlProvider>
-          {children}
+          <ScopedIntlProvider scopes={['ErrorBoundary']}>{children}</ScopedIntlProvider>
         </AppProviders>
       </body>
     </html>
