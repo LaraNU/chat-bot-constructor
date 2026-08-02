@@ -305,10 +305,10 @@ To receive real Telegram updates locally, the webhook URL registered with Telegr
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | Supabase publishable (anon) key |
 | `NEXT_PUBLIC_APP_URL` | Public base URL used to construct the Telegram webhook URL when publishing a bot; falls back to `VERCEL_URL` if unset |
+| `TELEGRAM_WEBHOOK_SECRET_KEY` | Server-only key used to deterministically derive each bot's Telegram webhook secret (`HMAC-SHA256(botId)`); registered with Telegram as `secret_token` and verified on every incoming update via the `X-Telegram-Bot-Api-Secret-Token` header |
 | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | Credentials used by the Playwright authentication setup |
 
-No `.env.example` currently ships with the repository — copy the variable names above into your own
-`.env.local`.
+Copy [`.env.example`](.env.example) to `.env.local` (or `.env.test` for running tests) and fill in real values.
 
 ## Project Structure
 

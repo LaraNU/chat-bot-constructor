@@ -2,21 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import type { AppNode, AppEdge } from '@/entities/workflow';
 import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
+import { botService } from '@/entities/bot/server';
 
 import type { TelegramUpdate, UserContext } from '../model/types';
 
 import { getUserSessionState, saveUserSession } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
 
+const TELEGRAM_SECRET_TOKEN_HEADER = 'x-telegram-bot-api-secret-token';
+
 export async function handleTelegramWebhook(request: NextRequest): Promise<NextResponse> {
+  const { searchParams } = new URL(request.url);
+  const botId = searchParams.get('botId');
+
+  if (!botId) {
+    return NextResponse.json({ error: 'Missing configuration' }, { status: 400 });
+  }
+
+  // Validated before any DB access: the secret is derived purely from `botId` +
+  // a server-only key, so a forged/unknown botId is rejected for free.
+  const providedSecret = request.headers.get(TELEGRAM_SECRET_TOKEN_HEADER);
+
+  if (!botService.verifyWebhookSecret(botId, providedSecret)) {
+    return NextResponse.json({ error: 'Invalid secret token' }, { status: 401 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
+    // The bot token is read from the database, never trusted from the request —
+    // the URL only ever carries `botId`, keeping the live token out of logs/proxies.
+    const bot = await botService.getBotById(botId);
 
-    const botId = searchParams.get('botId');
-    const botToken = searchParams.get('token');
+    if (!bot?.token) {
+      console.error(`[webhook] Invariant violation: bot "${botId}" has no token configured.`);
 
-    if (!botId || !botToken) {
-      return NextResponse.json({ error: 'Missing configuration' }, { status: 400 });
+      return NextResponse.json({ error: 'Bot is not published' }, { status: 500 });
     }
 
     const update = (await request.json()) as TelegramUpdate;
@@ -38,7 +57,7 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
 
     const context: UserContext = {
       botId,
-      botToken,
+      botToken: bot.token,
 
       chatId: chatId.toString(),
       userText: update.message?.text ?? '',

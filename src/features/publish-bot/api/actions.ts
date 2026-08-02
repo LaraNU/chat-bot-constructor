@@ -47,7 +47,8 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
 
     // External call first: if Telegram registration fails, nothing is written to DB.
     // If the DB transaction below fails, the user can safely retry — setWebhook is idempotent.
-    await setTelegramWebhook(token, botId, appUrl);
+    const secretToken = botService.getWebhookSecret(botId);
+    await setTelegramWebhook(token, botId, appUrl, secretToken);
 
     // Atomic: Bot.token and FlowSnapshot are committed together.
     // Flow is read inside the transaction to eliminate the race condition window between
