@@ -6,7 +6,7 @@ import { botService } from '@/entities/bot/server';
 
 import type { TelegramUpdate, UserContext } from '../model/types';
 
-import { getUserSessionState, saveUserSession } from '../lib/session';
+import { getUserSessionState, saveUserSession, isUpdateAlreadyProcessed } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
 
 const TELEGRAM_SECRET_TOKEN_HEADER = 'x-telegram-bot-api-secret-token';
@@ -55,6 +55,14 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
       return NextResponse.json({ success: true });
     }
 
+    // Idempotency guard (#61): must run before `getUserSessionState`, whose `/start`
+    // branch resets the dialog without touching the DB — a retried `/start` would
+    // otherwise re-send the welcome step every time. Runs after the message/callback
+    // filter above since irrelevant update types have no side effects to deduplicate.
+    if (await isUpdateAlreadyProcessed(botId, chatId.toString(), update.update_id)) {
+      return NextResponse.json({ success: true });
+    }
+
     const context: UserContext = {
       botId,
       botToken: bot.token,
@@ -99,7 +107,7 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
       tempData,
     });
 
-    await saveUserSession(context.botId, context.chatId, finalNodeId, tempData);
+    await saveUserSession(context.botId, context.chatId, finalNodeId, tempData, update.update_id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

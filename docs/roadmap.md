@@ -55,20 +55,20 @@ working code — items either close a concrete gap or add a capability that does
 
 ## P1 — Public Beta readiness
 
-| # | Problem | Why it matters | Affected code | Complexity | Depends on |
-|---|---|---|---|---|---|
-| P1.1 | No idempotency handling for Telegram updates (`update_id` is not tracked) | Telegram retries (e.g. after a 500) can cause a conversation step or side effect to run twice | `features/telegram-webhook/lib/session.ts`, `model/types.ts`, `api/controller.ts` | M | — |
-| P1.2 | No rate limiting anywhere in the application | Auth, publish, delete, and the webhook are all open to abuse at any volume | `src/middleware.ts` or a dedicated layer | M | P0.5 (webhook hardening first) |
-| P1.3 | No structured logging or error monitoring (only ad hoc `console.error`) | Operational issues are invisible until a user reports them; the webhook already swallows most errors as `{ success: true }` | Project-wide, starting with `features/telegram-webhook` | M | — |
-| P1.4 | `src/middleware.ts` gates protected routes by checking for a cookie name containing `auth-token`, not by validating the session | False sense of route protection at the middleware layer (pages are still protected server-side via `requireAuthenticatedUser()`) | `src/middleware.ts` | S | — |
-| P1.5 | No autosave; `isDirty` is set to `true` on any `onNodesChange`, including selection/drag, not just data changes | Manual-save-only UX does not scale to unsupervised external users; false-positive dirty state blocks publishing unnecessarily | `entities/workflow/model/store/workflow-store.ts`, `features/save-workflow` | M | — |
-| P1.6 | `Bot.token` is stored in plaintext | A database read exposes every bot's Telegram token directly | `prisma/schema.prisma`, `entities/bot/server` | M | — |
-| P1.7 | `BotResponse` has no foreign key to `Bot` | Deleting a bot leaves orphaned response rows; cannot safely join responses to their owning bot | `prisma/schema.prisma` + migration | S | — |
-| P1.8 | `src/features/workflow-actions` is dead code (not imported anywhere in `src`) that duplicates store responsibilities | Ambiguity for future contributors about which mutation API is authoritative | `src/features/workflow-actions/**` | S | — |
-| P1.9 | No deployment manifest (Dockerfile, docker-compose, or equivalent) in the repository | Deployment is not reproducible from the repository | Repository root | M | — |
-| P1.10 | No basic security headers configured (`next.config.ts` sets no `headers()`) | Missing baseline protections (e.g. `X-Frame-Options`, `Content-Security-Policy`) | `next.config.ts` | S | — |
-| P1.11 | No end-to-end tests for save, publish, or webhook flows (Playwright currently covers only auth and bot creation) | The most business-critical user flows have no regression safety net | `tests/` | M | P0.7 |
-| P1.12 | `answerCallbackQuery` is never called after a `choice` node's inline button is pressed | Telegram shows a persistent loading state on the button for the end user | `features/telegram-webhook/lib/nodes/choice-handler.ts` | S | — |
+| # | Problem | Why it matters | Affected code | Complexity | Depends on | Status |
+|---|---|---|---|---|---|---|
+| P1.1 | No idempotency handling for Telegram updates (`update_id` is not tracked) | Telegram retries (e.g. after a 500) can cause a conversation step or side effect to run twice | `features/telegram-webhook/lib/session.ts`, `model/types.ts`, `api/controller.ts` | M | — | Done |
+| P1.2 | No rate limiting anywhere in the application | Auth, publish, delete, and the webhook are all open to abuse at any volume | `src/middleware.ts` or a dedicated layer | M | P0.5 (webhook hardening first) | — |
+| P1.3 | No structured logging or error monitoring (only ad hoc `console.error`) | Operational issues are invisible until a user reports them; the webhook already swallows most errors as `{ success: true }` | Project-wide, starting with `features/telegram-webhook` | M | — | — |
+| P1.4 | `src/middleware.ts` gates protected routes by checking for a cookie name containing `auth-token`, not by validating the session | False sense of route protection at the middleware layer (pages are still protected server-side via `requireAuthenticatedUser()`) | `src/middleware.ts` | S | — | — |
+| P1.5 | No autosave; `isDirty` is set to `true` on any `onNodesChange`, including selection/drag, not just data changes | Manual-save-only UX does not scale to unsupervised external users; false-positive dirty state blocks publishing unnecessarily | `entities/workflow/model/store/workflow-store.ts`, `features/save-workflow` | M | — | — |
+| P1.6 | `Bot.token` is stored in plaintext | A database read exposes every bot's Telegram token directly | `prisma/schema.prisma`, `entities/bot/server` | M | — | — |
+| P1.7 | `BotResponse` has no foreign key to `Bot` | Deleting a bot leaves orphaned response rows; cannot safely join responses to their owning bot | `prisma/schema.prisma` + migration | S | — | — |
+| P1.8 | `src/features/workflow-actions` is dead code (not imported anywhere in `src`) that duplicates store responsibilities | Ambiguity for future contributors about which mutation API is authoritative | `src/features/workflow-actions/**` | S | — | — |
+| P1.9 | No deployment manifest (Dockerfile, docker-compose, or equivalent) in the repository | Deployment is not reproducible from the repository | Repository root | M | — | — |
+| P1.10 | No basic security headers configured (`next.config.ts` sets no `headers()`) | Missing baseline protections (e.g. `X-Frame-Options`, `Content-Security-Policy`) | `next.config.ts` | S | — | — |
+| P1.11 | No end-to-end tests for save, publish, or webhook flows (Playwright currently covers only auth and bot creation) | The most business-critical user flows have no regression safety net | `tests/` | M | P0.7 | — |
+| P1.12 | `answerCallbackQuery` is never called after a `choice` node's inline button is pressed | Telegram shows a persistent loading state on the button for the end user | `features/telegram-webhook/lib/nodes/choice-handler.ts` | S | — | — |
 
 ## P2 — Self-service SaaS
 
