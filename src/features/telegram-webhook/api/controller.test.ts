@@ -158,4 +158,80 @@ describe('handleTelegramWebhook', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ success: true });
   });
+
+  test('should return 500 and never run the engine when no snapshot has been published', async () => {
+    vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+    vi.mocked(flowSnapshotRepository.findByBotId).mockResolvedValue(null);
+
+    const response = await handleTelegramWebhook(buildRequest({ secret: mockSecret }));
+
+    expect(response.status).toBe(500);
+    expect(runWorkflowEngine).not.toHaveBeenCalled();
+  });
+
+  test('should ignore updates without a message or callback query', async () => {
+    vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+
+    const response = await handleTelegramWebhook(
+      buildRequest({ secret: mockSecret, body: { update_id: 1 } })
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ success: true });
+    expect(runWorkflowEngine).not.toHaveBeenCalled();
+  });
+
+  test('should ignore updates without a resolvable chat id', async () => {
+    vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+
+    const response = await handleTelegramWebhook(
+      buildRequest({ secret: mockSecret, body: { message: { from: {}, text: 'hi' } } })
+    );
+
+    expect(response.status).toBe(200);
+    expect(runWorkflowEngine).not.toHaveBeenCalled();
+  });
+
+  test('should build the engine context from a callback_query update', async () => {
+    vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+
+    const response = await handleTelegramWebhook(
+      buildRequest({
+        secret: mockSecret,
+        body: {
+          callback_query: {
+            from: { username: 'callback-user' },
+            message: { chat: { id: 42 } },
+            data: 'btn-1',
+          },
+        },
+      })
+    );
+
+    expect(runWorkflowEngine).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: expect.objectContaining({
+          botId: mockBotId,
+          chatId: '42',
+          callbackData: 'btn-1',
+          username: 'callback-user',
+        }),
+      })
+    );
+    expect(response.status).toBe(200);
+  });
+
+  test('should persist the session with the node id returned by the engine', async () => {
+    vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+    vi.mocked(runWorkflowEngine).mockResolvedValue('next-node-id');
+
+    await handleTelegramWebhook(buildRequest({ secret: mockSecret }));
+
+    expect(saveUserSession).toHaveBeenCalledWith(
+      mockBotId,
+      '1',
+      'next-node-id',
+      expect.objectContaining({ answers: {}, responses: [] })
+    );
+  });
 });
