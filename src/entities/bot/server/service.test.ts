@@ -1,5 +1,5 @@
 import { botRepository } from './repository';
-import { vi, beforeEach, describe, test, expect } from 'vitest';
+import { vi, beforeEach, afterEach, describe, test, expect } from 'vitest';
 import { botService } from './service';
 import { createClient } from '@/shared/lib/supabase/server';
 import { NotFoundError } from '@/shared/api/errors';
@@ -154,6 +154,106 @@ describe('botService', () => {
         .catch((error: Error) => error.message);
 
       expect(notFoundMessage).toBe(otherOwnerMessage);
+    });
+  });
+
+  describe('getBotById', () => {
+    const mockBotId = 'bot-uuid-1234';
+
+    const mockBot: Bot = {
+      id: mockBotId,
+      name: 'Some Bot',
+      description: null,
+      userId: mockUserId,
+      token: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    test('should return the bot regardless of who owns it', async () => {
+      vi.mocked(botRepository.findById).mockResolvedValue({
+        ...mockBot,
+        userId: 'another-user-id',
+      });
+
+      const result = await botService.getBotById(mockBotId);
+
+      expect(botRepository.findById).toHaveBeenCalledWith(mockBotId);
+      expect(result).toEqual({ ...mockBot, userId: 'another-user-id' });
+    });
+
+    test('should return null when the bot does not exist', async () => {
+      vi.mocked(botRepository.findById).mockResolvedValue(null);
+
+      const result = await botService.getBotById(mockBotId);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getWebhookSecret', () => {
+    const mockBotId = 'bot-uuid-1234';
+
+    beforeEach(() => {
+      vi.stubEnv('TELEGRAM_WEBHOOK_SECRET_KEY', 'server-only-secret-key');
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    test('should deterministically derive the same secret for the same botId', () => {
+      const first = botService.getWebhookSecret(mockBotId);
+      const second = botService.getWebhookSecret(mockBotId);
+
+      expect(first).toBe(second);
+    });
+
+    test('should derive a different secret for a different botId', () => {
+      const secretA = botService.getWebhookSecret('bot-a');
+      const secretB = botService.getWebhookSecret('bot-b');
+
+      expect(secretA).not.toBe(secretB);
+    });
+
+    test('should throw when TELEGRAM_WEBHOOK_SECRET_KEY is not configured', () => {
+      vi.stubEnv('TELEGRAM_WEBHOOK_SECRET_KEY', '');
+
+      expect(() => botService.getWebhookSecret(mockBotId)).toThrow(
+        'TELEGRAM_WEBHOOK_SECRET_KEY environment variable is not set'
+      );
+    });
+  });
+
+  describe('verifyWebhookSecret', () => {
+    const mockBotId = 'bot-uuid-1234';
+
+    beforeEach(() => {
+      vi.stubEnv('TELEGRAM_WEBHOOK_SECRET_KEY', 'server-only-secret-key');
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    test('should return true when the provided secret matches the expected one', () => {
+      const expected = botService.getWebhookSecret(mockBotId);
+
+      expect(botService.verifyWebhookSecret(mockBotId, expected)).toBe(true);
+    });
+
+    test('should return false when the provided secret is wrong', () => {
+      expect(botService.verifyWebhookSecret(mockBotId, 'not-the-right-secret')).toBe(false);
+    });
+
+    test('should return false when the header is missing', () => {
+      expect(botService.verifyWebhookSecret(mockBotId, null)).toBe(false);
+    });
+
+    test('should return false for a secret computed for a different botId', () => {
+      const secretForAnotherBot = botService.getWebhookSecret('another-bot-id');
+
+      expect(botService.verifyWebhookSecret(mockBotId, secretForAnotherBot)).toBe(false);
     });
   });
 });

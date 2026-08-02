@@ -18,6 +18,7 @@ vi.mock('@/shared/lib/supabase/server', () => ({
 vi.mock('@/entities/bot/server', () => ({
   botService: {
     assertBotOwnership: vi.fn(),
+    getWebhookSecret: vi.fn(),
   },
 }));
 
@@ -99,15 +100,18 @@ describe('publishBotAction', () => {
   test('should verify ownership before calling Telegram, then publish successfully for the owner', async () => {
     mockAuthenticatedUser(mockUserId);
     vi.mocked(botService.assertBotOwnership).mockResolvedValue(mockBot);
+    vi.mocked(botService.getWebhookSecret).mockReturnValue('computed-secret-token');
     vi.mocked(setTelegramWebhook).mockResolvedValue(undefined);
 
     const result = await publishBotAction({ botId: mockBotId, token: mockToken });
 
     expect(botService.assertBotOwnership).toHaveBeenCalledWith(mockUserId, mockBotId);
+    expect(botService.getWebhookSecret).toHaveBeenCalledWith(mockBotId);
     expect(setTelegramWebhook).toHaveBeenCalledWith(
       mockToken,
       mockBotId,
-      'https://app.example.com'
+      'https://app.example.com',
+      'computed-secret-token'
     );
 
     const ownershipCallOrder = vi.mocked(botService.assertBotOwnership).mock.invocationCallOrder[0];
