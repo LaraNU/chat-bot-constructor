@@ -51,7 +51,7 @@ working code — items either close a concrete gap or add a capability that does
 | P0.6 | No index on `Bot.userId` | Bot listing degrades as the table grows | `prisma/schema.prisma` + migration | S | — | Done |
 | P0.7 | No automated tests for the execution engine, webhook controller, or node handlers | This is the code path that talks to real Telegram users; regressions here are high-impact and currently invisible until reported by a user | `features/telegram-webhook/**` | M | — | Done |
 | P0.8 | CI's "Install dependencies" step is a malformed multi-line YAML value that runs `npm install npm ci` as one command instead of `npm install` and `npm ci` separately | CI does not perform the reproducible install it appears to perform | `.github/workflows/ci.yml` | S | — | Done |
-| P0.9 | No `error.tsx` / `global-error.tsx` in the App Router | Unhandled render errors produce the default Next.js error screen instead of a controlled UX | `src/app/[locale]/` | S | — | — |
+| P0.9 | No `error.tsx` / `global-error.tsx` in the App Router | Unhandled render errors produce the default Next.js error screen instead of a controlled UX | `src/app/[locale]/` | S | — | Done |
 
 ## P1 — Public Beta readiness
 

@@ -201,5 +201,11 @@
       "draft": "Draft"
     }
   },
-  "heroSection": {}
+  "heroSection": {},
+  "ErrorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or return to the homepage.",
+    "retryButton": "Try again",
+    "homeButton": "Go to homepage"
+  }
 }
