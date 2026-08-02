@@ -26,6 +26,8 @@ model Bot {
   flow      Flow?
 
   sessions  UserSession[]
+
+  @@index([userId])
 }
 
 // Модель Потока (черновик)
