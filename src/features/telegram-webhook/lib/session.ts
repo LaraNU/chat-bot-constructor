@@ -92,6 +92,43 @@ export async function getUserSessionState(
   };
 }
 
+/**
+ * Idempotency guard for Telegram webhook retries (see #61). Telegram redelivers an
+ * update if the webhook didn't answer `200 OK` in time; without this check the same
+ * update would run the dialog step (and its side effects — outgoing messages,
+ * `BotResponse` writes) again.
+ *
+ * Only the last processed `update_id` per chat is stored (`UserSession.lastUpdateId`),
+ * not a history of ids: Telegram only ever retries the current unacknowledged update
+ * and never redelivers an older one once a newer update_id has been accepted, so a
+ * single scalar is sufficient and needs no TTL/cleanup.
+ *
+ * This is a best-effort, sequential-retry guard, not a full concurrency guarantee:
+ * two truly concurrent deliveries of the same update_id could both pass this check
+ * before either writes back via `saveUserSession`. Closing that race would require
+ * holding a lock for the whole webhook handler duration (including outbound Telegram
+ * API calls), which is disproportionate at this stage — Telegram does not deliver the
+ * same update_id in parallel, only sequentially after a timeout/error, so this window
+ * is not expected to be hit in practice.
+ */
+export async function isUpdateAlreadyProcessed(
+  botId: string,
+  chatId: string,
+  updateId: number
+): Promise<boolean> {
+  const session = await prisma.userSession.findUnique({
+    where: {
+      botId_telegramChatId: {
+        botId,
+        telegramChatId: chatId,
+      },
+    },
+    select: { lastUpdateId: true },
+  });
+
+  return session?.lastUpdateId === updateId;
+}
+
 export async function getCurrentNodeId(
   botId: string,
   chatId: string,
@@ -109,7 +146,11 @@ export async function saveUserSession(
   tempData: TempData = {
     answers: {},
     responses: [],
-  }
+  },
+  // `update_id` of the Telegram update that produced this state, if any. Written in the
+  // same upsert as the rest of the session so a retry of the same update can never be
+  // observed as "not yet processed" for one field but "processed" for another.
+  updateId?: number
 ): Promise<void> {
   const serializedTempData = JSON.parse(JSON.stringify(tempData)) as Prisma.InputJsonValue;
 
@@ -125,10 +166,12 @@ export async function saveUserSession(
       telegramChatId: chatId,
       currentNodeId,
       tempData: serializedTempData,
+      lastUpdateId: updateId ?? null,
     },
     update: {
       currentNodeId,
       tempData: serializedTempData,
+      ...(updateId !== undefined ? { lastUpdateId: updateId } : {}),
     },
   });
 }

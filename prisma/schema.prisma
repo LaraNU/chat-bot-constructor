@@ -73,7 +73,13 @@ model UserSession {
   telegramChatId String  // ID чата в Telegram
   currentNodeId String?  // ID узла, на котором сейчас стоит пользователь
   variables     Json?
-  
+
+  // Telegram `update_id` последнего успешно обработанного апдейта для этого чата.
+  // Используется для идемпотентности: Telegram повторяет доставку апдейта, если
+  // webhook не ответил 200 OK вовремя, а update_id монотонно возрастает в рамках
+  // одного бота, поэтому хранить достаточно только последнее значение (см. #61).
+  lastUpdateId  Int?
+
   botId         String
   bot           Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
   

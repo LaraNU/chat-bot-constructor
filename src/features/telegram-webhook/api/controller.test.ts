@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import { handleTelegramWebhook } from './controller';
 import { botService } from '@/entities/bot/server';
 import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
-import { getUserSessionState, saveUserSession } from '../lib/session';
+import { getUserSessionState, saveUserSession, isUpdateAlreadyProcessed } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
 import type { Bot } from '@prisma/client';
 import type { FlowSnapshot } from '@prisma/client';
@@ -25,6 +25,7 @@ vi.mock('@/entities/workflow/server/snapshot-repository', () => ({
 vi.mock('../lib/session', () => ({
   getUserSessionState: vi.fn(),
   saveUserSession: vi.fn(),
+  isUpdateAlreadyProcessed: vi.fn(),
 }));
 
 vi.mock('../lib/engine', () => ({
@@ -57,7 +58,7 @@ describe('handleTelegramWebhook', () => {
   function buildRequest({
     botId = mockBotId,
     secret,
-    body = { message: { chat: { id: 1 }, from: {}, text: 'hi' } },
+    body = { update_id: 100, message: { chat: { id: 1 }, from: {}, text: 'hi' } },
   }: {
     botId?: string | null;
     secret?: string | null;
@@ -89,6 +90,7 @@ describe('handleTelegramWebhook', () => {
     });
     vi.mocked(runWorkflowEngine).mockResolvedValue(null);
     vi.mocked(saveUserSession).mockResolvedValue(undefined);
+    vi.mocked(isUpdateAlreadyProcessed).mockResolvedValue(false);
     vi.mocked(flowSnapshotRepository.findByBotId).mockResolvedValue(mockSnapshot);
     vi.mocked(botService.getBotById).mockResolvedValue(mockBot);
   });
@@ -221,17 +223,74 @@ describe('handleTelegramWebhook', () => {
     expect(response.status).toBe(200);
   });
 
-  test('should persist the session with the node id returned by the engine', async () => {
+  test('should persist the session with the node id and update_id returned by the engine', async () => {
     vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
     vi.mocked(runWorkflowEngine).mockResolvedValue('next-node-id');
 
-    await handleTelegramWebhook(buildRequest({ secret: mockSecret }));
+    await handleTelegramWebhook(
+      buildRequest({
+        secret: mockSecret,
+        body: { update_id: 100, message: { chat: { id: 1 }, from: {}, text: 'hi' } },
+      })
+    );
 
     expect(saveUserSession).toHaveBeenCalledWith(
       mockBotId,
       '1',
       'next-node-id',
-      expect.objectContaining({ answers: {}, responses: [] })
+      expect.objectContaining({ answers: {}, responses: [] }),
+      100
     );
+  });
+
+  describe('update_id idempotency (#61)', () => {
+    test('should skip processing and return success when the update_id was already processed for this chat', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+      vi.mocked(isUpdateAlreadyProcessed).mockResolvedValue(true);
+
+      const response = await handleTelegramWebhook(
+        buildRequest({
+          secret: mockSecret,
+          body: { update_id: 100, message: { chat: { id: 1 }, from: {}, text: 'hi' } },
+        })
+      );
+
+      expect(isUpdateAlreadyProcessed).toHaveBeenCalledWith(mockBotId, '1', 100);
+      expect(runWorkflowEngine).not.toHaveBeenCalled();
+      expect(saveUserSession).not.toHaveBeenCalled();
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ success: true });
+    });
+
+    test('should process a new (not previously seen) update_id as usual', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+      vi.mocked(isUpdateAlreadyProcessed).mockResolvedValue(false);
+
+      const response = await handleTelegramWebhook(
+        buildRequest({
+          secret: mockSecret,
+          body: { update_id: 101, message: { chat: { id: 1 }, from: {}, text: 'hi' } },
+        })
+      );
+
+      expect(isUpdateAlreadyProcessed).toHaveBeenCalledWith(mockBotId, '1', 101);
+      expect(runWorkflowEngine).toHaveBeenCalled();
+      expect(saveUserSession).toHaveBeenCalledWith(
+        mockBotId,
+        '1',
+        null,
+        expect.objectContaining({ answers: {}, responses: [] }),
+        101
+      );
+      expect(response.status).toBe(200);
+    });
+
+    test('should not check idempotency for updates without a message or callback query', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+
+      await handleTelegramWebhook(buildRequest({ secret: mockSecret, body: { update_id: 1 } }));
+
+      expect(isUpdateAlreadyProcessed).not.toHaveBeenCalled();
+    });
   });
 });
