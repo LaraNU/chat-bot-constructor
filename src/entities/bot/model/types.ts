@@ -31,21 +31,24 @@ export type BotStatus = 'draft' | 'published' | 'published_with_changes';
 type BotStatusInput = {
   token: string | null;
   flowUpdatedAt: Date | null;
-  snapshotCreatedAt: Date | null;
+  snapshotUpdatedAt: Date | null;
 };
 
 /**
  * Pure function — no DB calls, safe to use in serialization and tests.
- * `flowUpdatedAt` and `snapshotCreatedAt` may be null when the related row
+ * `flowUpdatedAt` and `snapshotUpdatedAt` may be null when the related row
  * is absent (e.g. a bot whose flow was deleted — edge case, treated as draft).
+ *
+ * Compare against snapshot.updatedAt (not createdAt): republish must advance
+ * the snapshot timestamp so a freshly published bot returns to `published`.
  */
 export function getBotStatus({
   token,
   flowUpdatedAt,
-  snapshotCreatedAt,
+  snapshotUpdatedAt,
 }: BotStatusInput): BotStatus {
   if (!token) return 'draft';
-  if (!snapshotCreatedAt || !flowUpdatedAt) return 'published';
+  if (!snapshotUpdatedAt || !flowUpdatedAt) return 'published';
 
-  return flowUpdatedAt > snapshotCreatedAt ? 'published_with_changes' : 'published';
+  return flowUpdatedAt > snapshotUpdatedAt ? 'published_with_changes' : 'published';
 }

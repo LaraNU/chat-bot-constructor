@@ -14,7 +14,7 @@ type initialBotsMock = {
   token: string | null;
   createdAt: Date;
   updatedAt: Date;
-  flow: { updatedAt: Date; snapshot: { createdAt: Date } | null } | null;
+  flow: { updatedAt: Date; snapshot: { updatedAt: Date } | null } | null;
 };
 
 vi.mock('next-intl/server', () => ({
@@ -100,11 +100,15 @@ describe('BotList', () => {
         id: 'bot-2',
         name: 'Bot Two',
         description: null,
-        token: null,
+        token: 'live-token',
         userId: 'user-1',
         createdAt: new Date('2026-02-16T00:00:00.000Z'),
+        // Bot.updatedAt lags behind flow edits — card must use flow.updatedAt
         updatedAt: new Date('2026-02-16T00:00:00.000Z'),
-        flow: null,
+        flow: {
+          updatedAt: new Date('2026-02-18T00:00:00.000Z'),
+          snapshot: { updatedAt: new Date('2026-02-18T00:00:00.000Z') },
+        },
       },
     ]);
 
@@ -126,10 +130,10 @@ describe('BotList', () => {
           },
           {
             id: 'bot-2',
-            status: 'draft',
+            status: 'published',
             name: 'Bot Two',
             description: null,
-            updatedAt: '2026-02-16T00:00:00.000Z',
+            updatedAt: '2026-02-18T00:00:00.000Z',
           },
         ],
         limit: BOTS_PER_PAGE,

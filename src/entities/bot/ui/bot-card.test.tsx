@@ -22,7 +22,7 @@ describe('BotCard', () => {
       const dictionary: Record<string, string> = {
         active: 'Active',
         draft: 'Draft',
-        publishedWithChanges: 'Published · unsaved changes',
+        publishedWithChanges: 'Published · has draft changes',
         lastUpdated: 'Last updated',
         edit: 'Edit',
         delete: 'Delete',
@@ -66,7 +66,7 @@ describe('BotCard', () => {
     expect(screen.getByText('Draft')).toBeInTheDocument();
   });
 
-  test('shows published_with_changes badge for bots with unsaved changes', () => {
+  test('shows published_with_changes badge for bots with draft changes after publish', () => {
     render(
       <BotCard
         id="bot-3"
@@ -76,6 +76,6 @@ describe('BotCard', () => {
         description={null}
       />
     );
-    expect(screen.getByText('Published · unsaved changes')).toBeInTheDocument();
+    expect(screen.getByText('Published · has draft changes')).toBeInTheDocument();
   });
 });

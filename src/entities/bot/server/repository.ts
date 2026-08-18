@@ -5,7 +5,7 @@ import { createDefaultFlow } from '@/entities/workflow/model';
 export type BotWithPublishInfo = Bot & {
   flow: {
     updatedAt: Date;
-    snapshot: { createdAt: Date } | null;
+    snapshot: { updatedAt: Date } | null;
   } | null;
 };
 
@@ -32,12 +32,13 @@ export const botRepository = {
       where: { userId },
       take: limit,
       skip: offset,
-      orderBy: { createdAt: 'desc' },
+      // Activity = last workflow edit; every bot has a flow from create.
+      orderBy: { flow: { updatedAt: 'desc' } },
       include: {
         flow: {
           select: {
             updatedAt: true,
-            snapshot: { select: { createdAt: true } },
+            snapshot: { select: { updatedAt: true } },
           },
         },
       },

@@ -40,7 +40,8 @@ export const flowSnapshotRepository = {
     return prisma.flowSnapshot.upsert({
       where: { flowId },
       create: { flowId, nodes, edges },
-      update: { nodes, edges },
+      // Explicit updatedAt so republish advances the timestamp used by getBotStatus.
+      update: { nodes, edges, updatedAt: new Date() },
     });
   },
 };

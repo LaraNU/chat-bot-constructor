@@ -62,6 +62,9 @@ model FlowSnapshot {
   edges     Json
 
   createdAt DateTime @default(now())
+  // Bumped on every publish so getBotStatus can detect draft vs live divergence
+  // via flow.updatedAt > snapshot.updatedAt (createdAt alone freezes after first publish).
+  updatedAt DateTime @updatedAt
 
   flowId    String   @unique
   flow      Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
