@@ -70,7 +70,8 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
       await tx.flowSnapshot.upsert({
         where: { flowId: flow.id },
         create: { flowId: flow.id, nodes: flow.nodes, edges: flow.edges },
-        update: { nodes: flow.nodes, edges: flow.edges },
+        // Explicit updatedAt so republish always advances the timestamp used by getBotStatus.
+        update: { nodes: flow.nodes, edges: flow.edges, updatedAt: new Date() },
       });
     });
 

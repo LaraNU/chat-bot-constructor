@@ -23,11 +23,11 @@ export const BotList = async () => {
     id: bot.id,
     name: bot.name,
     description: bot.description,
-    updatedAt: bot.updatedAt.toISOString(),
+    updatedAt: (bot.flow?.updatedAt ?? bot.updatedAt).toISOString(),
     status: getBotStatus({
       token: bot.token,
       flowUpdatedAt: bot.flow?.updatedAt ?? null,
-      snapshotCreatedAt: bot.flow?.snapshot?.createdAt ?? null,
+      snapshotUpdatedAt: bot.flow?.snapshot?.updatedAt ?? null,
     }),
   }));
 

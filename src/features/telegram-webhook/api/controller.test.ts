@@ -53,6 +53,7 @@ describe('handleTelegramWebhook', () => {
     nodes: [],
     edges: [],
     createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   function buildRequest({
