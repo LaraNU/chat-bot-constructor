@@ -4,8 +4,38 @@ import { botService } from '@/entities/bot/server';
 import { setTelegramWebhook } from '../lib/telegram';
 import { createClient } from '@/shared/lib/supabase/server';
 import { prisma } from '@/shared/lib/prisma';
-import { NotFoundError } from '@/shared/api/errors';
+import { NotFoundError, TooManyRequestsError } from '@/shared/api/errors';
+import { assertMutationRateLimit } from '@/shared/lib/rate-limit';
 import type { Bot } from '@prisma/client';
+
+vi.mock('next/headers', () => ({
+  headers: vi.fn().mockResolvedValue(new Map([['host', 'app.example.com']])),
+}));
+
+vi.mock('@/shared/lib/supabase/server', () => ({
+  createClient: vi.fn(),
+}));
+
+vi.mock('@/entities/bot/server', () => ({
+  botService: {
+    assertBotOwnership: vi.fn(),
+    getWebhookSecret: vi.fn(),
+  },
+}));
+
+vi.mock('../lib/telegram', () => ({
+  setTelegramWebhook: vi.fn(),
+}));
+
+vi.mock('@/shared/lib/prisma', () => ({
+  prisma: {
+    $transaction: vi.fn(),
+  },
+}));
+
+vi.mock('@/shared/lib/rate-limit', () => ({
+  assertMutationRateLimit: vi.fn(),
+}));
 
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Map([['host', 'app.example.com']])),
@@ -70,6 +100,7 @@ describe('publishBotAction', () => {
 
     expect(result.success).toBe(false);
     expect(createClient).not.toHaveBeenCalled();
+    expect(assertMutationRateLimit).not.toHaveBeenCalled();
     expect(botService.assertBotOwnership).not.toHaveBeenCalled();
     expect(setTelegramWebhook).not.toHaveBeenCalled();
   });
@@ -80,6 +111,7 @@ describe('publishBotAction', () => {
     const result = await publishBotAction({ botId: mockBotId, token: mockToken });
 
     expect(result).toEqual({ success: false, error: 'Unauthorized' });
+    expect(assertMutationRateLimit).not.toHaveBeenCalled();
     expect(botService.assertBotOwnership).not.toHaveBeenCalled();
     expect(setTelegramWebhook).not.toHaveBeenCalled();
   });
@@ -119,5 +151,20 @@ describe('publishBotAction', () => {
     expect(ownershipCallOrder).toBeLessThan(webhookCallOrder);
 
     expect(result).toEqual({ success: true });
+  });
+
+  test('should reject without Telegram or DB side effects when the user is rate limited', async () => {
+    mockAuthenticatedUser(mockUserId);
+    vi.mocked(assertMutationRateLimit).mockImplementation(() => {
+      throw new TooManyRequestsError('Too many requests', 12);
+    });
+
+    const result = await publishBotAction({ botId: mockBotId, token: mockToken });
+
+    expect(assertMutationRateLimit).toHaveBeenCalledWith(mockUserId);
+    expect(result).toEqual({ success: false, error: 'Too many requests' });
+    expect(botService.assertBotOwnership).not.toHaveBeenCalled();
+    expect(setTelegramWebhook).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });

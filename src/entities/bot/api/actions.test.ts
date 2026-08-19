@@ -2,7 +2,27 @@ import { vi, beforeEach, describe, test, expect } from 'vitest';
 import { deleteBotAction } from './actions';
 import { botService } from '../server/service';
 import { createClient } from '@/shared/lib/supabase/server';
-import { NotFoundError } from '@/shared/api/errors';
+import { NotFoundError, TooManyRequestsError } from '@/shared/api/errors';
+import { assertMutationRateLimit } from '@/shared/lib/rate-limit';
+
+vi.mock('@/shared/lib/supabase/server', () => ({
+  createClient: vi.fn(),
+}));
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}));
+
+vi.mock('../server/service', () => ({
+  botService: {
+    assertBotOwnership: vi.fn(),
+    deleteBot: vi.fn(),
+  },
+}));
+
+vi.mock('@/shared/lib/rate-limit', () => ({
+  assertMutationRateLimit: vi.fn(),
+}));
 
 vi.mock('@/shared/lib/supabase/server', () => ({
   createClient: vi.fn(),
@@ -46,6 +66,7 @@ describe('deleteBotAction', () => {
     const result = await deleteBotAction(mockBotId);
 
     expect(result).toEqual({ success: false, error: 'Unauthorized' });
+    expect(assertMutationRateLimit).not.toHaveBeenCalled();
     expect(botService.assertBotOwnership).not.toHaveBeenCalled();
     expect(botService.deleteBot).not.toHaveBeenCalled();
   });
@@ -78,5 +99,19 @@ describe('deleteBotAction', () => {
     expect(botService.assertBotOwnership).toHaveBeenCalledWith(mockUserId, mockBotId);
     expect(botService.deleteBot).not.toHaveBeenCalled();
     expect(result).toEqual({ success: false, error: 'Bot not found' });
+  });
+
+  test('should reject without deleting when the user is rate limited', async () => {
+    mockAuthenticatedUser(mockUserId);
+    vi.mocked(assertMutationRateLimit).mockImplementation(() => {
+      throw new TooManyRequestsError('Too many requests', 12);
+    });
+
+    const result = await deleteBotAction(mockBotId);
+
+    expect(assertMutationRateLimit).toHaveBeenCalledWith(mockUserId);
+    expect(result).toEqual({ success: false, error: 'Too many requests' });
+    expect(botService.assertBotOwnership).not.toHaveBeenCalled();
+    expect(botService.deleteBot).not.toHaveBeenCalled();
   });
 });

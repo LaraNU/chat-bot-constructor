@@ -28,3 +28,13 @@ export class NotFoundError extends ApiError {
     this.name = 'NotFoundError';
   }
 }
+
+export class TooManyRequestsError extends ApiError {
+  retryAfterSec: number;
+
+  constructor(message = 'Too many requests', retryAfterSec = 1) {
+    super(message, 429);
+    this.name = 'TooManyRequestsError';
+    this.retryAfterSec = retryAfterSec;
+  }
+}
