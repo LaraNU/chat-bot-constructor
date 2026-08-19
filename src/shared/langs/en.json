@@ -201,7 +201,123 @@
       "draft": "Draft"
     }
   },
-  "heroSection": {},
+  "Landing": {
+    "header": {
+      "brand": "BotFlow",
+      "navHowItWorks": "How it works",
+      "navFeatures": "Features",
+      "navRoadmap": "Roadmap",
+      "signIn": "Sign in",
+      "getStarted": "Get started"
+    },
+    "hero": {
+      "title": "Build Telegram bots with",
+      "titleHighlight": "visual workflows",
+      "subtitle": "Design conversation flows on a canvas, publish them to Telegram, and iterate without writing bot code.",
+      "primaryCta": "Get started",
+      "secondaryCta": "Sign in",
+      "imageAlt": "Preview of the visual workflow editor canvas",
+      "previewBadge": "Preview"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "From an empty canvas to a live Telegram bot in four steps.",
+      "steps": {
+        "create": {
+          "title": "Create a bot",
+          "description": "Give it a name. Drafts stay on your account and are not shared with other users."
+        },
+        "design": {
+          "title": "Design the flow",
+          "description": "Drag nodes onto the canvas: messages, questions, choices, conditions, summaries, and an end step."
+        },
+        "publish": {
+          "title": "Publish to Telegram",
+          "description": "Connect a BotFather token and go live in one click. The published snapshot stays separate from your draft."
+        },
+        "chat": {
+          "title": "Chat with the bot",
+          "description": "People talk to the bot in Telegram. You keep editing the draft until you publish again."
+        }
+      }
+    },
+    "features": {
+      "title": "What you can do today",
+      "subtitle": "Capabilities that already ship in the product — not a wishlist.",
+      "items": {
+        "visualEditor": {
+          "title": "Visual editor",
+          "description": "Build conversation flows on a canvas instead of writing webhook handlers."
+        },
+        "nodeTypes": {
+          "title": "Conversation nodes",
+          "description": "Message, question, choice, condition, summary, and end nodes with branching logic."
+        },
+        "publish": {
+          "title": "One-click Telegram publish",
+          "description": "Register a webhook and ship the current flow as the live snapshot."
+        },
+        "drafts": {
+          "title": "Draft vs published",
+          "description": "Keep working after you publish. The live bot stays on the last snapshot until you publish again."
+        },
+        "isolation": {
+          "title": "Per-account isolation",
+          "description": "Each user only sees and edits their own bots."
+        },
+        "bilingual": {
+          "title": "Russian and English UI",
+          "description": "The editor and dashboard are translated. Switch language at any time."
+        }
+      }
+    },
+    "audience": {
+      "title": "Who it is for",
+      "subtitle": "Built first for internal teams, then for independent builders and agencies.",
+      "items": {
+        "makers": {
+          "title": "Solo makers",
+          "description": "Ship a Telegram bot without standing up a backend or writing handlers."
+        },
+        "agencies": {
+          "title": "Small agencies",
+          "description": "Prototype and deliver client bots faster, then iterate from a visual canvas."
+        },
+        "teams": {
+          "title": "Internal company teams",
+          "description": "Let operations or support design flows while engineering keeps access control and the runtime."
+        }
+      }
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "subtitle": "Honest product status — no launch dates, no vaporware.",
+      "availableTitle": "Available now",
+      "inProgressTitle": "In progress",
+      "plannedTitle": "Planned",
+      "available": {
+        "editor": "Visual workflow editor and Telegram publish",
+        "snapshots": "Draft vs published snapshots",
+        "isolation": "Per-user bot isolation",
+        "i18n": "Russian and English interface"
+      },
+      "inProgress": {
+        "autosave": "Autosave in the editor",
+        "rateLimit": "Rate limiting and abuse protection",
+        "observability": "Structured logging and error monitoring"
+      },
+      "planned": {
+        "analytics": "Bot usage analytics",
+        "versions": "Versioned publishes and rollback",
+        "runtime": "Dedicated Telegram runtime service"
+      }
+    },
+    "cta": {
+      "title": "Ready to build your first bot?",
+      "subtitle": "Create an account and publish a Telegram workflow from the visual editor.",
+      "button": "Get started"
+    }
+  },
   "ErrorBoundary": {
     "title": "Something went wrong",
     "description": "An unexpected error occurred. You can try again or return to the homepage.",

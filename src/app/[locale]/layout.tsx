@@ -4,10 +4,10 @@ import { hasLocale, Locale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Header } from '@/widgets/header';
 import { getAuthenticatedUser } from '@/shared/auth';
 import { AppProviders } from '../providers/app-providers';
 import { ScopedIntlProvider } from '../providers/scoped-intl-provider';
+import { AppHeaderGate } from './app-header-gate';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -64,7 +64,7 @@ export default async function RootLayout({ children, params }: PropsRootLayout) 
       <body className={`${inter.variable} ${roboto.variable} antialiased`}>
         <AppProviders initialUser={user}>
           <ScopedIntlProvider scopes={['Header']}>
-            <Header />
+            <AppHeaderGate />
           </ScopedIntlProvider>
           <ScopedIntlProvider scopes={['ErrorBoundary']}>{children}</ScopedIntlProvider>
         </AppProviders>
