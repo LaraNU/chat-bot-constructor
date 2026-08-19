@@ -25,5 +25,9 @@ export default async function Home({ params }: Props) {
     );
   }
 
-  return <LandingPage />;
+  return (
+    <ScopedIntlProvider scopes={['Landing']}>
+      <LandingPage />
+    </ScopedIntlProvider>
+  );
 }

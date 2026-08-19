@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { LangSwitcher } from './language-switcher';
 import { vi, Mock } from 'vitest';
 import { useLocale } from 'next-intl';
@@ -10,16 +10,30 @@ vi.mock('@/i18n/navigation', () => ({
   usePathname: vi.fn(),
 }));
 
-test('LangSwitcher calls router.replace with correct locale', () => {
+function setup(locale = 'en') {
   const replace = vi.fn();
-  (useLocale as Mock).mockReturnValue('en');
+  (useLocale as Mock).mockReturnValue(locale);
   (useRouter as Mock).mockReturnValue({ replace });
   (usePathname as Mock).mockReturnValue('/');
+  return replace;
+}
+
+test('inline switcher calls router.replace with the selected locale', () => {
+  const replace = setup('en');
 
   render(<LangSwitcher />);
 
-  const ruButton = screen.getByText('RU');
-  fireEvent.click(ruButton);
+  fireEvent.click(within(screen.getByTestId('lang-switcher-inline')).getByText('RU'));
 
   expect(replace).toHaveBeenCalledWith('/', { locale: 'ru' });
+});
+
+test('renders a compact dropdown trigger for narrow viewports', () => {
+  setup('en');
+
+  render(<LangSwitcher />);
+
+  const trigger = screen.getByTestId('lang-switcher-dropdown');
+  expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+  expect(trigger).toHaveTextContent('EN');
 });
