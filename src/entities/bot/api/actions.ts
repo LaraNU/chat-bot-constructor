@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/shared/lib/supabase/server';
+import { assertMutationRateLimit } from '@/shared/lib/rate-limit';
 import { botService } from '../server/service';
 import { getBotStatus, type BotStatus } from '../model/types';
 import { revalidatePath } from 'next/cache';
@@ -81,6 +82,8 @@ export async function deleteBotAction(botId: string) {
     if (!user) {
       return { success: false, error: 'Unauthorized' };
     }
+
+    assertMutationRateLimit(user.id);
 
     await botService.assertBotOwnership(user.id, botId);
     await botService.deleteBot(botId);

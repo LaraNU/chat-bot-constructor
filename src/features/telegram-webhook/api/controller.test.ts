@@ -6,6 +6,7 @@ import { botService } from '@/entities/bot/server';
 import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
 import { getUserSessionState, saveUserSession, isUpdateAlreadyProcessed } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
+import { consumeWebhookBotRateLimit, consumeWebhookIpRateLimit } from '@/shared/lib/rate-limit';
 import type { Bot } from '@prisma/client';
 import type { FlowSnapshot } from '@prisma/client';
 
@@ -30,6 +31,11 @@ vi.mock('../lib/session', () => ({
 
 vi.mock('../lib/engine', () => ({
   runWorkflowEngine: vi.fn(),
+}));
+
+vi.mock('@/shared/lib/rate-limit', () => ({
+  consumeWebhookIpRateLimit: vi.fn(() => ({ allowed: true, remaining: 9, retryAfterSec: 0 })),
+  consumeWebhookBotRateLimit: vi.fn(() => ({ allowed: true, remaining: 9, retryAfterSec: 0 })),
 }));
 
 describe('handleTelegramWebhook', () => {
@@ -59,10 +65,12 @@ describe('handleTelegramWebhook', () => {
   function buildRequest({
     botId = mockBotId,
     secret,
+    ip,
     body = { update_id: 100, message: { chat: { id: 1 }, from: {}, text: 'hi' } },
   }: {
     botId?: string | null;
     secret?: string | null;
+    ip?: string;
     body?: unknown;
   } = {}) {
     const url = botId
@@ -75,6 +83,10 @@ describe('handleTelegramWebhook', () => {
       headers.set('x-telegram-bot-api-secret-token', secret);
     }
 
+    if (ip) {
+      headers.set('x-forwarded-for', ip);
+    }
+
     return new NextRequest(url, {
       method: 'POST',
       headers,
@@ -84,6 +96,16 @@ describe('handleTelegramWebhook', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(consumeWebhookIpRateLimit).mockReturnValue({
+      allowed: true,
+      remaining: 9,
+      retryAfterSec: 0,
+    });
+    vi.mocked(consumeWebhookBotRateLimit).mockReturnValue({
+      allowed: true,
+      remaining: 9,
+      retryAfterSec: 0,
+    });
     vi.mocked(getUserSessionState).mockResolvedValue({
       currentNodeId: null,
       tempData: { answers: {}, responses: [] },
@@ -101,6 +123,8 @@ describe('handleTelegramWebhook', () => {
 
     expect(response.status).toBe(400);
     expect(botService.verifyWebhookSecret).not.toHaveBeenCalled();
+    expect(consumeWebhookIpRateLimit).not.toHaveBeenCalled();
+    expect(consumeWebhookBotRateLimit).not.toHaveBeenCalled();
     expect(botService.getBotById).not.toHaveBeenCalled();
   });
 
@@ -292,6 +316,67 @@ describe('handleTelegramWebhook', () => {
       await handleTelegramWebhook(buildRequest({ secret: mockSecret, body: { update_id: 1 } }));
 
       expect(isUpdateAlreadyProcessed).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('rate limiting (#62)', () => {
+    test('should consume the IP limiter (not the bot limiter) and still return 401 for an invalid secret', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(false);
+
+      const response = await handleTelegramWebhook(
+        buildRequest({
+          secret: 'wrong-secret',
+          ip: '203.0.113.10',
+        })
+      );
+
+      expect(response.status).toBe(401);
+      expect(consumeWebhookIpRateLimit).toHaveBeenCalledWith('203.0.113.10');
+      expect(consumeWebhookBotRateLimit).not.toHaveBeenCalled();
+      expect(botService.getBotById).not.toHaveBeenCalled();
+    });
+
+    test('should still return 401 when the IP limiter is exceeded, without touching the bot', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(false);
+      vi.mocked(consumeWebhookIpRateLimit).mockReturnValue({
+        allowed: false,
+        remaining: 0,
+        retryAfterSec: 30,
+      });
+
+      const response = await handleTelegramWebhook(buildRequest({ secret: 'wrong-secret' }));
+
+      expect(response.status).toBe(401);
+      expect(consumeWebhookBotRateLimit).not.toHaveBeenCalled();
+      expect(runWorkflowEngine).not.toHaveBeenCalled();
+    });
+
+    test('should consume the bot limiter (not the IP limiter) for a valid secret', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+
+      const response = await handleTelegramWebhook(buildRequest({ secret: mockSecret }));
+
+      expect(response.status).toBe(200);
+      expect(consumeWebhookBotRateLimit).toHaveBeenCalledWith(mockBotId);
+      expect(consumeWebhookIpRateLimit).not.toHaveBeenCalled();
+      expect(runWorkflowEngine).toHaveBeenCalled();
+    });
+
+    test('should drop valid traffic with 200 when the bot limiter is exceeded, without running the engine', async () => {
+      vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+      vi.mocked(consumeWebhookBotRateLimit).mockReturnValue({
+        allowed: false,
+        remaining: 0,
+        retryAfterSec: 20,
+      });
+
+      const response = await handleTelegramWebhook(buildRequest({ secret: mockSecret }));
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ success: true });
+      expect(consumeWebhookIpRateLimit).not.toHaveBeenCalled();
+      expect(botService.getBotById).not.toHaveBeenCalled();
+      expect(runWorkflowEngine).not.toHaveBeenCalled();
     });
   });
 });

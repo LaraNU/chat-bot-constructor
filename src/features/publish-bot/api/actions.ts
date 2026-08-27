@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { createClient } from '@/shared/lib/supabase/server';
 import { UnauthorizedError } from '@/shared/api/errors';
 import { prisma } from '@/shared/lib/prisma';
+import { assertMutationRateLimit } from '@/shared/lib/rate-limit';
 import { botService } from '@/entities/bot/server';
 import { publishBotSchema } from '../lib/validation';
 import { setTelegramWebhook } from '../lib/telegram';
@@ -30,6 +31,8 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
     if (!user) {
       throw new UnauthorizedError();
     }
+
+    assertMutationRateLimit(user.id);
 
     // Ownership must be verified before any external side effect — otherwise a request
     // carrying someone else's botId would still register a live Telegram webhook before
