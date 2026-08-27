@@ -3,11 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { AppNode, AppEdge } from '@/entities/workflow';
 import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
 import { botService } from '@/entities/bot/server';
+import { consumeWebhookBotRateLimit, consumeWebhookIpRateLimit } from '@/shared/lib/rate-limit';
 
 import type { TelegramUpdate, UserContext } from '../model/types';
 
 import { getUserSessionState, saveUserSession, isUpdateAlreadyProcessed } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
+import { getClientIp } from '../lib/client-ip';
 
 const TELEGRAM_SECRET_TOKEN_HEADER = 'x-telegram-bot-api-secret-token';
 
@@ -24,7 +26,14 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
   const providedSecret = request.headers.get(TELEGRAM_SECRET_TOKEN_HEADER);
 
   if (!botService.verifyWebhookSecret(botId, providedSecret)) {
+    consumeWebhookIpRateLimit(getClientIp(request));
     return NextResponse.json({ error: 'Invalid secret token' }, { status: 401 });
+  }
+
+  // Valid Telegram traffic is dropped with 200 (not 429) so Telegram does not
+  // retry-storm a bot that is over its best-effort in-memory cap.
+  if (!consumeWebhookBotRateLimit(botId).allowed) {
+    return NextResponse.json({ success: true });
   }
 
   try {

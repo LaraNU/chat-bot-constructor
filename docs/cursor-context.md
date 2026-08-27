@@ -9,7 +9,7 @@ where external users self-register, create, and publish their own Telegram bots.
 
 Users build chatbot conversation flows using a visual workflow editor powered by XYFlow / React Flow.
 
-This is a fullstack portfolio project. The frontend is implemented first; the next strategic phase is building
+The frontend is implemented first; the next strategic phase is building
 a dedicated backend service (Node.js — NestJS or an equivalent framework, decision pending), with production
 deployment, database architecture, authentication/authorization, bot execution infrastructure, monitoring,
 logging, testing, and CI/CD treated as first-class deliverables, not afterthoughts.

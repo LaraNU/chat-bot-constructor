@@ -25,6 +25,7 @@ register, build, and publish their own bots.
   - [Backend / Server Architecture Today](#backend--server-architecture-today)
   - [Data Model Overview](#data-model-overview)
   - [Authentication and Authorization](#authentication-and-authorization)
+  - [Rate limiting](#rate-limiting)
   - [Telegram Integration](#telegram-integration)
   - [Workflow Engine](#workflow-engine)
   - [Validation and Publishing Flow](#validation-and-publishing-flow)
@@ -179,13 +180,37 @@ registering the webhook against the Telegram Bot API.
 ## Authentication and Authorization
 
 **Authentication** is handled by Supabase Auth (`@supabase/ssr`) for sign-up, sign-in, and session/cookie
-management. Server-side code verifies the session via `supabase.auth.getUser()`.
+management. Sign-in and sign-up run **in the browser against `*.supabase.co`** (`signInWithPassword` /
+`signUp`) — they are not proxied through a Next.js Server Action or Route Handler, so Next.js middleware
+cannot rate-limit password attempts. Server-side code verifies the session via `supabase.auth.getUser()`.
+
+Brute-force protection for auth is therefore a **Supabase Auth** concern, not an application limiter. Review
+and tighten the project limits under **Authentication → Rate Limits** in the [Supabase dashboard](https://supabase.com/dashboard/project/_/auth/rate-limits)
+(see [Rate limits](https://supabase.com/docs/guides/auth/rate-limits)). The sign-in form already maps the
+Auth error code `too_many_requests` to a user-facing message.
 
 **Authorization** (resource ownership) is enforced in application code path-by-path rather than through a
 database-level policy layer (no Row Level Security is used; Prisma accesses PostgreSQL directly). Bot creation
 and bot listing are correctly scoped to the authenticated user. Ownership enforcement is not yet uniform across
 every bot/workflow mutation — closing these gaps consistently is an active, tracked item (see
 [Production-Readiness Status](#production-readiness-status)) before any multi-user or public rollout.
+
+## Rate limiting
+
+Best-effort in-memory sliding-window limits (P1.2) protect publish, delete, and the Telegram webhook. Counters
+live in the current process/isolate (`src/shared/lib/rate-limit`). On Vercel they are **not** a global cap —
+a hard distributed limit needs Redis/Upstash later, once the Telegram runtime is extracted (P2.2). Limits are
+**not** applied only in `src/middleware.ts`: that matcher excludes `api`, and auth/Server Actions would not be
+covered there anyway.
+
+| Surface | Where | Key | Over-limit behaviour |
+|---|---|---|---|
+| Login / signup | Supabase Auth (browser → `*.supabase.co`) | Supabase IP / project quotas | Auth `429` / `too_many_requests`; Next.js does not see the attempt |
+| Publish / delete | Server Action after `getUser()` | Authenticated `userId` | `{ success: false, error: 'Too many requests' }` (same UI contract as other action errors) |
+| Webhook, invalid or missing secret | `handleTelegramWebhook` | Client IP (`x-forwarded-for` first hop, else `x-real-ip`) | Existing `401`; does **not** consume the bot budget |
+| Webhook, valid secret | `handleTelegramWebhook` | `botId` | `200 { success: true }` and drop — **not** `429`, so Telegram does not retry-storm an over-cap bot |
+
+Optional env overrides (defaults apply when unset) are listed under [Environment Variables](#environment-variables).
 
 ## Telegram Integration
 
@@ -204,9 +229,9 @@ React, React Flow, or any editor-specific state:
 Outbound calls to the Telegram Bot API (`sendMessage`, `setWebhook`) live in
 `shared/api/telegram/client.ts` and `features/publish-bot/lib/telegram.ts`.
 
-Webhook transport security (verifying that inbound requests genuinely originate from Telegram) and delivery
-idempotency are not yet implemented — tracked as part of [Telegram runtime reliability](#roadmap) hardening
-before public exposure.
+Webhook requests are authenticated with `X-Telegram-Bot-Api-Secret-Token` (HMAC-derived per `botId`; the bot
+token is not in the webhook URL). Duplicate deliveries are ignored via tracked `update_id`. Over-limit
+handling is described under [Rate limiting](#rate-limiting).
 
 ## Workflow Engine
 
@@ -306,6 +331,9 @@ To receive real Telegram updates locally, the webhook URL registered with Telegr
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | Supabase publishable (anon) key |
 | `NEXT_PUBLIC_APP_URL` | Public base URL used to construct the Telegram webhook URL when publishing a bot; falls back to `VERCEL_URL` if unset |
 | `TELEGRAM_WEBHOOK_SECRET_KEY` | Server-only key used to deterministically derive each bot's Telegram webhook secret (`HMAC-SHA256(botId)`); registered with Telegram as `secret_token` and verified on every incoming update via the `X-Telegram-Bot-Api-Secret-Token` header |
+| `RATE_LIMIT_MUTATION_MAX` / `RATE_LIMIT_MUTATION_WINDOW_SEC` | In-memory cap for publish+delete per authenticated user (default `10` / `60s`). Does **not** apply to login/signup |
+| `RATE_LIMIT_WEBHOOK_IP_MAX` / `RATE_LIMIT_WEBHOOK_IP_WINDOW_SEC` | In-memory cap for webhook requests with an invalid or missing secret, keyed by client IP (default `60` / `60s`) |
+| `RATE_LIMIT_WEBHOOK_BOT_MAX` / `RATE_LIMIT_WEBHOOK_BOT_WINDOW_SEC` | In-memory cap for webhook requests with a valid secret, keyed by `botId` (default `120` / `60s`) |
 | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | Credentials used by the Playwright authentication setup |
 
 Copy [`.env.example`](.env.example) to `.env.local` (or `.env.test` for running tests) and fill in real values.
@@ -344,7 +372,7 @@ The table below is an honest snapshot of what still separates the current state 
 | Telegram delivery idempotency | Not yet implemented |
 | Structured logging / error monitoring | Not yet implemented |
 | Automated tests for the Telegram runtime | Not yet implemented |
-| Rate limiting | Not yet implemented |
+| Rate limiting | Implemented for publish/delete (`userId`) and the webhook (IP vs `botId`); login/signup are limited by Supabase Auth, not Next.js. In-memory / per-isolate — not a global cap on Vercel |
 | Deployment automation (containerization / deploy manifest) | Not yet implemented |
 | Bot usage analytics UI | Not yet implemented (underlying data is already collected) |
 | Publish history / rollback | Not yet implemented (publishing currently keeps only the latest snapshot) |
