@@ -54,15 +54,11 @@ export function Header() {
               <UserMenu user={user} />
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="sm:flex">
-                  <Link href={'/login'} type="button">
-                    {t('login')}
-                  </Link>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={'/login'}>{t('login')}</Link>
                 </Button>
                 <Button size="sm" asChild>
-                  <Link href={'/signup'} type="button">
-                    {t('signUp')}
-                  </Link>
+                  <Link href={'/signup'}>{t('signUp')}</Link>
                 </Button>
               </>
             )}

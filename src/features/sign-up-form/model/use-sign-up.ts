@@ -9,33 +9,42 @@ import { toast } from 'sonner';
 import { AuthError } from '@supabase/supabase-js';
 import { getAuthErrorKey } from '@/shared/lib/supabase/auth-errors';
 
-type TranslationFn = ReturnType<typeof useTranslations<'SignInForm'>>;
+type TranslationFn = ReturnType<typeof useTranslations<'SignUpForm'>>;
 
-export const createSignInSchema = (t: TranslationFn) =>
+export const createSignUpSchema = (t: TranslationFn) =>
   z.object({
+    name: z.string().min(3, t('errors.nameMin')),
     email: z.email(t('errors.emailInvalid')),
     password: z.string().min(8, t('errors.passwordMin')),
   });
 
-export type SignInFields = z.infer<ReturnType<typeof createSignInSchema>>;
+export type SignUpFields = z.infer<ReturnType<typeof createSignUpSchema>>;
 
-export const useSignIn = () => {
-  const t = useTranslations('SignInForm');
+export const useSignUp = () => {
+  const t = useTranslations('SignUpForm');
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
-  const form = useForm<SignInFields>({
-    resolver: zodResolver(createSignInSchema(t)),
-    defaultValues: { email: '', password: '' },
+  const form = useForm<SignUpFields>({
+    resolver: zodResolver(createSignUpSchema(t)),
+    defaultValues: { name: '', email: '', password: '' },
     mode: 'onChange',
   });
 
-  const onSubmit = async (data: SignInFields) => {
+  const onSubmit = async (data: SignUpFields) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword(data);
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: { display_name: data.name },
+        },
+      });
+
       if (error) throw error;
+
       toast.success(t('success'));
       try {
         router.push('/');

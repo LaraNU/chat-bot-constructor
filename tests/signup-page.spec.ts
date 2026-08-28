@@ -27,9 +27,13 @@ test('should show validation errors for empty fields', async ({ page }) => {
   await expect(page.locator('[data-slot="field-error"]')).toHaveCount(3);
 });
 
-test('should submit sign up form and toggle loading state', async ({ page }) => {
+test('should toggle loading state around a failed sign-up request', async ({ page }) => {
   await page.goto('/signup');
 
+  // A successful sign-up navigates the user away and keeps the button locked
+  // until the component unmounts, so we exercise the loading toggle on the
+  // error path — which is the only path that resets `isLoading` on the same
+  // page.
   await page.route('**/auth/v1/signup**', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
@@ -38,9 +42,13 @@ test('should submit sign up form and toggle loading state', async ({ page }) => 
 
     await new Promise((resolve) => setTimeout(resolve, 700));
     await route.fulfill({
-      status: 200,
+      status: 400,
       contentType: 'application/json',
-      body: JSON.stringify({ user: null, session: null }),
+      body: JSON.stringify({
+        code: 'user_already_exists',
+        error_code: 'user_already_exists',
+        msg: 'User already registered',
+      }),
     });
   });
 
@@ -53,4 +61,35 @@ test('should submit sign up form and toggle loading state', async ({ page }) => 
 
   await expect(submitButton).toBeDisabled();
   await expect(submitButton).toBeEnabled({ timeout: 10000 });
+});
+
+test('should redirect to dashboard after successful sign-up', async ({ page }) => {
+  const email = `pw-${Date.now()}@example.com`;
+
+  await page.goto('/signup');
+
+  await page.route('**/auth/v1/signup**', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        user: { id: 'test-user-id', email },
+        session: { access_token: 'fake-token', refresh_token: 'fake-refresh' },
+      }),
+    });
+  });
+
+  await typeIntoInputByTestId(page, 'user-name-input', 'Playwright User');
+  await typeIntoInputByTestId(page, 'user-email-input', email);
+  await typeIntoInputByTestId(page, 'user-password-input', 'strongpass123');
+
+  await page.getByTestId('submit-sign-up-form').click();
+
+  await page.waitForURL(/\/(en|ru)\/?$/, { timeout: 8000 });
+  await expect(page).toHaveURL(/\/(en|ru)\/?$/);
 });
