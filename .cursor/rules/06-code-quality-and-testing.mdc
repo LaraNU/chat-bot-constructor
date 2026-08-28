@@ -86,29 +86,39 @@ Prefer E2E tests for flows such as:
 - publishing a bot
 - critical Telegram bot flows
 
-## Public API
+## No magic numbers or strings
 
-When adding new types, components, actions, or other cross-slice exports:
+Never hard-code numeric or string literals that carry meaning — always
+extract them into a named constant, even if used only once.
 
-1. Check the slice Public API.
-2. Update `index.ts` when the item should be publicly exposed.
-3. Do not bypass the Public API with internal imports.
+Bad:
+```ts
+if (retryCount > 3) { ... }
+setTimeout(fn, 30000);
+if (user.role === "admin") { ... }
+```
 
-## Code Reviews
+Good:
+```ts
+const MAX_RETRY_ATTEMPTS = 3;
+const WORKFLOW_TIMEOUT_MS = 30_000;
+const ROLE_ADMIN = "admin";
 
-When reviewing code:
+if (retryCount > MAX_RETRY_ATTEMPTS) { ... }
+setTimeout(fn, WORKFLOW_TIMEOUT_MS);
+if (user.role === ROLE_ADMIN) { ... }
+```
 
-- explain why something is problematic
-- explain possible consequences
-- recommend a production-ready alternative
-- review architecture as well as implementation
+Why: a bare `3` or `30000` gives no signal of *why* that value was chosen or
+where else it might need to change. A named constant documents intent and
+gives one place to change it. This applies to thresholds, timeouts, retry
+counts, magic string keys/roles/statuses, array indices with meaning, and
+HTTP status codes used for logic branching.
 
-Clearly distinguish:
+Exceptions (do not over-apply): `0`, `1`, `-1` used as truly generic
+loop/array idioms (`arr[0]`, `i + 1`, `array.length - 1`) don't need a
+constant — only extract values that encode a *decision*, not language idiom.
 
-### Required Changes
-
-Issues that should be fixed before merging.
-
-### Optional Improvements
-
-Non-blocking improvements that may be addressed later.
+Place shared constants in the appropriate FSD layer (`shared/config` or the
+relevant slice's `config.ts`) — not inline in component files, unless the
+constant is truly local to that one file only.

@@ -9,7 +9,7 @@ where external users self-register, create, and publish their own Telegram bots.
 
 Users build chatbot conversation flows using a visual workflow editor powered by XYFlow / React Flow.
 
-The frontend is implemented first; the next strategic phase is building
+This is a production application used by real users and a team. The frontend is implemented first; the next strategic phase is building
 a dedicated backend service (Node.js — NestJS or an equivalent framework, decision pending), with production
 deployment, database architecture, authentication/authorization, bot execution infrastructure, monitoring,
 logging, testing, and CI/CD treated as first-class deliverables, not afterthoughts.
@@ -347,8 +347,14 @@ unrelated changes:
   publishing model.
 * Server Actions as the entire "API" surface — acceptable for the current single-process monolith, not the
   target for a multi-tenant public product.
-* `src/middleware.ts` cookie-presence check — a UX-level redirect gate, not a security boundary; do not rely on
-  it for authorization decisions elsewhere in the code.
+* **Email confirmation disabled in Supabase Auth** — temporarily disabled (Authentication → Providers → Email →
+  "Confirm email" = off) because the built-in Supabase SMTP has a 2 emails/hour project-wide limit, which makes
+  it unusable for any real signup flow. The application does not request `emailRedirectTo` and does not render a
+  "check your inbox" screen. This will be reverted and a custom SMTP domain configured in the `transactional-email`
+  change. Do not build features that assume email-confirmed accounts.
+* `src/middleware.ts` cookie-presence check — **replaced** (as of `fix-auth-flow`) with a proper `getUser()`
+  call that validates the session against Supabase Auth and silently refreshes the access token. The middleware
+  is now a correct session gate, not just a cookie-presence check.
 * `src/features/workflow-actions` — dead code kept temporarily; do not extend it, and do not assume it is wired
   into the editor.
 

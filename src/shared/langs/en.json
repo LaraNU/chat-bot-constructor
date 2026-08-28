@@ -59,10 +59,18 @@
     "passwordLabel": "Password",
     "passwordPlaceholder": "Create a password",
     "submit": "Create account",
+    "success": "Account created successfully! You are now signed in.",
     "errors": {
       "nameMin": "Min 3 characters",
       "emailInvalid": "Invalid email",
-      "passwordMin": "At least 8 characters"
+      "passwordMin": "At least 8 characters",
+      "invalid_credentials": "Invalid email or password",
+      "email_not_confirmed": "Please confirm your email before signing in",
+      "user_not_found": "No account found with these credentials",
+      "user_already_exists": "An account with this email already exists. Try signing in instead",
+      "too_many_requests": "Too many attempts. Please try again later",
+      "unexpected": "An unexpected error occurred",
+      "default": "Registration error. Please check your data and try again"
     }
   },
   "SignInForm": {

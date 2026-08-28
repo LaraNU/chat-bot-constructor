@@ -3,66 +3,19 @@
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/shared/ui/field';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { Spinner } from '@/shared/ui/spinner';
-import { createClient } from '@/shared/lib/supabase/client';
-import { useTranslations } from 'next-intl';
-
-type FormInputs = {
-  name: string;
-  email: string;
-  password: string;
-};
+import { useSignUp } from '../model/use-sign-up';
 
 export function SignUpForm() {
-  const t = useTranslations('SignUpForm');
-  const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
-
-  const formSchema = z.object({
-    name: z.string().min(3, t('errors.nameMin')),
-    email: z.email(t('errors.emailInvalid')),
-    password: z.string().min(8, t('errors.passwordMin')),
-  });
-
-  const { handleSubmit, control } = useForm<FormInputs>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
-  });
-
-  const onSubmit: SubmitHandler<FormInputs> = async ({ name, email, password }) => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${location.origin}/auth/callback`,
-          data: { display_name: name },
-        },
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { form, onSubmit, isLoading, t } = useSignUp();
 
   return (
-    <form id="sign-up-form" onSubmit={handleSubmit(onSubmit)}>
+    <form id="sign-up-form" onSubmit={onSubmit}>
       <FieldGroup>
         <Controller
           name="name"
-          control={control}
+          control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-name">{t('nameLabel')}</FieldLabel>
@@ -72,6 +25,7 @@ export function SignUpForm() {
                 data-testid="user-name-input"
                 placeholder={t('namePlaceholder')}
                 autoComplete="off"
+                disabled={isLoading}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -80,7 +34,7 @@ export function SignUpForm() {
 
         <Controller
           name="email"
-          control={control}
+          control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-email">{t('emailLabel')}</FieldLabel>
@@ -90,6 +44,7 @@ export function SignUpForm() {
                 data-testid="user-email-input"
                 placeholder={t('emailPlaceholder')}
                 autoComplete="off"
+                disabled={isLoading}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -98,7 +53,7 @@ export function SignUpForm() {
 
         <Controller
           name="password"
-          control={control}
+          control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="user-password">{t('passwordLabel')}</FieldLabel>
@@ -109,6 +64,7 @@ export function SignUpForm() {
                 data-testid="user-password-input"
                 placeholder={t('passwordPlaceholder')}
                 autoComplete="off"
+                disabled={isLoading}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>

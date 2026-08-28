@@ -1,32 +1,43 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
+import { createMiddlewareClient } from '@/shared/lib/supabase/middleware';
+import { getAuthRedirect } from '@/shared/lib/auth/redirect-rules';
 
 const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
+  // 1. Let next-intl handle locale routing and produce the base response.
+  const response = intlMiddleware(request);
 
-  const allCookies = request.cookies.getAll();
+  // 2. Attach a Supabase client that reads cookies from the request and
+  //    writes refreshed cookies into the response produced in step 1.
+  const supabase = createMiddlewareClient(request, response);
 
-  const hasAuthCookie = allCookies.some((cookie) => cookie.name.includes('auth-token'));
+  // getUser() validates the session with Supabase Auth and, if the access
+  // token is expired, silently refreshes it — writing the new token back
+  // into `response` via the cookie handlers above.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const isAuthPage = pathname.includes('/login') || pathname.includes('/sign-up');
-  const isProtectedPage = pathname.includes('/editor') || pathname.includes('/dashboard');
+  const redirectTarget = getAuthRedirect(request.nextUrl.pathname, user !== null);
 
-  if (!hasAuthCookie && isProtectedPage) {
+  if (redirectTarget) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    url.pathname = redirectTarget;
+    const redirectResponse = NextResponse.redirect(url);
+
+    // Copy the refreshed session cookies onto the redirect response so the
+    // browser doesn't lose the updated token on the next request.
+    response.cookies.getAll().forEach(({ name, value, ...rest }) => {
+      redirectResponse.cookies.set(name, value, rest);
+    });
+
+    return redirectResponse;
   }
 
-  if (hasAuthCookie && isAuthPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/';
-    return NextResponse.redirect(url);
-  }
-
-  return intlMiddleware(request);
+  return response;
 }
 
 export const config = {

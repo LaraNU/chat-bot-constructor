@@ -32,11 +32,11 @@ test('should login user', async ({ page }) => {
   await typeIntoInputByTestId(page, 'user-password-input-login', password!);
 
   await Promise.all([
-    page.waitForURL(/\/(en|ru)\/?$/, { timeout: 15000 }),
+    page.waitForURL(/\/(en|ru)\/?$/, { timeout: 10000 }),
     page.getByTestId('submit-sign-in-form-login').click(),
   ]);
 
-  await expect(page.getByTestId('open-create-bot-modal')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('open-create-bot-modal')).toBeVisible({ timeout: 10000 });
 });
 
 test('should show error with invalid credentials', async ({ page }) => {

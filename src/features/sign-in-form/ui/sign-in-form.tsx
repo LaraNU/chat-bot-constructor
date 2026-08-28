@@ -25,6 +25,7 @@ export function SignInForm() {
                 data-testid="user-email-input-login"
                 placeholder={t('emailPlaceholder')}
                 autoComplete="off"
+                disabled={isLoading}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -44,6 +45,7 @@ export function SignInForm() {
                 data-testid="user-password-input-login"
                 placeholder={t('passwordPlaceholder')}
                 autoComplete="off"
+                disabled={isLoading}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>

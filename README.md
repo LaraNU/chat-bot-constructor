@@ -183,11 +183,18 @@ registering the webhook against the Telegram Bot API.
 management. Sign-in and sign-up run **in the browser against `*.supabase.co`** (`signInWithPassword` /
 `signUp`) — they are not proxied through a Next.js Server Action or Route Handler, so Next.js middleware
 cannot rate-limit password attempts. Server-side code verifies the session via `supabase.auth.getUser()`.
+After a successful sign-in or sign-up the user is navigated to the dashboard via `router.push('/')` +
+`router.refresh()` — explicit navigation rather than relying on an indirect RSC refresh.
 
-Brute-force protection for auth is therefore a **Supabase Auth** concern, not an application limiter. Review
-and tighten the project limits under **Authentication → Rate Limits** in the [Supabase dashboard](https://supabase.com/dashboard/project/_/auth/rate-limits)
-(see [Rate limits](https://supabase.com/docs/guides/auth/rate-limits)). The sign-in form already maps the
-Auth error code `too_many_requests` to a user-facing message.
+**Email confirmation is temporarily disabled.** The built-in Supabase SMTP has a 2 emails/hour project-wide
+limit, which makes it unusable for real signup flows. Until a custom SMTP domain is configured (planned in the
+`transactional-email` change), new accounts are activated immediately without requiring a confirmation email.
+**Password reset is not yet implemented.**
+
+Brute-force protection for auth is a **Supabase Auth** concern, not an application limiter. Review and tighten
+the project limits under **Authentication → Rate Limits** in the [Supabase dashboard](https://supabase.com/dashboard/project/_/auth/rate-limits)
+(see [Rate limits](https://supabase.com/docs/guides/auth/rate-limits)). Both sign-in and sign-up forms map the
+Auth error code `too_many_requests` to a localised user-facing message.
 
 **Authorization** (resource ownership) is enforced in application code path-by-path rather than through a
 database-level policy layer (no Row Level Security is used; Prisma accesses PostgreSQL directly). Bot creation

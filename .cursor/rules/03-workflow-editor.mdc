@@ -54,45 +54,17 @@ Before adding a new workflow operation:
 3. Extend the existing implementation when the responsibility matches.
 4. Avoid creating parallel implementations of the same workflow operation.
 
-## State Updates
-
-Prefer granular state updates.
-
-When changing a single node or edge:
-
-- update only the affected entity
-- preserve references for unaffected entities
-- avoid recreating the entire graph unnecessarily
-
-Do not update the entire graph state on every property-panel keystroke.
-
 ## Performance
 
-The workflow editor is expected to support workflows containing hundreds of nodes.
-
-Consider:
-
-- selector granularity
-- subscription scope
-- rerender frequency
-- object and array recreation
-- graph update cost
-
-Prefer selector-based subscriptions and granular updates.
-
-Use appropriate equality checks when subscribing to deeply nested node properties.
-
-Avoid subscribing UI components to the entire workflow store when only a small part of the state is required.
+Store update granularity and rendering performance for workflows with
+hundreds of nodes are covered in `04-react-flow.mdc` (Performance, Large
+Graphs). Apply that guidance whenever mutating node/edge state here.
 
 ## Editor and Runtime Separation
 
-The workflow editor produces a serializable workflow representation.
-
-Published workflows are executed by the Telegram runtime.
-
-Do not couple workflow editor state or UI components to Telegram runtime execution.
-
-The runtime must not depend on React Flow presentation components or editor-specific UI state.
+The editor and the Telegram runtime are separate systems — see
+`05-telegram-runtime.mdc` for the full boundary (what belongs to the editor
+vs. the runtime, and what the runtime must never depend on).
 
 ## Workflow Changes
 
