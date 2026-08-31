@@ -1,5 +1,12 @@
 import { createStore } from 'zustand/vanilla';
-import { addEdge, applyNodeChanges, type Connection, type NodeChange } from '@xyflow/react';
+import {
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  type Connection,
+  type EdgeChange,
+  type NodeChange,
+} from '@xyflow/react';
 
 import type { AppEdge, CustomAppNode, NodeDataUpdatePayload } from '../types';
 
@@ -9,6 +16,8 @@ export interface WorkflowState {
   selectedNodeId: string | null;
   /** True when in-memory graph differs from the last persisted version. */
   isDirty: boolean;
+  /** True while any save operation (manual or autosave) is in progress. */
+  isSaving: boolean;
 }
 
 export interface WorkflowActions {
@@ -20,8 +29,11 @@ export interface WorkflowActions {
   connectNodes: (connection: Connection) => void;
   deleteEdge: (edgeId: string) => void;
   onNodesChange: (changes: NodeChange<CustomAppNode>[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
   /** Called by the save feature after a successful persist. Resets isDirty to false. */
   markClean: () => void;
+  /** Set while a save is in progress to prevent concurrent saves. */
+  setSaving: (value: boolean) => void;
 }
 
 export type WorkflowStore = WorkflowState & WorkflowActions;
@@ -47,6 +59,7 @@ export const createWorkflowStore = ({ nodes, edges }: CreateWorkflowStoreParams)
     edges,
     selectedNodeId: null,
     isDirty: false,
+    isSaving: false,
 
     setNodes: (updater) =>
       set((state) => ({
@@ -103,12 +116,37 @@ export const createWorkflowStore = ({ nodes, edges }: CreateWorkflowStoreParams)
         const nodes = applyNodeChanges(changes, state.nodes);
         const selectedNode = nodes.find((node) => node.selected);
 
+        const causesDirty = changes.some((change) => {
+          if (change.type === 'add' || change.type === 'remove' || change.type === 'replace') {
+            return true;
+          }
+          // position with dragging: false means the drag is committed (drop)
+          if (change.type === 'position' && change.dragging === false) {
+            return true;
+          }
+          return false;
+        });
+
         return {
           nodes,
           selectedNodeId: selectedNode?.id ?? null,
-          isDirty: true,
+          isDirty: causesDirty ? true : state.isDirty,
+        };
+      }),
+
+    onEdgesChange: (changes) =>
+      set((state) => {
+        const edges = applyEdgeChanges(changes, state.edges);
+        const causesDirty = changes.some(
+          (change) => change.type === 'add' || change.type === 'remove' || change.type === 'replace'
+        );
+        return {
+          edges,
+          isDirty: causesDirty ? true : state.isDirty,
         };
       }),
 
     markClean: () => set({ isDirty: false }),
+
+    setSaving: (value) => set({ isSaving: value }),
   }));

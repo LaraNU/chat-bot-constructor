@@ -63,6 +63,7 @@ const baseNodeSchema = z.object({
     .optional(),
 });
 
+/** Strict node schemas — used at publish time to enforce non-empty content. */
 const appNodeSchema = z.discriminatedUnion('type', [
   baseNodeSchema.extend({ type: z.literal('start'), data: startNodeDataSchema }),
   baseNodeSchema.extend({ type: z.literal('end'), data: endNodeDataSchema }),
@@ -73,6 +74,20 @@ const appNodeSchema = z.discriminatedUnion('type', [
   baseNodeSchema.extend({ type: z.literal('summary'), data: summaryNodeDataSchema }),
 ]);
 
+/** Draft node schema — validates structure only, allows empty data fields. */
+const draftNodeSchema = baseNodeSchema.extend({
+  type: z.union([
+    z.literal('start'),
+    z.literal('end'),
+    z.literal('message'),
+    z.literal('condition'),
+    z.literal('question'),
+    z.literal('choice'),
+    z.literal('summary'),
+  ]),
+  data: z.record(z.string(), z.unknown()),
+});
+
 const appEdgeSchema = z.object({
   id: z.string(),
   source: z.string().min(1, 'Edge source is required'),
@@ -81,9 +96,17 @@ const appEdgeSchema = z.object({
   targetHandle: z.string().nullable().optional(),
 });
 
+/** Strict schema for publish — all node data fields must be valid and non-empty. */
 export const workflowSchema = z.object({
   botId: z.uuid({ message: 'botId must be a valid UUID' }),
   nodes: z.array(appNodeSchema),
+  edges: z.array(appEdgeSchema),
+});
+
+/** Draft schema for save — validates structure only (id, type, position, edge refs). */
+export const draftWorkflowSchema = z.object({
+  botId: z.uuid({ message: 'botId must be a valid UUID' }),
+  nodes: z.array(draftNodeSchema),
   edges: z.array(appEdgeSchema),
 });
 

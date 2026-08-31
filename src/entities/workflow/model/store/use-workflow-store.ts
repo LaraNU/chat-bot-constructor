@@ -15,3 +15,14 @@ export function useWorkflowStore<T>(selector: (state: WorkflowStore) => T): T {
 
   return useStore(store, selector);
 }
+
+/** Returns the raw Zustand StoreApi — use `.getState()` inside callbacks to read fresh values. */
+export function useWorkflowStoreApi() {
+  const store = useContext(WorkflowStoreContext);
+
+  if (!store) {
+    throw new Error('useWorkflowStoreApi must be used inside WorkflowStoreProvider');
+  }
+
+  return store;
+}

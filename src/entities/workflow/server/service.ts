@@ -1,5 +1,5 @@
 import { workflowRepository } from './repository';
-import { workflowSchema } from '../model/validation';
+import { draftWorkflowSchema } from '../model/validation';
 import type { AppNode, AppEdge } from '../model/types';
 import type { Flow } from '@prisma/client';
 
@@ -12,16 +12,16 @@ export const workflowService = {
   },
 
   async saveWorkflow(botId: string, nodes: AppNode[], edges: AppEdge[]): Promise<Flow> {
-    const parsed = workflowSchema.safeParse({ botId, nodes, edges });
+    // Draft save uses a loose schema — node data may be empty (work-in-progress).
+    // Strict content validation (non-empty fields) is enforced at publish time only.
+    const parsed = draftWorkflowSchema.safeParse({ botId, nodes, edges });
 
     if (!parsed.success) {
       throw new Error(parsed.error.issues.map((item) => item.message).join(', '));
     }
 
-    return workflowRepository.upsertByBotId(
-      parsed.data.botId,
-      parsed.data.nodes,
-      parsed.data.edges
-    );
+    // The draft schema validates structure but does not transform data,
+    // so the original typed args are safe to pass directly to the repository.
+    return workflowRepository.upsertByBotId(parsed.data.botId, nodes, edges);
   },
 };
