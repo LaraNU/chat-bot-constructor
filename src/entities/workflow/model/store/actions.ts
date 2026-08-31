@@ -16,4 +16,8 @@ export const useDeleteEdge = () => useWorkflowStore((state) => state.deleteEdge)
 
 export const useNodesChange = () => useWorkflowStore((state) => state.onNodesChange);
 
+export const useEdgesChange = () => useWorkflowStore((state) => state.onEdgesChange);
+
 export const useMarkClean = () => useWorkflowStore((state) => state.markClean);
+
+export const useSetSaving = () => useWorkflowStore((state) => state.setSaving);

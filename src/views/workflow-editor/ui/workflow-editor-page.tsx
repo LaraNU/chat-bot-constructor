@@ -8,8 +8,9 @@ import { PropertiesPanel } from '@/widgets/properties-panel';
 import { EditorHeader } from '@/widgets/editor-header';
 
 import { WorkflowStoreProvider } from '@/entities/workflow/model/store';
-
 import type { AppEdge, AppNode, CustomAppNode } from '@/entities/workflow/model/types';
+
+import { useAutosave } from '@/features/save-workflow';
 
 type Props = {
   botId: string;
@@ -18,23 +19,31 @@ type Props = {
   initialToken: string | null;
 };
 
+function EditorContent({ botId, initialToken }: { botId: string; initialToken: string | null }) {
+  useAutosave({ botId });
+
+  return (
+    <div
+      className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden"
+      data-testid="editor-root"
+    >
+      <NodesPalette />
+
+      <main className="text-card-foreground relative flex flex-1 flex-col">
+        <EditorHeader botId={botId} initialToken={initialToken} />
+        <WorkflowCanvas />
+      </main>
+
+      <PropertiesPanel />
+    </div>
+  );
+}
+
 export function WorkflowEditorPage({ botId, initialNodes, initialEdges, initialToken }: Props) {
   return (
     <WorkflowStoreProvider nodes={initialNodes as CustomAppNode[]} edges={initialEdges}>
       <ReactFlowProvider>
-        <div
-          className="bg-background flex h-[calc(100vh-3.5rem)] w-full overflow-hidden"
-          data-testid="editor-root"
-        >
-          <NodesPalette />
-
-          <main className="text-card-foreground relative flex flex-1 flex-col">
-            <EditorHeader botId={botId} initialToken={initialToken} />
-            <WorkflowCanvas />
-          </main>
-
-          <PropertiesPanel />
-        </div>
+        <EditorContent botId={botId} initialToken={initialToken} />
       </ReactFlowProvider>
     </WorkflowStoreProvider>
   );

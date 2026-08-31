@@ -1,18 +1,10 @@
 'use client';
 
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  applyEdgeChanges,
-  type EdgeChange,
-  type EdgeProps,
-  MarkerType,
-} from '@xyflow/react';
+import { ReactFlow, Background, Controls, type EdgeProps, MarkerType } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { NODE_TYPES, CustomEdge } from '@/entities/workflow';
 
@@ -20,10 +12,10 @@ import {
   useWorkflowNodes,
   useWorkflowEdges,
   useNodesChange,
+  useEdgesChange,
   useConnectNodes,
   useDeleteEdge,
   useSetNodes,
-  useSetEdges,
 } from '@/entities/workflow/model/store';
 
 import { useCanvasDragDrop } from '@/features/drag-drop-node';
@@ -35,9 +27,9 @@ export function WorkflowCanvas() {
   const edges = useWorkflowEdges();
 
   const setNodes = useSetNodes();
-  const setEdges = useSetEdges();
 
   const onNodesChange = useNodesChange();
+  const onEdgesChange = useEdgesChange();
   const onConnect = useConnectNodes();
   const deleteEdge = useDeleteEdge();
 
@@ -48,13 +40,6 @@ export function WorkflowCanvas() {
       custom: (props: EdgeProps) => <CustomEdge {...props} onDelete={deleteEdge} />,
     }),
     [deleteEdge]
-  );
-
-  const handleEdgesChange = useCallback(
-    (changes: EdgeChange[]) => {
-      setEdges((currentEdges) => applyEdgeChanges(changes, currentEdges));
-    },
-    [setEdges]
   );
 
   const renderedEdges = useMemo(
@@ -77,7 +62,7 @@ export function WorkflowCanvas() {
         nodes={nodes}
         edges={renderedEdges}
         onNodesChange={onNodesChange}
-        onEdgesChange={handleEdgesChange}
+        onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}

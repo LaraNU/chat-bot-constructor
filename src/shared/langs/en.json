@@ -199,7 +199,8 @@
       "unsavedChanges": "Save your workflow before publishing.",
       "validationFailed": "Fix {count} error(s) before publishing.",
       "tokenRequired": "Please enter a valid Bot Token."
-    }
+    },
+    "savedButton": "Saved"
   },
   "BotFilters": {
     "placeholder": "Search bots...",
