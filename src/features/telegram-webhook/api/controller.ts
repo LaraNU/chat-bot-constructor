@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { AppNode, AppEdge } from '@/entities/workflow';
 import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
 import { botService } from '@/entities/bot/server';
+import { decryptToken, isEncryptedToken } from '@/shared/lib/crypto';
 import { consumeWebhookBotRateLimit, consumeWebhookIpRateLimit } from '@/shared/lib/rate-limit';
 
 import type { TelegramUpdate, UserContext } from '../model/types';
@@ -72,9 +73,27 @@ export async function handleTelegramWebhook(request: NextRequest): Promise<NextR
       return NextResponse.json({ success: true });
     }
 
+    // Legacy bots (pre-migration) may still have a plaintext token — handle both formats.
+    // Run scripts/encrypt-tokens.ts to migrate all existing tokens at once.
+    let plaintextToken: string;
+    if (isEncryptedToken(bot.token)) {
+      try {
+        plaintextToken = decryptToken(bot.token);
+      } catch (err) {
+        console.error(
+          `[webhook] Invariant violation: bot "${botId}" token cannot be decrypted. ` +
+            `Check BOT_TOKEN_ENCRYPTION_KEY and re-run the migration script.`,
+          err
+        );
+        return NextResponse.json({ error: 'Bot configuration error' }, { status: 500 });
+      }
+    } else {
+      plaintextToken = bot.token;
+    }
+
     const context: UserContext = {
       botId,
-      botToken: bot.token,
+      botToken: plaintextToken,
 
       chatId: chatId.toString(),
       userText: update.message?.text ?? '',

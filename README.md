@@ -219,6 +219,25 @@ covered there anyway.
 
 Optional env overrides (defaults apply when unset) are listed under [Environment Variables](#environment-variables).
 
+## Security
+
+### Bot token encryption
+
+Telegram bot tokens are encrypted at rest using AES-256-GCM before being stored in the database.
+The plaintext token is never returned to the client (no RSC props, no Server Action responses).
+
+**Setup:** Add `BOT_TOKEN_ENCRYPTION_KEY` to your environment (see `.env.example` for generation instructions).
+Store it in a secrets manager (Vercel, Doppler) — do **not** commit it.
+
+**One-time migration** (for existing databases with plaintext tokens):
+
+```bash
+npx tsx scripts/encrypt-tokens.ts
+```
+
+The script is idempotent — rows already starting with `enc:v1:` are skipped.
+Run it after deploying the new code, before removing any plaintext-read fallback.
+
 ## Telegram Integration
 
 The Telegram runtime (`features/telegram-webhook`) is a self-contained execution engine with no dependency on

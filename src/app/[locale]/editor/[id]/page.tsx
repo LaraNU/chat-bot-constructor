@@ -34,7 +34,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
   const workflow = await workflowService.getWorkflowByBotId(id);
   const initialNodes = workflow?.nodes ?? [];
   const initialEdges = workflow?.edges ?? [];
-  const initialToken = bot.token ?? null;
+  const hasToken = Boolean(bot.token);
 
   return (
     <ScopedIntlProvider scopes={['WorkflowEditor', 'WorkflowCanvas', 'PropertiesPanel']}>
@@ -42,7 +42,7 @@ export default async function EditorPage({ params }: EditorPageProps) {
         botId={id}
         initialNodes={initialNodes}
         initialEdges={initialEdges}
-        initialToken={initialToken}
+        hasToken={hasToken}
       />
     </ScopedIntlProvider>
   );
