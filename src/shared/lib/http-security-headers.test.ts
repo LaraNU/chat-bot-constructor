@@ -89,8 +89,19 @@ describe('buildSecurityHeaders', () => {
   });
 
   test('throws in production when supabaseUrl is missing', () => {
-    expect(() => buildSecurityHeaders({ supabaseUrl: undefined, isProduction: true })).toThrow(
-      /NEXT_PUBLIC_SUPABASE_URL must be set/
-    );
+    const original = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    try {
+      expect(() => buildSecurityHeaders({ isProduction: true })).toThrow(
+        /NEXT_PUBLIC_SUPABASE_URL must be set/
+      );
+    } finally {
+      if (original === undefined) {
+        delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+      } else {
+        process.env.NEXT_PUBLIC_SUPABASE_URL = original;
+      }
+    }
   });
 });
