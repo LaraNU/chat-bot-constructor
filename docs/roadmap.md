@@ -66,7 +66,7 @@ working code — items either close a concrete gap or add a capability that does
 | P1.7 | `BotResponse` has no foreign key to `Bot` | Deleting a bot leaves orphaned response rows; cannot safely join responses to their owning bot | `prisma/schema.prisma` + migration | S | — | — |
 | P1.8 | `src/features/workflow-actions` is dead code (not imported anywhere in `src`) that duplicates store responsibilities | Ambiguity for future contributors about which mutation API is authoritative | `src/features/workflow-actions/**` | S | — | — |
 | P1.9 | No deployment manifest (Dockerfile, docker-compose, or equivalent) in the repository | Deployment is not reproducible from the repository | Repository root | M | — | — |
-| P1.10 | No basic security headers configured (`next.config.ts` sets no `headers()`) | Missing baseline protections (e.g. `X-Frame-Options`, `Content-Security-Policy`) | `next.config.ts` | S | — | — |
+| P1.10 | No basic security headers configured (`next.config.ts` sets no `headers()`) | Missing baseline protections (e.g. `X-Frame-Options`, `Content-Security-Policy`) | `next.config.ts` | S | — | Done |
 | P1.11 | No end-to-end tests for save, publish, or webhook flows (Playwright currently covers only auth and bot creation) | The most business-critical user flows have no regression safety net | `tests/` | M | P0.7 | — |
 | P1.12 | `answerCallbackQuery` is never called after a `choice` node's inline button is pressed | Telegram shows a persistent loading state on the button for the end user | `features/telegram-webhook/lib/nodes/choice-handler.ts` | S | — | — |
 

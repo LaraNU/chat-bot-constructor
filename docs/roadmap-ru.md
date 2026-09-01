@@ -70,7 +70,7 @@ Internal tool → Internal multi-user beta → Public beta → Self-service SaaS
 | P1.7 | У `BotResponse` нет внешнего ключа на `Bot` | Удаление бота оставляет "осиротевшие" записи ответов; невозможно безопасно связать ответы с ботом-владельцем | `prisma/schema.prisma` + миграция | S | — | — |
 | P1.8 | `src/features/workflow-actions` — мёртвый код (нигде не импортируется в `src`), дублирующий обязанности store | Неоднозначность для будущих контрибьюторов относительно того, какой API мутаций является основным | `src/features/workflow-actions/**` | S | — | — |
 | P1.9 | В репозитории нет манифеста деплоя (Dockerfile, docker-compose или аналога) | Деплой невозможно воспроизвести из репозитория | Корень репозитория | M | — | — |
-| P1.10 | Не настроены базовые security-заголовки (`next.config.ts` не задаёт `headers()`) | Отсутствуют базовые защиты (например, `X-Frame-Options`, `Content-Security-Policy`) | `next.config.ts` | S | — | — |
+| P1.10 | Не настроены базовые security-заголовки (`next.config.ts` не задаёт `headers()`) | Отсутствуют базовые защиты (например, `X-Frame-Options`, `Content-Security-Policy`) | `next.config.ts` | S | — | Done |
 | P1.11 | Нет end-to-end тестов для save, publish или webhook-сценариев (Playwright сейчас покрывает только auth и создание бота) | Самые бизнес-критичные пользовательские сценарии не имеют регрессионной защиты | `tests/` | M | P0.7 | — |
 | P1.12 | `answerCallbackQuery` никогда не вызывается после нажатия inline-кнопки ноды `choice` | Telegram показывает пользователю постоянный индикатор загрузки на кнопке | `features/telegram-webhook/lib/nodes/choice-handler.ts` | S | — | — |
 

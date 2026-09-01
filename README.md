@@ -238,6 +238,21 @@ npx tsx scripts/encrypt-tokens.ts
 The script is idempotent — rows already starting with `enc:v1:` are skipped.
 Run it after deploying the new code, before removing any plaintext-read fallback.
 
+### HTTP security headers
+
+Responses include baseline browser protections configured globally in `next.config.ts`:
+
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy` (camera, microphone, and geolocation disabled)
+- `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'`
+- Enforcing `Content-Security-Policy` (`script-src`/`style-src` allow `'unsafe-inline'` because Next.js hydration and `next-themes` inject inline scripts/styles)
+- `Strict-Transport-Security` in production only (not localhost)
+
+`connect-src` allows `'self'` and the origin from `NEXT_PUBLIC_SUPABASE_URL` (HTTPS and WebSocket). Telegram Bot API calls are server-only and are not listed.
+
+When adding a third-party auth provider (for example Google OAuth), extend CSP (`connect-src`, and possibly `form-action` / `frame-src`) before shipping that feature.
+
 ## Telegram Integration
 
 The Telegram runtime (`features/telegram-webhook`) is a self-contained execution engine with no dependency on
