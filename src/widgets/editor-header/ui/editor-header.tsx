@@ -6,15 +6,15 @@ import { PublishBotButton } from '@/features/publish-bot';
 
 interface EditorHeaderProps {
   botId: string;
-  initialToken?: string | null;
+  hasToken: boolean;
 }
 
-export const EditorHeader = memo(({ botId, initialToken }: EditorHeaderProps) => {
+export const EditorHeader = memo(({ botId, hasToken }: EditorHeaderProps) => {
   return (
     <div className="bg-card absolute right-[0] z-50 flex items-center justify-between rounded-[20px] bg-[#ffffffba] p-4">
       <div className="flex items-center gap-2">
         <SaveWorkflowButton botId={botId} />
-        <PublishBotButton botId={botId} initialToken={initialToken} />
+        <PublishBotButton botId={botId} hasToken={hasToken} />
       </div>
     </div>
   );

@@ -16,10 +16,10 @@ type Props = {
   botId: string;
   initialNodes: AppNode[];
   initialEdges: AppEdge[];
-  initialToken: string | null;
+  hasToken: boolean;
 };
 
-function EditorContent({ botId, initialToken }: { botId: string; initialToken: string | null }) {
+function EditorContent({ botId, hasToken }: { botId: string; hasToken: boolean }) {
   useAutosave({ botId });
 
   return (
@@ -30,7 +30,7 @@ function EditorContent({ botId, initialToken }: { botId: string; initialToken: s
       <NodesPalette />
 
       <main className="text-card-foreground relative flex flex-1 flex-col">
-        <EditorHeader botId={botId} initialToken={initialToken} />
+        <EditorHeader botId={botId} hasToken={hasToken} />
         <WorkflowCanvas />
       </main>
 
@@ -39,11 +39,11 @@ function EditorContent({ botId, initialToken }: { botId: string; initialToken: s
   );
 }
 
-export function WorkflowEditorPage({ botId, initialNodes, initialEdges, initialToken }: Props) {
+export function WorkflowEditorPage({ botId, initialNodes, initialEdges, hasToken }: Props) {
   return (
     <WorkflowStoreProvider nodes={initialNodes as CustomAppNode[]} edges={initialEdges}>
       <ReactFlowProvider>
-        <EditorContent botId={botId} initialToken={initialToken} />
+        <EditorContent botId={botId} hasToken={hasToken} />
       </ReactFlowProvider>
     </WorkflowStoreProvider>
   );

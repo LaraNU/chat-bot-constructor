@@ -198,7 +198,9 @@
       "publishError": "Failed to publish bot. Please try again.",
       "unsavedChanges": "Save your workflow before publishing.",
       "validationFailed": "Fix {count} error(s) before publishing.",
-      "tokenRequired": "Please enter a valid Bot Token."
+      "tokenRequired": "Please enter a valid Bot Token.",
+      "confirmDescription": "Your bot is already configured. Click Republish to apply your latest workflow changes.",
+      "confirmPublishBtn": "Republish"
     },
     "savedButton": "Saved"
   },

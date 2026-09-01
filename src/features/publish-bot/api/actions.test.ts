@@ -8,6 +8,9 @@ import { NotFoundError, TooManyRequestsError } from '@/shared/api/errors';
 import { assertMutationRateLimit } from '@/shared/lib/rate-limit';
 import type { Bot } from '@prisma/client';
 
+const VALID_KEY = 'a'.repeat(64);
+process.env.BOT_TOKEN_ENCRYPTION_KEY = VALID_KEY;
+
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Map([['host', 'app.example.com']])),
 }));
@@ -35,31 +38,6 @@ vi.mock('@/shared/lib/prisma', () => ({
 
 vi.mock('@/shared/lib/rate-limit', () => ({
   assertMutationRateLimit: vi.fn(),
-}));
-
-vi.mock('next/headers', () => ({
-  headers: vi.fn().mockResolvedValue(new Map([['host', 'app.example.com']])),
-}));
-
-vi.mock('@/shared/lib/supabase/server', () => ({
-  createClient: vi.fn(),
-}));
-
-vi.mock('@/entities/bot/server', () => ({
-  botService: {
-    assertBotOwnership: vi.fn(),
-    getWebhookSecret: vi.fn(),
-  },
-}));
-
-vi.mock('../lib/telegram', () => ({
-  setTelegramWebhook: vi.fn(),
-}));
-
-vi.mock('@/shared/lib/prisma', () => ({
-  prisma: {
-    $transaction: vi.fn(),
-  },
 }));
 
 describe('publishBotAction', () => {
@@ -129,7 +107,7 @@ describe('publishBotAction', () => {
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
-  test('should verify ownership before calling Telegram, then publish successfully for the owner', async () => {
+  test('should verify ownership before calling Telegram, then publish successfully for the owner (first publish with token)', async () => {
     mockAuthenticatedUser(mockUserId);
     vi.mocked(botService.assertBotOwnership).mockResolvedValue(mockBot);
     vi.mocked(botService.getWebhookSecret).mockReturnValue('computed-secret-token');
@@ -151,6 +129,37 @@ describe('publishBotAction', () => {
     expect(ownershipCallOrder).toBeLessThan(webhookCallOrder);
 
     expect(result).toEqual({ success: true });
+  });
+
+  test('should use stored encrypted token when no token is submitted (confirm/republish mode)', async () => {
+    const { encryptToken } = await import('@/shared/lib/crypto');
+    const storedEncrypted = encryptToken(mockToken);
+    const botWithToken: Bot = { ...mockBot, token: storedEncrypted };
+
+    mockAuthenticatedUser(mockUserId);
+    vi.mocked(botService.assertBotOwnership).mockResolvedValue(botWithToken);
+    vi.mocked(botService.getWebhookSecret).mockReturnValue('computed-secret-token');
+    vi.mocked(setTelegramWebhook).mockResolvedValue(undefined);
+
+    const result = await publishBotAction({ botId: mockBotId });
+
+    expect(setTelegramWebhook).toHaveBeenCalledWith(
+      mockToken,
+      mockBotId,
+      'https://app.example.com',
+      'computed-secret-token'
+    );
+    expect(result).toEqual({ success: true });
+  });
+
+  test('should return token_required error when no token submitted and no stored token', async () => {
+    mockAuthenticatedUser(mockUserId);
+    vi.mocked(botService.assertBotOwnership).mockResolvedValue(mockBot); // token: null
+
+    const result = await publishBotAction({ botId: mockBotId });
+
+    expect(result).toEqual({ success: false, error: 'token_required' });
+    expect(setTelegramWebhook).not.toHaveBeenCalled();
   });
 
   test('should reject without Telegram or DB side effects when the user is rate limited', async () => {

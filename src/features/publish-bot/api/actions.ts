@@ -6,6 +6,7 @@ import { UnauthorizedError } from '@/shared/api/errors';
 import { prisma } from '@/shared/lib/prisma';
 import { assertMutationRateLimit } from '@/shared/lib/rate-limit';
 import { botService } from '@/entities/bot/server';
+import { encryptToken, decryptToken, isEncryptedToken } from '@/shared/lib/crypto';
 import { publishBotSchema } from '../lib/validation';
 import { setTelegramWebhook } from '../lib/telegram';
 import type { PublishBotPayload, ActionResponse } from '../model/types';
@@ -37,7 +38,19 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
     // Ownership must be verified before any external side effect — otherwise a request
     // carrying someone else's botId would still register a live Telegram webhook before
     // the ownership check (previously only enforced inside the DB transaction) had a chance to reject it.
-    await botService.assertBotOwnership(user.id, botId);
+    const bot = await botService.assertBotOwnership(user.id, botId);
+
+    // Resolve the plaintext token: use the submitted one or read/decrypt the stored one.
+    // Legacy bots (pre-migration) may still have a plaintext token — handle both formats
+    // during the migration window; run scripts/encrypt-tokens.ts to encrypt them all at once.
+    let plaintextToken: string;
+    if (token) {
+      plaintextToken = token;
+    } else if (bot.token) {
+      plaintextToken = isEncryptedToken(bot.token) ? decryptToken(bot.token) : bot.token;
+    } else {
+      return { success: false, error: 'token_required' };
+    }
 
     const headersList = await headers();
     const host = headersList.get('host');
@@ -51,7 +64,7 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
     // External call first: if Telegram registration fails, nothing is written to DB.
     // If the DB transaction below fails, the user can safely retry — setWebhook is idempotent.
     const secretToken = botService.getWebhookSecret(botId);
-    await setTelegramWebhook(token, botId, appUrl, secretToken);
+    await setTelegramWebhook(plaintextToken, botId, appUrl, secretToken);
 
     // Atomic: Bot.token and FlowSnapshot are committed together.
     // Flow is read inside the transaction to eliminate the race condition window between
@@ -65,9 +78,12 @@ export async function publishBotAction(payload: PublishBotPayload): Promise<Acti
         throw new Error('Workflow not found. Save your workflow before publishing.');
       }
 
+      // Only update the stored token when a new one was submitted.
+      const tokenUpdate = token ? { token: encryptToken(token) } : {};
+
       await tx.bot.update({
         where: { id: botId, userId: user.id },
-        data: { token },
+        data: tokenUpdate,
       });
 
       await tx.flowSnapshot.upsert({

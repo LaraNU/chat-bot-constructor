@@ -12,13 +12,19 @@ import { publishBotAction } from '../api/actions';
 
 type UsePublishBotParams = {
   botId: string;
-  initialToken?: string | null;
+  hasToken: boolean;
 };
 
 export type UsePublishBotReturn = {
-  /** Controls the Telegram token dialog. */
+  /** Controls the publish dialog. */
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
+
+  /**
+   * 'confirm' — bot already has a stored token; user confirms republish.
+   * 'input-token' — first publish; user must enter a token.
+   */
+  dialogVariant: 'confirm' | 'input-token';
 
   token: string;
   setToken: (token: string) => void;
@@ -34,27 +40,30 @@ export type UsePublishBotReturn = {
 
   /**
    * Validates the current workflow graph.
-   * Opens the token dialog only when there are no errors.
+   * Opens the dialog only when there are no errors.
    * Shows a toast and populates validationResult on failure.
    */
   openDialog: () => void;
 
   /**
    * Submits the publish request to the server.
-   * Should only be called when the dialog is open and a token is set.
+   * In 'input-token' mode the token field must be non-empty.
+   * In 'confirm' mode no token is sent — the server uses the stored one.
    */
   publish: () => void;
 };
 
-export function usePublishBot({ botId, initialToken }: UsePublishBotParams): UsePublishBotReturn {
+export function usePublishBot({ botId, hasToken }: UsePublishBotParams): UsePublishBotReturn {
   const t = useTranslations('WorkflowCanvas.publishDialog');
 
   const nodes = useWorkflowNodes();
   const edges = useWorkflowEdges();
   const isDirty = useIsDirty();
 
+  const dialogVariant: 'confirm' | 'input-token' = hasToken ? 'confirm' : 'input-token';
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [token, setToken] = useState(initialToken ?? '');
+  const [token, setToken] = useState('');
   const [isPending, startTransition] = useTransition();
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
@@ -77,27 +86,34 @@ export function usePublishBot({ botId, initialToken }: UsePublishBotParams): Use
   }, [isDirty, nodes, edges, t]);
 
   const publish = useCallback(() => {
-    if (!token.trim()) {
+    if (dialogVariant === 'input-token' && !token.trim()) {
       toast.error(t('tokenRequired'));
       return;
     }
 
+    const payload = dialogVariant === 'input-token' ? { botId, token: token.trim() } : { botId };
+
     startTransition(async () => {
-      const result = await publishBotAction({ botId, token: token.trim() });
+      const result = await publishBotAction(payload);
 
       if (result.success) {
         toast.success(t('publishSuccess'));
         setIsDialogOpen(false);
         setValidationResult(null);
       } else {
-        toast.error(result.error ?? t('publishError'));
+        const message =
+          result.error === 'token_required'
+            ? t('tokenRequired')
+            : (result.error ?? t('publishError'));
+        toast.error(message);
       }
     });
-  }, [token, botId, t]);
+  }, [dialogVariant, token, botId, t]);
 
   return {
     isDialogOpen,
     setIsDialogOpen,
+    dialogVariant,
     token,
     setToken,
     isPending,
