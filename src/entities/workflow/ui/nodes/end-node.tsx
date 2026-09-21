@@ -20,14 +20,19 @@ import { EndAppNode } from '../../model/types';
 import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 import { useNodeMutations } from '../../model/store';
 import { WorkflowNodeIcon } from '../workflow-node-icon';
+import {
+  RESPONSIVE_NODE_WIDTH_CLASSNAME,
+  NODE_HANDLE_SIZE_CLASSNAME,
+} from './responsive-classnames';
+import { cn } from '@/shared/lib/utils';
 
 export const EndNode = memo(({ id, data }: NodeProps<EndAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.end');
   const { remove, commit } = useNodeMutations<EndAppNode['data']>(id);
 
   return (
-    <BaseNode className="w-64">
-      <Handle type="target" position={Position.Top} />
+    <BaseNode className={cn('w-64', RESPONSIVE_NODE_WIDTH_CLASSNAME)}>
+      <Handle type="target" position={Position.Top} className={NODE_HANDLE_SIZE_CLASSNAME} />
 
       <BaseNodeHeader className="bg-muted/30 border-b">
         <WorkflowNodeIcon type="end" />

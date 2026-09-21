@@ -20,6 +20,11 @@ import { ChoiceButtonsEditorMemoized } from '../choice-buttons-editor';
 import { useTranslations } from 'next-intl';
 import { useNodeMutations } from '../../model/store';
 import { WorkflowNodeIcon } from '../workflow-node-icon';
+import {
+  RESPONSIVE_NODE_WIDTH_CLASSNAME,
+  NODE_HANDLE_SIZE_CLASSNAME,
+} from './responsive-classnames';
+import { cn } from '@/shared/lib/utils';
 
 export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.choice');
@@ -33,8 +38,8 @@ export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
   );
 
   return (
-    <BaseNode className="w-96">
-      <Handle type="target" position={Position.Top} />
+    <BaseNode className={cn('w-96', RESPONSIVE_NODE_WIDTH_CLASSNAME)}>
+      <Handle type="target" position={Position.Top} className={NODE_HANDLE_SIZE_CLASSNAME} />
 
       <BaseNodeHeader className="border-b bg-green-50">
         <WorkflowNodeIcon type="choice" />
@@ -69,6 +74,7 @@ export const ChoiceNode = memo(({ id, data }: NodeProps<ChoiceAppNode>) => {
           type="source"
           id={button.id}
           position={Position.Bottom}
+          className={NODE_HANDLE_SIZE_CLASSNAME}
           style={{
             left: `${((index + 1) * 100) / (buttons.length + 1)}%`,
           }}

@@ -109,10 +109,11 @@
     "title": "Редактор сценария для бота",
     "plaletteTitle": "Компоненты",
     "description": "Перетащите узлы на холст",
+    "openPaletteButton": "Открыть панель компонентов",
+    "openPropertiesButton": "Открыть панель свойств",
     "nodes": {
       "start": {
-        "name": "Старт",
-        "description": "Диалог начинается после нажатия кнопки Start или команды /start в Telegram"
+        "name": "Старт"
       },
       "message": {
         "name": "Сообщение",
