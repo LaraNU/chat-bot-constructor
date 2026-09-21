@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
-import { useReactFlow } from '@xyflow/react';
+import { useReactFlow, useStore, type XYPosition } from '@xyflow/react';
 
 import type { CustomAppNode, WorkflowNodeType } from '@/entities/workflow';
 
@@ -84,7 +84,23 @@ function getDefaultNodeData(type: WorkflowNodeType): Record<string, unknown> {
 }
 
 export function useCanvasDragDrop(setNodes: Dispatch<SetStateAction<CustomAppNode[]>>) {
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getViewport } = useReactFlow();
+  const paneWidth = useStore((state) => state.width);
+  const paneHeight = useStore((state) => state.height);
+
+  const createNodeAtPosition = useCallback(
+    (type: WorkflowNodeType, position: XYPosition) => {
+      const newNode: CustomAppNode = {
+        id: crypto.randomUUID(),
+        type,
+        position,
+        data: getDefaultNodeData(type),
+      } as CustomAppNode;
+
+      setNodes((nodes) => [...nodes, newNode]);
+    },
+    [setNodes]
+  );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -106,20 +122,26 @@ export function useCanvasDragDrop(setNodes: Dispatch<SetStateAction<CustomAppNod
         y: event.clientY,
       });
 
-      const newNode: CustomAppNode = {
-        id: crypto.randomUUID(),
-        type,
-        position,
-        data: getDefaultNodeData(type),
-      } as CustomAppNode;
-
-      setNodes((nodes) => [...nodes, newNode]);
+      createNodeAtPosition(type, position);
     },
-    [screenToFlowPosition, setNodes]
+    [screenToFlowPosition, createNodeAtPosition]
+  );
+
+  const onTapAdd = useCallback(
+    (type: WorkflowNodeType) => {
+      const { x, y, zoom } = getViewport();
+
+      createNodeAtPosition(type, {
+        x: (paneWidth / 2 - x) / zoom,
+        y: (paneHeight / 2 - y) / zoom,
+      });
+    },
+    [getViewport, paneWidth, paneHeight, createNodeAtPosition]
   );
 
   return {
     onDragOver,
     onDrop,
+    onTapAdd,
   };
 }

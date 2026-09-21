@@ -20,14 +20,19 @@ import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 import { useTranslations } from 'next-intl';
 import { useNodeMutations } from '../../model/store';
 import { WorkflowNodeIcon } from '../workflow-node-icon';
+import {
+  RESPONSIVE_NODE_WIDTH_CLASSNAME,
+  NODE_HANDLE_SIZE_CLASSNAME,
+} from './responsive-classnames';
+import { cn } from '@/shared/lib/utils';
 
 export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.question');
   const { remove, commit } = useNodeMutations<QuestionAppNode['data']>(id);
 
   return (
-    <BaseNode className="w-80">
-      <Handle type="target" position={Position.Top} />
+    <BaseNode className={cn('w-80', RESPONSIVE_NODE_WIDTH_CLASSNAME)}>
+      <Handle type="target" position={Position.Top} className={NODE_HANDLE_SIZE_CLASSNAME} />
 
       <BaseNodeHeader className="border-b bg-yellow-50">
         <WorkflowNodeIcon type="question" />
@@ -57,7 +62,7 @@ export const QuestionNode = memo(({ id, data }: NodeProps<QuestionAppNode>) => {
         </EditorField>
       </BaseNodeContent>
 
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Bottom} className={NODE_HANDLE_SIZE_CLASSNAME} />
     </BaseNode>
   );
 });

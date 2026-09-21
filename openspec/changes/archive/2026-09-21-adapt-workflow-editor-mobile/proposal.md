@@ -9,6 +9,8 @@ The workflow editor (`/editor/[id]`) is unusable on mobile and touch devices tod
 - Make the editor layout (`EditorContent` in `workflow-editor-page.tsx`) responsive: below the mobile breakpoint, `NodesPalette` and `PropertiesPanel` collapse into toggleable overlay panels instead of permanently occupying horizontal space next to the canvas.
 - Add toolbar controls in `EditorHeader` (or equivalent) to open/close the palette and properties overlay panels on mobile.
 - Increase touch target size for interactive canvas elements that currently assume a mouse pointer (node handles, edge delete affordance in `custom-edge`), to meet a minimum comfortable touch-target size.
+- Make node cards themselves responsive below the mobile breakpoint: every node type (`entities/workflow/ui/nodes/*`) narrows to fit small viewports instead of keeping its fixed desktop width (`w-64`/`w-80`/`w-96`), while keeping the exact same inline-editable fields — this was discovered as a gap during manual verification (fixed-width cards made the editor feel broken on a phone even after the panel/tap-to-add work above).
+- Simplify the Start node's presentation on **all** viewports (not just mobile) to an icon + "Start" label, since it carries no editable data and its current two-tier header/content layout adds width and visual weight for no functional benefit.
 - No changes to workflow persistence, autosave, save-button states, or any other behavior already covered by the `workflow-editor` spec — this change is additive to presentation/interaction, not to save semantics.
 
 ## Capabilities
@@ -23,7 +25,7 @@ None.
 
 ## Impact
 
-- **Affected code**: `src/views/workflow-editor/ui/workflow-editor-page.tsx`, `src/widgets/nodes-palette/ui/nodes-palette.tsx`, `src/widgets/properties-panel/ui/properties-panel.tsx`, `src/widgets/editor-header/ui/editor-header.tsx`, `src/features/drag-drop-node/model/use-canvas-drag-drop.ts` (new sibling touch-add action, existing drop handler untouched), `src/entities/workflow` (custom edge / node handle touch-target sizing), `src/shared/lib/hooks` (new `useMediaQuery`).
+- **Affected code**: `src/views/workflow-editor/ui/workflow-editor-page.tsx`, `src/widgets/nodes-palette/ui/nodes-palette.tsx`, `src/widgets/properties-panel/ui/properties-panel.tsx`, `src/widgets/editor-header/ui/editor-header.tsx`, `src/features/drag-drop-node/model/use-canvas-drag-drop.ts` (new sibling touch-add action, existing drop handler untouched), `src/entities/workflow/ui/nodes/*` and `src/entities/workflow/ui/edge/custom-edge.tsx` (touch-target sizing and responsive card width), `src/shared/lib/hooks` (new `useMediaQuery`).
 - **No backend/API impact**: this is purely an editor presentation/interaction change; `Flow`/`FlowSnapshot` persistence, server actions, and the Telegram runtime are untouched.
 - **No breaking changes**: desktop behavior (drag-and-drop, fixed side panels) is preserved unchanged above the mobile breakpoint.
 - **New dependency risk**: none required — the plan intentionally avoids a native-DnD library swap (e.g. dnd-kit) for this iteration to keep the change additive and low-risk; that remains a possible future follow-up, not part of this change.

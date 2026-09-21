@@ -109,10 +109,11 @@
     "title": "Editor for bot workflow",
     "plaletteTitle": "Components",
     "description": "Drag nodes to the canvas",
+    "openPaletteButton": "Open components panel",
+    "openPropertiesButton": "Open properties panel",
     "nodes": {
       "start": {
-        "name": "Start",
-        "description": "Dialog starts after pressing the Start button or /start command in Telegram"
+        "name": "Start"
       },
       "message": {
         "name": "Message",

@@ -23,6 +23,11 @@ import { ControlledInput } from '@/shared/ui/controlled-input';
 import { useTranslations } from 'next-intl';
 import { useNodeMutations } from '../../model/store';
 import { WorkflowNodeIcon } from '../workflow-node-icon';
+import {
+  NODE_HANDLE_SIZE_CLASSNAME,
+  RESPONSIVE_NODE_WIDTH_CLASSNAME,
+} from './responsive-classnames';
+import { cn } from '@/shared/lib/utils';
 
 export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.condition');
@@ -50,8 +55,8 @@ export const ConditionNode = memo(({ id, data }: NodeProps<ConditionAppNode>) =>
   );
 
   return (
-    <BaseNode className="w-80 pb-5">
-      <Handle type="target" position={Position.Top} />
+    <BaseNode className={cn('w-80 pb-5', RESPONSIVE_NODE_WIDTH_CLASSNAME)}>
+      <Handle type="target" position={Position.Top} className={NODE_HANDLE_SIZE_CLASSNAME} />
 
       <BaseNodeHeader className="bg-muted/30 border-b">
         <WorkflowNodeIcon type="condition" />

@@ -57,7 +57,7 @@ export const CustomEdge = memo(
               }}
             >
               <button
-                className="cursor-pointer rounded-[50%] border-[5px] border-solid border-[#ffffff] bg-[#f2f2f2] p-[3px]"
+                className="cursor-pointer rounded-[50%] border-[5px] border-solid border-[#ffffff] bg-[#f2f2f2] p-[3px] max-md:p-[11px]"
                 onClick={() => onDelete?.(id)}
               >
                 <X size={12} color="#2284c5" absoluteStrokeWidth />

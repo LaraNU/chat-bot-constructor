@@ -20,14 +20,19 @@ import { useTranslations } from 'next-intl';
 import { useNodeMutations } from '../../model/store';
 import { ControlledTextarea } from '@/shared/ui/controlled-textarea';
 import { WorkflowNodeIcon } from '../workflow-node-icon';
+import {
+  RESPONSIVE_NODE_WIDTH_CLASSNAME,
+  NODE_HANDLE_SIZE_CLASSNAME,
+} from './responsive-classnames';
+import { cn } from '@/shared/lib/utils';
 
 export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
   const t = useTranslations('WorkflowEditor.nodes.message');
   const { remove, commit } = useNodeMutations<MessageAppNode['data']>(id);
 
   return (
-    <BaseNode className="w-80">
-      <Handle type="target" position={Position.Top} />
+    <BaseNode className={cn('w-80', RESPONSIVE_NODE_WIDTH_CLASSNAME)}>
+      <Handle type="target" position={Position.Top} className={NODE_HANDLE_SIZE_CLASSNAME} />
 
       <BaseNodeHeader className="bg-muted/30 border-b">
         <WorkflowNodeIcon type="message" />
@@ -50,7 +55,7 @@ export const MessageNode = memo(({ id, data }: NodeProps<MessageAppNode>) => {
         </EditorField>
       </BaseNodeContent>
 
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Bottom} className={NODE_HANDLE_SIZE_CLASSNAME} />
     </BaseNode>
   );
 });
