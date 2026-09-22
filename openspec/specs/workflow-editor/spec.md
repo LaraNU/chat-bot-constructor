@@ -122,12 +122,43 @@ Below the mobile breakpoint, the editor SHALL NOT render the node palette and th
 - **WHEN** the properties overlay is open below the mobile breakpoint
 - **THEN** the canvas underneath remains visible (no full-screen backdrop covers it) and continues to receive pointer/touch input, including panning the canvas
 
-Note: the properties overlay auto-opens whenever a node becomes selected (the auto-open behavior is implemented in `views/workflow-editor`). Panning across several nodes on touch can incidentally select one mid-gesture, re-triggering that auto-open. An earlier version of this behavior rendered the overlay as a modal dialog (a full-screen backdrop that blocks and captures all pointer/touch input outside the panel, per Radix Dialog's default `modal={true}`), which meant every incidental selection during panning would pop up a screen-covering backdrop and swallow the user's next touches — from the user's perspective, indistinguishable from "the canvas stopped responding to touch." Fixed by rendering the properties overlay non-modal (`modal={false}`): Radix's own `Dialog.Overlay` renders nothing when non-modal, and outside pointer/touch events are no longer blocked, so a stray auto-open no longer interrupts panning — the panel now dismisses itself on the very touch that continues the pan, rather than absorbing it. The node palette overlay remains modal (it is only ever opened by a deliberate user action, not as a side effect of selection).
+#### Scenario: Selecting a node does not by itself open the properties overlay
+
+- **WHEN** the user is below the mobile breakpoint and single-taps a node to select it
+- **THEN** the node becomes selected and the properties overlay does not open on its own, so the user can continue panning the canvas without interruption
+
+#### Scenario: Double-tapping a node opens the properties overlay for it
+
+- **WHEN** the user is below the mobile breakpoint and double-taps a node
+- **THEN** the properties overlay opens showing that node's properties
+
+Note: an earlier version of this behavior auto-opened the properties overlay whenever a node became selected — including a single tap. Panning across several nodes on touch routinely brushes against a node mid-gesture, selecting it, so this made the overlay pop up (and, before the non-modal fix above, block the canvas) on nearly every pan. Fixed by decoupling "select" from "open for editing": selection stays a single tap (React Flow's own behavior, unchanged), while opening the properties overlay now requires an explicit double-tap on the node (`onNodeDoubleClick`), or the header's "open properties" toggle for whatever is currently selected. The properties overlay's content still always reflects the current selection live, however it was opened.
 
 #### Scenario: Desktop layout is unaffected
 
 - **WHEN** the editor is opened at a viewport width at or above the mobile breakpoint
 - **THEN** the node palette and properties panel render as fixed side panels exactly as before this change, with no overlay behavior
+
+### Requirement: Editor toolbar does not overlap the site header on mobile
+
+Below the mobile breakpoint, the editor toolbar (save/publish controls and the palette/properties toggle buttons) SHALL render in normal document flow, occupying its own space above the canvas, rather than as an absolutely-positioned overlay. At or above the mobile breakpoint, the toolbar SHALL keep its existing floating presentation over the canvas.
+
+#### Scenario: Toolbar does not cover the site header on a narrow viewport
+
+- **WHEN** the editor is opened at a viewport width below the mobile breakpoint
+- **THEN** the toolbar renders below the site header without overlapping it, and the canvas occupies the remaining space beneath the toolbar
+
+#### Scenario: Desktop toolbar presentation is unaffected
+
+- **WHEN** the editor is opened at a viewport width at or above the mobile breakpoint
+- **THEN** the toolbar renders as a floating panel over the canvas, exactly as before this change
+
+Note: the toolbar was an absolutely-positioned floating panel anchored only by `right: 0`, with no explicit vertical offset — a presentation that happened to work with two buttons (save, publish) on desktop but became unreliable once two more buttons (palette/properties toggles) were added for mobile, where it could end up overlapping the site's own sticky header instead of rendering below it. Fixed by rendering the toolbar in normal flow below the mobile breakpoint, which cannot overlap adjacent content by construction; the desktop floating presentation is unchanged.
+
+#### Scenario: Toolbar controls wrap instead of being clipped on narrow viewports
+
+- **WHEN** the editor is below the mobile breakpoint and the toolbar's controls (palette toggle, properties toggle, save, publish) do not all fit in a single row at the current viewport width
+- **THEN** the controls wrap onto additional centered rows rather than overflowing and being clipped by the surrounding layout
 
 ### Requirement: Touch-compatible node creation
 
@@ -142,6 +173,16 @@ The editor SHALL provide a way to add a node to the canvas that does not depend 
 
 - **WHEN** a user with mouse/pointer input drags a node type from the palette and drops it on the canvas
 - **THEN** the node is created exactly as it was before this change, with no behavior difference introduced by the touch-compatible creation path
+
+#### Scenario: Consecutive taps at an unchanged viewport do not stack nodes on top of each other
+
+- **WHEN** a user taps a palette entry more than once in a row without panning or zooming the canvas in between
+- **THEN** each added node is placed at a distinct position (cascading from the viewport center) rather than exactly overlapping the previous one
+
+#### Scenario: Panning between taps resets the cascade
+
+- **WHEN** a user taps a palette entry, pans or zooms the canvas, then taps a palette entry again
+- **THEN** the second node is placed at the new viewport center, not offset by the previous tap's cascade
 
 ### Requirement: Minimum touch target size for the edge delete control
 

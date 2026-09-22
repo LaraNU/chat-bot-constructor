@@ -1,7 +1,17 @@
 'use client';
 
-import { useCallback, Dispatch, SetStateAction } from 'react';
+import { useCallback, useRef, Dispatch, SetStateAction } from 'react';
 import { useReactFlow, useStore, type XYPosition } from '@xyflow/react';
+
+/**
+ * Repeated taps on the same palette entry without panning between them would
+ * otherwise all land on the exact same viewport-center position, stacking
+ * new nodes perfectly on top of each other (indistinguishable from "nothing
+ * was added" until the user drags them apart). Each consecutive tap-add at
+ * an unchanged viewport nudges the position by this offset, cascading
+ * diagonally; panning (which changes the computed center) resets the count.
+ */
+const TAP_ADD_CASCADE_OFFSET_PX = 24;
 
 import type { CustomAppNode, WorkflowNodeType } from '@/entities/workflow';
 
@@ -87,6 +97,7 @@ export function useCanvasDragDrop(setNodes: Dispatch<SetStateAction<CustomAppNod
   const { screenToFlowPosition, getViewport } = useReactFlow();
   const paneWidth = useStore((state) => state.width);
   const paneHeight = useStore((state) => state.height);
+  const lastTapAddRef = useRef<{ x: number; y: number; cascadeCount: number } | null>(null);
 
   const createNodeAtPosition = useCallback(
     (type: WorkflowNodeType, position: XYPosition) => {
@@ -131,9 +142,18 @@ export function useCanvasDragDrop(setNodes: Dispatch<SetStateAction<CustomAppNod
     (type: WorkflowNodeType) => {
       const { x, y, zoom } = getViewport();
 
+      const baseX = (paneWidth / 2 - x) / zoom;
+      const baseY = (paneHeight / 2 - y) / zoom;
+
+      const last = lastTapAddRef.current;
+      const isSameViewportAsLastTap = last !== null && last.x === baseX && last.y === baseY;
+      const cascadeCount = isSameViewportAsLastTap ? last.cascadeCount + 1 : 0;
+
+      lastTapAddRef.current = { x: baseX, y: baseY, cascadeCount };
+
       createNodeAtPosition(type, {
-        x: (paneWidth / 2 - x) / zoom,
-        y: (paneHeight / 2 - y) / zoom,
+        x: baseX + cascadeCount * TAP_ADD_CASCADE_OFFSET_PX,
+        y: baseY + cascadeCount * TAP_ADD_CASCADE_OFFSET_PX,
       });
     },
     [getViewport, paneWidth, paneHeight, createNodeAtPosition]
