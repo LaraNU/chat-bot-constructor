@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/ui/button';
 import { SaveWorkflowButton } from '@/features/save-workflow';
 import { PublishBotButton } from '@/features/publish-bot';
+import { cn } from '@/shared/lib/utils';
 
 interface EditorHeaderProps {
   botId: string;
@@ -21,8 +22,15 @@ export const EditorHeader = memo(
     const t = useTranslations('WorkflowEditor');
 
     return (
-      <div className="bg-card absolute right-[0] z-50 flex items-center justify-between rounded-[20px] bg-[#ffffffba] p-4">
-        <div className="flex items-center gap-2">
+      <div
+        className={cn(
+          'z-50 flex items-center justify-center p-4',
+          isMobile
+            ? 'border-border bg-card w-full border-b'
+            : 'bg-card absolute right-[0] rounded-[20px] bg-[#ffffffba]'
+        )}
+      >
+        <div className={cn('flex items-center gap-2', isMobile && 'flex-wrap justify-center')}>
           {isMobile && (
             <>
               <Button

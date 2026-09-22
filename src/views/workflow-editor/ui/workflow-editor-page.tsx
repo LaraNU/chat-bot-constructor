@@ -9,7 +9,6 @@ import { PropertiesPanel } from '@/widgets/properties-panel';
 import { EditorHeader } from '@/widgets/editor-header';
 
 import { WorkflowStoreProvider } from '@/entities/workflow/model/store';
-import { useSelectedNodeId } from '@/entities/workflow/model/store/selectors';
 import type { AppEdge, AppNode, CustomAppNode } from '@/entities/workflow/model/types';
 
 import { useAutosave } from '@/features/save-workflow';
@@ -27,19 +26,9 @@ function EditorContent({ botId, hasToken }: { botId: string; hasToken: boolean }
   useAutosave({ botId });
 
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
-  const selectedNodeId = useSelectedNodeId();
 
   const [isPaletteOpen, setPaletteOpen] = useState(false);
   const [isPropertiesOpen, setPropertiesOpen] = useState(false);
-
-  // Auto-open the properties sheet the moment a node becomes selected on
-  // mobile, without re-triggering on every render while it stays selected.
-  const [autoOpenedForNodeId, setAutoOpenedForNodeId] = useState<string | null>(null);
-
-  if (isMobile && selectedNodeId && selectedNodeId !== autoOpenedForNodeId) {
-    setAutoOpenedForNodeId(selectedNodeId);
-    setPropertiesOpen(true);
-  }
 
   return (
     <div
@@ -56,7 +45,7 @@ function EditorContent({ botId, hasToken }: { botId: string; hasToken: boolean }
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenProperties={() => setPropertiesOpen(true)}
         />
-        <WorkflowCanvas />
+        <WorkflowCanvas onNodeDoubleClick={isMobile ? () => setPropertiesOpen(true) : undefined} />
       </main>
 
       <PropertiesPanel

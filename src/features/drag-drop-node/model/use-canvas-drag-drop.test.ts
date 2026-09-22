@@ -87,4 +87,41 @@ describe('useCanvasDragDrop', () => {
     // pane 800x600, viewport x=100 y=50 zoom=2 -> center = ((800/2 - 100)/2, (600/2 - 50)/2)
     expect(getNodes()[0].position).toEqual({ x: 150, y: 125 });
   });
+
+  it('cascades consecutive onTapAdd calls at an unchanged viewport so nodes do not stack exactly on top of each other', () => {
+    const { setNodes, getNodes } = trackSetNodes();
+    const { result } = renderHook(() => useCanvasDragDrop(setNodes));
+
+    act(() => {
+      result.current.onTapAdd('message');
+      result.current.onTapAdd('message');
+      result.current.onTapAdd('message');
+    });
+
+    expect(getNodes()).toHaveLength(3);
+    // viewport unchanged (x=0,y=0,zoom=1) -> base center (400, 300), each repeat offset by 24px
+    expect(getNodes()[0].position).toEqual({ x: 400, y: 300 });
+    expect(getNodes()[1].position).toEqual({ x: 424, y: 324 });
+    expect(getNodes()[2].position).toEqual({ x: 448, y: 348 });
+  });
+
+  it('resets the cascade once the viewport changes (e.g. the user panned) between taps', () => {
+    const { setNodes, getNodes } = trackSetNodes();
+    const { result } = renderHook(() => useCanvasDragDrop(setNodes));
+
+    act(() => {
+      result.current.onTapAdd('message');
+    });
+
+    mockGetViewport.mockReturnValue({ x: 100, y: 0, zoom: 1 });
+
+    act(() => {
+      result.current.onTapAdd('message');
+    });
+
+    expect(getNodes()).toHaveLength(2);
+    expect(getNodes()[0].position).toEqual({ x: 400, y: 300 });
+    // new viewport center, not offset by the previous cascade
+    expect(getNodes()[1].position).toEqual({ x: 300, y: 300 });
+  });
 });

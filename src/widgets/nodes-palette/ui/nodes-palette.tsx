@@ -7,7 +7,7 @@ import type { WorkflowNodeType } from '@/entities/workflow';
 import { useSetNodes } from '@/entities/workflow/model/store';
 import { DragEvent } from 'react';
 import { Heading } from '@/shared/ui/typography';
-import { Sheet, SheetContent, SheetTitle } from '@/shared/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/shared/ui/sheet';
 import { useCanvasDragDrop } from '@/features/drag-drop-node';
 import { useMediaQuery } from '@/shared/lib/hooks';
 
@@ -72,7 +72,7 @@ export function NodesPalette({ isMobile, open, onOpenChange }: Props) {
         <SheetContent side="left" className="gap-0 p-0">
           <div className="border-border border-b p-4">
             <SheetTitle className="text-lg font-medium">{t('plaletteTitle')}</SheetTitle>
-            <p className="text-muted-foreground mt-1 text-xs">{t('description')}</p>
+            <SheetDescription className="mt-1 text-xs">{t('description')}</SheetDescription>
           </div>
           {nodesList}
         </SheetContent>

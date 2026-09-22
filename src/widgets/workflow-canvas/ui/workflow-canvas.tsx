@@ -22,7 +22,11 @@ import { useCanvasDragDrop } from '@/features/drag-drop-node';
 
 import { WORKFLOW_EDGE } from '../model/constants';
 
-export function WorkflowCanvas() {
+type Props = {
+  onNodeDoubleClick?: () => void;
+};
+
+export function WorkflowCanvas({ onNodeDoubleClick }: Props) {
   const nodes = useWorkflowNodes();
   const edges = useWorkflowEdges();
 
@@ -66,6 +70,7 @@ export function WorkflowCanvas() {
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onNodeDoubleClick={onNodeDoubleClick}
         nodeTypes={NODE_TYPES}
         edgeTypes={edgeTypes}
         fitView
