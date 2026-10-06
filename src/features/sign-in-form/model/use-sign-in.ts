@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/shared/lib/supabase/client';
-import { useRouter } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { AuthError } from '@supabase/supabase-js';
 import { getAuthErrorKey } from '@/shared/lib/supabase/auth-errors';
@@ -23,7 +22,6 @@ export const useSignIn = () => {
   const t = useTranslations('SignInForm');
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
-  const router = useRouter();
 
   const form = useForm<SignInFields>({
     resolver: zodResolver(createSignInSchema(t)),
@@ -37,13 +35,6 @@ export const useSignIn = () => {
       const { error } = await supabase.auth.signInWithPassword(data);
       if (error) throw error;
       toast.success(t('success'));
-      try {
-        router.push('/');
-        // isLoading intentionally stays true — component unmounts on navigation.
-      } catch {
-        // Navigation failed (network loss, router error); unblock the form.
-        setIsLoading(false);
-      }
     } catch (err) {
       const key = err instanceof AuthError ? getAuthErrorKey(err.code) : 'default';
       const message = key === 'default' ? t('errors.default') : t(`errors.${key}`);
