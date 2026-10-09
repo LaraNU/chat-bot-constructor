@@ -15,6 +15,7 @@
     "signUp": "Sign up",
     "signOut": "Sign out",
     "signOutError": "Failed to sign out. Please try again",
+    "accountMenu": "Account menu",
     "search_placeholder": "Search bots..."
   },
   "PropertiesPanel": {

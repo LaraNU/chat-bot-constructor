@@ -1,5 +1,5 @@
 import { vi, describe, test, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import type { User } from '@supabase/supabase-js';
 import { UserMenu } from './user-menu';
 
@@ -61,7 +61,7 @@ describe('UserMenu', () => {
     fireEvent.click(button);
 
     expect(button).toBeDisabled();
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(within(button).getByRole('status')).toBeInTheDocument();
 
     resolveSignOut!({ error: null });
 
@@ -84,5 +84,22 @@ describe('UserMenu', () => {
     expect(button).not.toBeDisabled();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  test('compact dropdown trigger opens a menu showing the name and a working sign-out item', async () => {
+    mockSignOut.mockResolvedValue({ error: null });
+
+    render(<UserMenu user={user} />);
+
+    // Radix's DropdownMenuTrigger opens on pointerdown, not click; keyboard
+    // activation (Enter) is the reliable way to open it under jsdom.
+    fireEvent.keyDown(screen.getByTestId('user-menu-trigger'), { key: 'Enter' });
+
+    expect(screen.getByTestId('user-menu-dropdown-label')).toHaveTextContent('test@example.com');
+
+    fireEvent.click(screen.getByTestId('sign-out-menu-item'));
+
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalled());
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
   });
 });
