@@ -14,6 +14,8 @@
     "login": "Войти",
     "signUp": "Создать аккаунт",
     "signOut": "Выйти",
+    "signOutError": "Не удалось выйти из аккаунта. Попробуйте ещё раз",
+    "accountMenu": "Меню аккаунта",
     "search_placeholder": "Искать бота..."
   },
   "PropertiesPanel": {

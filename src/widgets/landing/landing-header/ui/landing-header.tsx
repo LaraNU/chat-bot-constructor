@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/shared/ui/button';
+import { BrandMark } from '@/shared/ui/brand-mark';
 import { LangSwitcher } from '@/features/language-switcher';
 import { ThemeToggle } from '@/features/theme-toggle';
 
@@ -12,27 +13,8 @@ export function LandingHeader() {
   return (
     <header className="border-border bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
       <div className="flex h-14 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="bg-foreground flex h-8 w-8 items-center justify-center rounded-lg">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-background h-5 w-5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M12 8V4H8" />
-              <rect width="16" height="12" x="4" y="8" rx="2" />
-              <path d="M2 14h2" />
-              <path d="M20 14h2" />
-              <path d="M15 13v2" />
-              <path d="M9 13v2" />
-            </svg>
-          </div>
-          <span className="text-lg font-semibold tracking-tight">{t('brand')}</span>
+        <Link href="/">
+          <BrandMark name={t('brand')} />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex" aria-label={t('brand')}>
@@ -56,13 +38,13 @@ export function LandingHeader() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 min-[380px]:gap-2">
           <LangSwitcher />
           <ThemeToggle />
-          <Button variant="ghost" asChild>
+          <Button variant="ghost" asChild className="px-2 min-[380px]:px-4">
             <Link href="/login">{t('signIn')}</Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="px-2 min-[380px]:px-4">
             <Link href="/signup">{t('getStarted')}</Link>
           </Button>
         </div>
