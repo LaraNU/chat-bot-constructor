@@ -64,13 +64,7 @@ export type AppNode = CustomAppNode;
 export type AppEdge = Edge;
 
 export type WorkflowNodeType =
-  | 'start'
-  | 'message'
-  | 'question'
-  | 'choice'
-  | 'condition'
-  | 'end'
-  | 'summary';
+  'start' | 'message' | 'question' | 'choice' | 'condition' | 'end' | 'summary';
 
 export type NodeDataUpdatePayload =
   | Partial<MessageNodeData>

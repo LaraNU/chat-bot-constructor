@@ -60,12 +60,12 @@ it is explicitly re-published.
 The project is designed to move through four stages. Each stage adds requirements without discarding the
 previous architecture:
 
-| Stage | Description | Status |
-|---|---|---|
-| **1. Internal tool** | A small team creates and manages a handful of Telegram bots for internal use. | Core functionality implemented |
-| **2. Internal multi-user beta** | Multiple team members use the same deployment with separate accounts. | Requires closing remaining multi-tenant isolation gaps (see [Roadmap](#roadmap)) |
-| **3. Public beta** | External users register and use the product with a shared, monitored deployment. | Not started — depends on stage 2 hardening, observability, and rate limiting |
-| **4. Self-service SaaS** | Users register, manage their own bots independently, and view usage analytics for their bots. | Long-term direction; requires publish/version history, analytics UI, and further backend work |
+| Stage                           | Description                                                                                   | Status                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **1. Internal tool**            | A small team creates and manages a handful of Telegram bots for internal use.                 | Core functionality implemented                                                                |
+| **2. Internal multi-user beta** | Multiple team members use the same deployment with separate accounts.                         | Requires closing remaining multi-tenant isolation gaps (see [Roadmap](#roadmap))              |
+| **3. Public beta**              | External users register and use the product with a shared, monitored deployment.              | Not started — depends on stage 2 hardening, observability, and rate limiting                  |
+| **4. Self-service SaaS**        | Users register, manage their own bots independently, and view usage analytics for their bots. | Long-term direction; requires publish/version history, analytics UI, and further backend work |
 
 A longer-term architectural direction — extracting the Telegram runtime into a dedicated Node.js backend service
 — is described in [Future Architecture Evolution](#future-architecture-evolution). It is not implemented today.
@@ -128,14 +128,14 @@ The project follows **Feature-Sliced Design**, with dependencies flowing strictl
 shared → entities → features → widgets → views → app
 ```
 
-| Layer | Responsibility | Examples |
-|---|---|---|
-| `shared` | Reusable UI kit, infrastructure, auth helpers, Prisma client, i18n | `shared/ui`, `shared/lib`, `shared/auth.ts` |
-| `entities` | Domain models and domain logic | `entities/bot`, `entities/workflow` |
-| `features` | User-facing interactions and use cases | `features/publish-bot`, `features/save-workflow`, `features/telegram-webhook` |
-| `widgets` | Composed UI blocks | `widgets/workflow-canvas`, `widgets/properties-panel`, `widgets/bot-list` |
-| `views` | Page-level composition | `views/dashboard`, `views/workflow-editor` |
-| `app` | Next.js routing, layouts, providers, HTTP entry points | `app/[locale]`, `app/api/webhook` |
+| Layer      | Responsibility                                                     | Examples                                                                      |
+| ---------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `shared`   | Reusable UI kit, infrastructure, auth helpers, Prisma client, i18n | `shared/ui`, `shared/lib`, `shared/auth.ts`                                   |
+| `entities` | Domain models and domain logic                                     | `entities/bot`, `entities/workflow`                                           |
+| `features` | User-facing interactions and use cases                             | `features/publish-bot`, `features/save-workflow`, `features/telegram-webhook` |
+| `widgets`  | Composed UI blocks                                                 | `widgets/workflow-canvas`, `widgets/properties-panel`, `widgets/bot-list`     |
+| `views`    | Page-level composition                                             | `views/dashboard`, `views/workflow-editor`                                    |
+| `app`      | Next.js routing, layouts, providers, HTTP entry points             | `app/[locale]`, `app/api/webhook`                                             |
 
 The workflow editor uses an **isolated Zustand vanilla store per editor instance**, created via `createStore()`
 and provided through React Context (`entities/workflow/model/store`). There is no global singleton store — each
@@ -162,13 +162,13 @@ service an incremental migration rather than a rewrite.
 
 Managed by Prisma against PostgreSQL. Core models:
 
-| Model | Purpose |
-|---|---|
-| `Bot` | A user-owned bot: name, description, Telegram token (once published) |
-| `Flow` | The editable draft workflow (nodes/edges) for a bot — 1:1 with `Bot` |
-| `FlowSnapshot` | The published workflow graph executed by the Telegram runtime — 1:1 with `Flow` |
-| `UserSession` | Per-Telegram-chat conversation state (current node, temporary answers) — unique per `(botId, telegramChatId)` |
-| `BotResponse` | Collected end-of-conversation answers per chat |
+| Model          | Purpose                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `Bot`          | A user-owned bot: name, description, Telegram token (once published)                                          |
+| `Flow`         | The editable draft workflow (nodes/edges) for a bot — 1:1 with `Bot`                                          |
+| `FlowSnapshot` | The published workflow graph executed by the Telegram runtime — 1:1 with `Flow`                               |
+| `UserSession`  | Per-Telegram-chat conversation state (current node, temporary answers) — unique per `(botId, telegramChatId)` |
+| `BotResponse`  | Collected end-of-conversation answers per chat                                                                |
 
 The separation between `Flow` (draft) and `FlowSnapshot` (published) is a core architectural invariant: the
 Telegram runtime **only ever reads from `FlowSnapshot`**, never from the live draft. Editing a bot's flow has no
@@ -210,12 +210,12 @@ a hard distributed limit needs Redis/Upstash later, once the Telegram runtime is
 **not** applied only in `src/middleware.ts`: that matcher excludes `api`, and auth/Server Actions would not be
 covered there anyway.
 
-| Surface | Where | Key | Over-limit behaviour |
-|---|---|---|---|
-| Login / signup | Supabase Auth (browser → `*.supabase.co`) | Supabase IP / project quotas | Auth `429` / `too_many_requests`; Next.js does not see the attempt |
-| Publish / delete | Server Action after `getUser()` | Authenticated `userId` | `{ success: false, error: 'Too many requests' }` (same UI contract as other action errors) |
-| Webhook, invalid or missing secret | `handleTelegramWebhook` | Client IP (`x-forwarded-for` first hop, else `x-real-ip`) | Existing `401`; does **not** consume the bot budget |
-| Webhook, valid secret | `handleTelegramWebhook` | `botId` | `200 { success: true }` and drop — **not** `429`, so Telegram does not retry-storm an over-cap bot |
+| Surface                            | Where                                     | Key                                                       | Over-limit behaviour                                                                               |
+| ---------------------------------- | ----------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Login / signup                     | Supabase Auth (browser → `*.supabase.co`) | Supabase IP / project quotas                              | Auth `429` / `too_many_requests`; Next.js does not see the attempt                                 |
+| Publish / delete                   | Server Action after `getUser()`           | Authenticated `userId`                                    | `{ success: false, error: 'Too many requests' }` (same UI contract as other action errors)         |
+| Webhook, invalid or missing secret | `handleTelegramWebhook`                   | Client IP (`x-forwarded-for` first hop, else `x-real-ip`) | Existing `401`; does **not** consume the bot budget                                                |
+| Webhook, valid secret              | `handleTelegramWebhook`                   | `botId`                                                   | `200 { success: true }` and drop — **not** `429`, so Telegram does not retry-storm an over-cap bot |
 
 Optional env overrides (defaults apply when unset) are listed under [Environment Variables](#environment-variables).
 
@@ -364,18 +364,18 @@ To receive real Telegram updates locally, the webhook URL registered with Telegr
 
 ## Environment Variables
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | Pooled PostgreSQL connection string used by Prisma at runtime |
-| `DIRECT_URL` | Direct PostgreSQL connection string used by Prisma for migrations |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | Supabase publishable (anon) key |
-| `NEXT_PUBLIC_APP_URL` | Public base URL used to construct the Telegram webhook URL when publishing a bot; falls back to `VERCEL_URL` if unset |
-| `TELEGRAM_WEBHOOK_SECRET_KEY` | Server-only key used to deterministically derive each bot's Telegram webhook secret (`HMAC-SHA256(botId)`); registered with Telegram as `secret_token` and verified on every incoming update via the `X-Telegram-Bot-Api-Secret-Token` header |
-| `RATE_LIMIT_MUTATION_MAX` / `RATE_LIMIT_MUTATION_WINDOW_SEC` | In-memory cap for publish+delete per authenticated user (default `10` / `60s`). Does **not** apply to login/signup |
-| `RATE_LIMIT_WEBHOOK_IP_MAX` / `RATE_LIMIT_WEBHOOK_IP_WINDOW_SEC` | In-memory cap for webhook requests with an invalid or missing secret, keyed by client IP (default `60` / `60s`) |
-| `RATE_LIMIT_WEBHOOK_BOT_MAX` / `RATE_LIMIT_WEBHOOK_BOT_WINDOW_SEC` | In-memory cap for webhook requests with a valid secret, keyed by `botId` (default `120` / `60s`) |
-| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` | Credentials used by the Playwright authentication setup |
+| Variable                                                           | Purpose                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                     | Pooled PostgreSQL connection string used by Prisma at runtime                                                                                                                                                                                 |
+| `DIRECT_URL`                                                       | Direct PostgreSQL connection string used by Prisma for migrations                                                                                                                                                                             |
+| `NEXT_PUBLIC_SUPABASE_URL`                                         | Supabase project URL                                                                                                                                                                                                                          |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`                     | Supabase publishable (anon) key                                                                                                                                                                                                               |
+| `NEXT_PUBLIC_APP_URL`                                              | Public base URL used to construct the Telegram webhook URL when publishing a bot; falls back to `VERCEL_URL` if unset                                                                                                                         |
+| `TELEGRAM_WEBHOOK_SECRET_KEY`                                      | Server-only key used to deterministically derive each bot's Telegram webhook secret (`HMAC-SHA256(botId)`); registered with Telegram as `secret_token` and verified on every incoming update via the `X-Telegram-Bot-Api-Secret-Token` header |
+| `RATE_LIMIT_MUTATION_MAX` / `RATE_LIMIT_MUTATION_WINDOW_SEC`       | In-memory cap for publish+delete per authenticated user (default `10` / `60s`). Does **not** apply to login/signup                                                                                                                            |
+| `RATE_LIMIT_WEBHOOK_IP_MAX` / `RATE_LIMIT_WEBHOOK_IP_WINDOW_SEC`   | In-memory cap for webhook requests with an invalid or missing secret, keyed by client IP (default `60` / `60s`)                                                                                                                               |
+| `RATE_LIMIT_WEBHOOK_BOT_MAX` / `RATE_LIMIT_WEBHOOK_BOT_WINDOW_SEC` | In-memory cap for webhook requests with a valid secret, keyed by `botId` (default `120` / `60s`)                                                                                                                                              |
+| `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`                           | Credentials used by the Playwright authentication setup                                                                                                                                                                                       |
 
 Copy [`.env.example`](.env.example) to `.env.local` (or `.env.test` for running tests) and fill in real values.
 
@@ -403,20 +403,20 @@ The core product loop — build a workflow, publish it, run it against real Tele
 The table below is an honest snapshot of what still separates the current state from each stage in the
 [product evolution](#product-goals-and-evolution).
 
-| Area | Status |
-|---|---|
-| Core editor, publishing, and Telegram runtime | Implemented and functional |
-| Domain validation and unit test coverage (validation, services, store) | Implemented |
-| Authentication | Implemented (Supabase Auth) |
-| Authorization / multi-tenant isolation | Partially implemented — not yet uniform across all mutations |
-| Telegram webhook transport security | Not yet implemented |
-| Telegram delivery idempotency | Not yet implemented |
-| Structured logging / error monitoring | Not yet implemented |
-| Automated tests for the Telegram runtime | Not yet implemented |
-| Rate limiting | Implemented for publish/delete (`userId`) and the webhook (IP vs `botId`); login/signup are limited by Supabase Auth, not Next.js. In-memory / per-isolate — not a global cap on Vercel |
-| Deployment automation (containerization / deploy manifest) | Not yet implemented |
-| Bot usage analytics UI | Not yet implemented (underlying data is already collected) |
-| Publish history / rollback | Not yet implemented (publishing currently keeps only the latest snapshot) |
+| Area                                                                   | Status                                                                                                                                                                                  |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core editor, publishing, and Telegram runtime                          | Implemented and functional                                                                                                                                                              |
+| Domain validation and unit test coverage (validation, services, store) | Implemented                                                                                                                                                                             |
+| Authentication                                                         | Implemented (Supabase Auth)                                                                                                                                                             |
+| Authorization / multi-tenant isolation                                 | Partially implemented — not yet uniform across all mutations                                                                                                                            |
+| Telegram webhook transport security                                    | Not yet implemented                                                                                                                                                                     |
+| Telegram delivery idempotency                                          | Not yet implemented                                                                                                                                                                     |
+| Structured logging / error monitoring                                  | Not yet implemented                                                                                                                                                                     |
+| Automated tests for the Telegram runtime                               | Not yet implemented                                                                                                                                                                     |
+| Rate limiting                                                          | Implemented for publish/delete (`userId`) and the webhook (IP vs `botId`); login/signup are limited by Supabase Auth, not Next.js. In-memory / per-isolate — not a global cap on Vercel |
+| Deployment automation (containerization / deploy manifest)             | Not yet implemented                                                                                                                                                                     |
+| Bot usage analytics UI                                                 | Not yet implemented (underlying data is already collected)                                                                                                                              |
+| Publish history / rollback                                             | Not yet implemented (publishing currently keeps only the latest snapshot)                                                                                                               |
 
 ## Roadmap
 
