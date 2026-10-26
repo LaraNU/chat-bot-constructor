@@ -20,32 +20,32 @@ logging, testing, and CI/CD treated as first-class deliverables, not afterthough
 
 Current (implemented):
 
-* Next.js App Router
-* React
-* TypeScript (strict)
-* Tailwind CSS
-* Radix UI
-* CVA
-* Zustand Vanilla Store
-* React Context
-* XYFlow / React Flow v12
-* React Hook Form
-* Zod
-* Next.js Route Handlers (webhook only) + Server Actions (all other mutations)
-* PostgreSQL (hosted on Supabase)
-* Prisma ORM
-* Supabase Auth
-* next-intl
-* Vitest
-* React Testing Library
-* Playwright
+- Next.js App Router
+- React
+- TypeScript (strict)
+- Tailwind CSS
+- Radix UI
+- CVA
+- Zustand Vanilla Store
+- React Context
+- XYFlow / React Flow v12
+- React Hook Form
+- Zod
+- Next.js Route Handlers (webhook only) + Server Actions (all other mutations)
+- PostgreSQL (hosted on Supabase)
+- Prisma ORM
+- Supabase Auth
+- next-intl
+- Vitest
+- React Testing Library
+- Playwright
 
 Planned (not yet implemented — see Target Production Architecture):
 
-* Standalone Node.js backend service (NestJS or equivalent — final choice pending evaluation)
-* Structured logging (e.g. pino)
-* Error/monitoring tooling (e.g. Sentry)
-* Containerization (Docker) and an explicit deployment manifest
+- Standalone Node.js backend service (NestJS or equivalent — final choice pending evaluation)
+- Structured logging (e.g. pino)
+- Error/monitoring tooling (e.g. Sentry)
+- Containerization (Docker) and an explicit deployment manifest
 
 ---
 
@@ -71,17 +71,17 @@ app
 
 The project also contains infrastructure outside the FSD layers:
 
-* `prisma/` — database schema and migrations
-* `tests/` — Playwright end-to-end tests
+- `prisma/` — database schema and migrations
+- `tests/` — Playwright end-to-end tests
 
 ### Main Layer Responsibilities
 
-* `shared` — reusable UI, utilities, infrastructure, API clients, authentication, database access, and common types
-* `entities` — domain entities and domain logic such as bots and workflows
-* `features` — user interactions and feature-specific business logic such as workflow actions and Telegram webhook execution
-* `widgets` — composed UI blocks such as the workflow canvas, property panel, node palette, headers, and bot list
-* `views` — page-level composition
-* `app` — Next.js routing, layouts, providers, and HTTP route handlers
+- `shared` — reusable UI, utilities, infrastructure, API clients, authentication, database access, and common types
+- `entities` — domain entities and domain logic such as bots and workflows
+- `features` — user interactions and feature-specific business logic such as workflow actions and Telegram webhook execution
+- `widgets` — composed UI blocks such as the workflow canvas, property panel, node palette, headers, and bot list
+- `views` — page-level composition
+- `app` — Next.js routing, layouts, providers, and HTTP route handlers
 
 ### Domain logic is already framework-agnostic
 
@@ -102,13 +102,15 @@ The main workflow domain is located in:
 
 The workflow entity contains:
 
-* workflow state
-* isolated Zustand Vanilla Store (one store instance per editor, provided via React Context — never a global singleton)
-* React Context provider
-* selectors and mutations
-* workflow validation (3-phase: graph structure, node connections, node data)
-* workflow persistence actions
-* node configuration and domain types
+- workflow state
+- isolated Zustand Vanilla Store (one store instance per editor, provided via React Context — never a global singleton)
+- React Context provider
+- selectors and mutations
+- workflow validation (4-phase: graph structure, cycles without a waiting node, node connections, node data)
+- node semantics (`model/node-semantics.ts`: which node types wait for user input — shared by runtime,
+  validation, and canvas)
+- workflow persistence actions
+- node configuration and domain types
 
 Store Factory:
 
@@ -121,10 +123,10 @@ do not extend it.
 
 The editor UI is composed in widgets such as:
 
-* `src/widgets/workflow-canvas`
-* `src/widgets/properties-panel`
-* `src/widgets/nodes-palette`
-* `src/widgets/editor-header`
+- `src/widgets/workflow-canvas`
+- `src/widgets/properties-panel`
+- `src/widgets/nodes-palette`
+- `src/widgets/editor-header`
 
 The page-level editor composition is located in:
 
@@ -140,8 +142,8 @@ The workflow editor produces a serializable workflow representation containing n
 
 The workflow has two important states:
 
-* the editable draft stored in `Flow`
-* the published snapshot stored in `FlowSnapshot`
+- the editable draft stored in `Flow`
+- the published snapshot stored in `FlowSnapshot`
 
 The draft may change during editing without changing the workflow currently executed by a published bot.
 
@@ -166,19 +168,19 @@ Telegram bot execution is implemented in:
 
 The feature contains:
 
-* webhook controller
-* runtime execution engine
-* session handling
-* node handlers
-* node handler registry
-* runtime types and guards
+- webhook controller
+- runtime execution engine
+- session handling
+- node handlers
+- node handler registry
+- runtime types and guards
 
 The main runtime components include:
 
-* `engine.ts`
-* `session.ts`
-* `lib/nodes/registry.ts`
-* node-specific handlers
+- `engine.ts`
+- `session.ts`
+- `lib/nodes/registry.ts`
+- node-specific handlers
 
 The Next.js HTTP entry point for Telegram webhooks is:
 
@@ -191,13 +193,19 @@ backend service low-risk.
 Session/conversation state (`UserSession`) is persisted in PostgreSQL, not in memory — this is required for
 correctness on serverless/multi-instance deployments and must be preserved in any future refactor.
 
+Loop guard invariant: every cycle in a workflow must pass through a waiting node (`question`, `choice`). It is
+enforced in three places — the canvas rejects such connections (`isValidConnection`), validation reports
+`CYCLE_WITHOUT_WAITING_NODE`, and the engine stops with `WorkflowExecutionLimitError` when a non-waiting node is
+reached twice within one update or `MAX_STEPS_PER_UPDATE` is exceeded. Only the first executed handler receives
+`initialNodeId`; a later visit to the same waiting node asks again instead of re-consuming the answer.
+
 ### Known runtime limitations (do not treat as resolved)
 
-* No `X-Telegram-Bot-Api-Secret-Token` validation; the bot is resolved via `botId`/`token` query parameters,
+- No `X-Telegram-Bot-Api-Secret-Token` validation; the bot is resolved via `botId`/`token` query parameters,
   and the token is not cross-checked against `Bot.token` in the database.
-* The bot token is embedded in the webhook URL (`setWebhook` call), not just stored server-side.
-* No idempotency handling for duplicate Telegram updates (`update_id` is not tracked).
-* Handler/engine errors are caught at the webhook boundary and reported to Telegram as success, which prevents
+- The bot token is embedded in the webhook URL (`setWebhook` call), not just stored server-side.
+- No idempotency handling for duplicate Telegram updates (`update_id` is not tracked).
+- Handler/engine errors are caught at the webhook boundary and reported to Telegram as success, which prevents
   retries but also means runtime failures are currently silent (only `console.error`, no structured logging or
   alerting).
 
@@ -213,9 +221,9 @@ for authorization decisions.
 
 Authorization (resource ownership) is implemented ad hoc in application code, and is **inconsistent**:
 
-* Bot creation and bot listing correctly scope queries by `userId`.
-* Bot publishing checks ownership at the database-write step (`where: { id, userId }`).
-* Bot deletion and workflow save/read currently do **not** verify that the authenticated user owns the target
+- Bot creation and bot listing correctly scope queries by `userId`.
+- Bot publishing checks ownership at the database-write step (`where: { id, userId }`).
+- Bot deletion and workflow save/read currently do **not** verify that the authenticated user owns the target
   `botId` before acting on it.
 
 `src/middleware.ts` currently gates protected routes by checking for the presence of a cookie whose name
@@ -272,10 +280,10 @@ PostgreSQL
 
 The backend service will own:
 
-* the Telegram webhook and execution engine (first candidate for extraction — already framework-agnostic)
-* bot/workflow CRUD, exposed as a documented REST API
-* authorization/ownership enforcement as a first-class concern, not an afterthought
-* structured logging, error monitoring, and health checks
+- the Telegram webhook and execution engine (first candidate for extraction — already framework-agnostic)
+- bot/workflow CRUD, exposed as a documented REST API
+- authorization/ownership enforcement as a first-class concern, not an afterthought
+- structured logging, error monitoring, and health checks
 
 This target is directional. Do not begin implementing the extraction before the current-implementation gaps
 listed above (authorization, webhook security, testing) are resolved — migrating a monolith with unresolved
@@ -289,13 +297,13 @@ The application uses `next-intl`.
 
 Supported locales:
 
-* English
-* Russian
+- English
+- Russian
 
 Translation files:
 
-* `src/shared/langs/en.json`
-* `src/shared/langs/ru.json`
+- `src/shared/langs/en.json`
+- `src/shared/langs/ru.json`
 
 ---
 
@@ -303,9 +311,9 @@ Translation files:
 
 The project uses:
 
-* Vitest for unit and integration tests
-* React Testing Library for React component tests
-* Playwright for end-to-end tests
+- Vitest for unit and integration tests
+- React Testing Library for React component tests
+- Playwright for end-to-end tests
 
 Unit and component tests are colocated with the relevant source modules.
 
@@ -341,21 +349,21 @@ not reproducible from the repository alone.
 The following are explicitly temporary and should not be treated as permanent architectural choices when making
 unrelated changes:
 
-* Bot token stored in plaintext and passed via the webhook URL query string — a security placeholder, not a
+- Bot token stored in plaintext and passed via the webhook URL query string — a security placeholder, not a
   design decision to preserve.
-* `FlowSnapshot` as a single upsert row (no publish history) — a simplification, not the intended long-term
+- `FlowSnapshot` as a single upsert row (no publish history) — a simplification, not the intended long-term
   publishing model.
-* Server Actions as the entire "API" surface — acceptable for the current single-process monolith, not the
+- Server Actions as the entire "API" surface — acceptable for the current single-process monolith, not the
   target for a multi-tenant public product.
-* **Email confirmation disabled in Supabase Auth** — temporarily disabled (Authentication → Providers → Email →
+- **Email confirmation disabled in Supabase Auth** — temporarily disabled (Authentication → Providers → Email →
   "Confirm email" = off) because the built-in Supabase SMTP has a 2 emails/hour project-wide limit, which makes
   it unusable for any real signup flow. The application does not request `emailRedirectTo` and does not render a
   "check your inbox" screen. This will be reverted and a custom SMTP domain configured in the `transactional-email`
   change. Do not build features that assume email-confirmed accounts.
-* `src/middleware.ts` cookie-presence check — **replaced** (as of `fix-auth-flow`) with a proper `getUser()`
+- `src/middleware.ts` cookie-presence check — **replaced** (as of `fix-auth-flow`) with a proper `getUser()`
   call that validates the session against Supabase Auth and silently refreshes the access token. The middleware
   is now a correct session gate, not just a cookie-presence check.
-* `src/features/workflow-actions` — dead code kept temporarily; do not extend it, and do not assume it is wired
+- `src/features/workflow-actions` — dead code kept temporarily; do not extend it, and do not assume it is wired
   into the editor.
 
 ## Decisions That Require Reviewing Existing Code First
@@ -363,14 +371,14 @@ unrelated changes:
 Do not make the following assumptions without re-reading the current implementation — they are easy to get
 wrong and have direct security or correctness impact:
 
-* Whether a given bot/workflow mutation already enforces ownership — verify in the specific repository/service/
+- Whether a given bot/workflow mutation already enforces ownership — verify in the specific repository/service/
   action file, do not assume parity across similar-looking operations (ownership enforcement is currently
   inconsistent across `create`, `delete`, `save`, `publish`).
-* Whether the Telegram webhook route currently validates anything beyond presence of `botId`/`token` query
+- Whether the Telegram webhook route currently validates anything beyond presence of `botId`/`token` query
   params — it does not, as of this writing, but any future change here must be re-verified against
   `src/features/telegram-webhook/api/controller.ts` directly.
-* Whether `FlowSnapshot` supports multiple versions — it currently does not (unique constraint on `flowId`).
-* Whether Zustand selectors in `entities/workflow/ui/nodes` subscribe narrowly or to the entire React Flow
+- Whether `FlowSnapshot` supports multiple versions — it currently does not (unique constraint on `flowId`).
+- Whether Zustand selectors in `entities/workflow/ui/nodes` subscribe narrowly or to the entire React Flow
   store — some custom nodes (e.g. condition/summary) currently subscribe to the full node array; check before
   assuming granular subscriptions are in place everywhere.
 

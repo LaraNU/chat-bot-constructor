@@ -12,3 +12,4 @@ export type {
   ValidationSeverity,
   WorkflowGraph,
 } from './validation';
+export { findNodesInUnsafeCycles, wouldCreateUnsafeCycle } from './graph';

@@ -1,6 +1,7 @@
 import { vi, beforeEach, describe, test, expect } from 'vitest';
 
-import { runWorkflowEngine } from './engine';
+import { MAX_STEPS_PER_UPDATE, runWorkflowEngine } from './engine';
+import { WorkflowExecutionLimitError } from './execution-limit-error';
 import { getNodeHandler } from './nodes/registry';
 import type { AppNode, AppEdge } from '@/entities/workflow';
 import type { UserContext } from '../model/types';
@@ -194,5 +195,147 @@ describe('runWorkflowEngine', () => {
     expect(startHandler.handle).toHaveBeenCalledWith(
       expect.objectContaining({ tempData: { answers: {}, responses: [] } })
     );
+  });
+
+  describe('loop guard', () => {
+    // Mimics a linear runtime handler: follows the first outgoing edge.
+    function createLinearHandler(): NodeHandler {
+      return {
+        handle: vi.fn(async ({ node, edgesBySource }) => ({
+          nextNodeId: edgesBySource.get(node.id)?.[0]?.target ?? null,
+        })),
+      };
+    }
+
+    // Mimics question/choice: consumes the answer on resume, otherwise asks and waits.
+    function createWaitingHandler(): NodeHandler {
+      return {
+        handle: vi.fn(async ({ node, edgesBySource, initialNodeId }) =>
+          initialNodeId === node.id
+            ? { nextNodeId: edgesBySource.get(node.id)?.[0]?.target ?? null }
+            : { nextNodeId: node.id, shouldStop: true }
+        ),
+      };
+    }
+
+    function countCallsForNode(handler: NodeHandler, nodeId: string): number {
+      return vi.mocked(handler.handle).mock.calls.filter(([params]) => params.node.id === nodeId)
+        .length;
+    }
+
+    test('should run a message-only cycle once and stop with a `cycle` error', async () => {
+      const nodes = [
+        buildNode('start-1', 'start'),
+        buildNode('message-a', 'message'),
+        buildNode('message-b', 'message'),
+      ];
+      const edges = [
+        buildEdge('start-1', 'message-a'),
+        buildEdge('message-a', 'message-b'),
+        buildEdge('message-b', 'message-a'),
+      ];
+
+      const messageHandler = createLinearHandler();
+      vi.mocked(getNodeHandler).mockImplementation((type) =>
+        type === 'message' ? messageHandler : undefined
+      );
+
+      const run = runWorkflowEngine({ nodes, edges, initialNodeId: null, context: mockContext });
+
+      await expect(run).rejects.toBeInstanceOf(WorkflowExecutionLimitError);
+      await expect(run).rejects.toMatchObject({
+        reason: 'cycle',
+        nodeId: 'message-a',
+        botId: mockContext.botId,
+      });
+      expect(countCallsForNode(messageHandler, 'message-a')).toBe(1);
+      expect(countCallsForNode(messageHandler, 'message-b')).toBe(1);
+    });
+
+    test('should cut a cycle that goes through a condition node', async () => {
+      const nodes = [
+        buildNode('start-1', 'start'),
+        buildNode('message-a', 'message'),
+        buildNode('condition-1', 'condition'),
+      ];
+      const edges = [
+        buildEdge('start-1', 'message-a'),
+        buildEdge('message-a', 'condition-1'),
+        buildEdge('condition-1', 'message-a', 'true'),
+      ];
+
+      const linearHandler = createLinearHandler();
+      vi.mocked(getNodeHandler).mockImplementation((type) =>
+        type === 'message' || type === 'condition' ? linearHandler : undefined
+      );
+
+      await expect(
+        runWorkflowEngine({ nodes, edges, initialNodeId: null, context: mockContext })
+      ).rejects.toMatchObject({ reason: 'cycle', nodeId: 'message-a' });
+      expect(countCallsForNode(linearHandler, 'message-a')).toBe(1);
+    });
+
+    test('should ask the question again when the resumed path loops back to it', async () => {
+      const nodes = [
+        buildNode('question-1', 'question'),
+        buildNode('condition-1', 'condition'),
+        buildNode('message-retry', 'message'),
+      ];
+      const edges = [
+        buildEdge('question-1', 'condition-1'),
+        buildEdge('condition-1', 'message-retry', 'false'),
+        buildEdge('message-retry', 'question-1'),
+      ];
+
+      const questionHandler = createWaitingHandler();
+      const linearHandler = createLinearHandler();
+      vi.mocked(getNodeHandler).mockImplementation((type) =>
+        type === 'question' ? questionHandler : linearHandler
+      );
+
+      const result = await runWorkflowEngine({
+        nodes,
+        edges,
+        initialNodeId: 'question-1',
+        context: mockContext,
+      });
+
+      expect(result).toBe('question-1');
+      expect(countCallsForNode(linearHandler, 'message-retry')).toBe(1);
+      expect(questionHandler.handle).toHaveBeenCalledTimes(2);
+      expect(questionHandler.handle).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ initialNodeId: 'question-1' })
+      );
+      // A repeated visit within the same update must ask, not re-consume the answer.
+      expect(questionHandler.handle).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ initialNodeId: null })
+      );
+    });
+
+    test('should stop with a `step_limit` error when an acyclic chain exceeds the limit', async () => {
+      const chainLength = MAX_STEPS_PER_UPDATE + 1;
+      const messageIds = Array.from({ length: chainLength }, (_, index) => `message-${index}`);
+
+      const nodes = [
+        buildNode('start-1', 'start'),
+        ...messageIds.map((id) => buildNode(id, 'message')),
+      ];
+      const edges = [
+        buildEdge('start-1', messageIds[0]),
+        ...messageIds.slice(1).map((id, index) => buildEdge(messageIds[index], id)),
+      ];
+
+      const messageHandler = createLinearHandler();
+      vi.mocked(getNodeHandler).mockImplementation((type) =>
+        type === 'message' ? messageHandler : undefined
+      );
+
+      await expect(
+        runWorkflowEngine({ nodes, edges, initialNodeId: null, context: mockContext })
+      ).rejects.toMatchObject({ reason: 'step_limit', nodeId: messageIds[MAX_STEPS_PER_UPDATE] });
+      expect(messageHandler.handle).toHaveBeenCalledTimes(MAX_STEPS_PER_UPDATE);
+    });
   });
 });

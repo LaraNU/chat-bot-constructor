@@ -1,12 +1,19 @@
 'use client';
 
-import { ReactFlow, Background, Controls, type EdgeProps, MarkerType } from '@xyflow/react';
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  type EdgeProps,
+  type IsValidConnection,
+  MarkerType,
+} from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { NODE_TYPES, CustomEdge } from '@/entities/workflow';
+import { NODE_TYPES, CustomEdge, wouldCreateUnsafeCycle } from '@/entities/workflow';
 
 import {
   useWorkflowNodes,
@@ -16,6 +23,7 @@ import {
   useConnectNodes,
   useDeleteEdge,
   useSetNodes,
+  useWorkflowStoreApi,
 } from '@/entities/workflow/model/store';
 
 import { useCanvasDragDrop } from '@/features/drag-drop-node';
@@ -38,6 +46,19 @@ export function WorkflowCanvas({ onNodeDoubleClick }: Props) {
   const deleteEdge = useDeleteEdge();
 
   const { onDrop, onDragOver } = useCanvasDragDrop(setNodes);
+
+  const storeApi = useWorkflowStoreApi();
+
+  // Runs on every pointer move while a connection is dragged: read the graph
+  // at call time instead of re-creating the callback on each graph change.
+  const isValidConnection = useCallback<IsValidConnection>(
+    ({ source, target }) => {
+      const { nodes: currentNodes, edges: currentEdges } = storeApi.getState();
+
+      return !wouldCreateUnsafeCycle(currentNodes, currentEdges, { source, target });
+    },
+    [storeApi]
+  );
 
   const edgeTypes = useMemo(
     () => ({
@@ -68,6 +89,7 @@ export function WorkflowCanvas({ onNodeDoubleClick }: Props) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeDoubleClick={onNodeDoubleClick}

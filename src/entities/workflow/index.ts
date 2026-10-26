@@ -11,7 +11,10 @@ export type {
   ValidationSeverity,
   WorkflowGraph,
 } from './lib/validation';
+export { findNodesInUnsafeCycles, wouldCreateUnsafeCycle } from './lib/graph';
 export { WORKFLOW_NODES_CONFIG } from './model/nodes-config';
+export { WORKFLOW_NODE_SEMANTICS, isWaitingNodeType } from './model/node-semantics';
+export type { NodeSemantics } from './model/node-semantics';
 export { workflowService } from './server/service';
 export { saveWorkflowAction } from './api/actions';
 export type {

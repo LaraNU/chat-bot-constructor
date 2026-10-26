@@ -6,6 +6,7 @@ import { botService } from '@/entities/bot/server';
 import { flowSnapshotRepository } from '@/entities/workflow/server/snapshot-repository';
 import { getUserSessionState, saveUserSession, isUpdateAlreadyProcessed } from '../lib/session';
 import { runWorkflowEngine } from '../lib/engine';
+import { WorkflowExecutionLimitError } from '../lib/execution-limit-error';
 import { consumeWebhookBotRateLimit, consumeWebhookIpRateLimit } from '@/shared/lib/rate-limit';
 import type { Bot } from '@prisma/client';
 import type { FlowSnapshot } from '@prisma/client';
@@ -184,6 +185,20 @@ describe('handleTelegramWebhook', () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ success: true });
+  });
+
+  test('should return 200 without saving the session when the engine hits an execution limit', async () => {
+    vi.mocked(botService.verifyWebhookSecret).mockReturnValue(true);
+    vi.mocked(runWorkflowEngine).mockRejectedValue(
+      new WorkflowExecutionLimitError('cycle', 'bot-1', 'message-a')
+    );
+
+    const response = await handleTelegramWebhook(buildRequest({ secret: mockSecret }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ success: true });
+    // Session stays on the previous node, so a cycle cannot advance persisted state.
+    expect(saveUserSession).not.toHaveBeenCalled();
   });
 
   test('should return 500 and never run the engine when no snapshot has been published', async () => {
