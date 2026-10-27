@@ -27,10 +27,10 @@
 ## 5. Canvas connection guard
 
 - [x] 5.1 В `src/widgets/workflow-canvas/ui/workflow-canvas.tsx` передать в `ReactFlow` `isValidConnection` — `useCallback`, читающий `nodes`/`edges` из `useWorkflowStoreApi().getState()` и возвращающий `!wouldCreateUnsafeCycle(...)`. Проверка: `npx tsc --noEmit` и `npm run lint` проходят
-- [ ] 5.2 Ручная проверка в `npm run dev`: связь `message B → message A` при существующей `A → B` не создаётся и подсвечивается как невалидная; связь `message M → question Q` при `Q → M` создаётся; петля `message → тот же message` не создаётся; обычная связь создаётся. Результат зафиксировать в описании PR
+- [x] 5.2 Ручная проверка в `npm run dev`: связь `message B → message A` при существующей `A → B` не создаётся и подсвечивается как невалидная; связь `message M → question Q` при `Q → M` создаётся; петля `message → тот же message` не создаётся; обычная связь создаётся. Результат зафиксировать в описании PR
 
 ## 6. Docs and final verification
 
 - [x] 6.1 Обновить статус P1.13 на `Done` в `docs/roadmap.md` и `docs/roadmap-ru.md`; если `docs/cursor-context.md` описывает гарантии runtime или валидации — добавить правило «нет циклов без ноды ожидания». Проверка: diff документации соответствует реализации
-- [ ] 6.2 Прогнать полный пайплайн: `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run build`. Проверка: все команды завершаются без ошибок
+- [x] 6.2 Прогнать полный пайплайн: `npm run lint`, `npx tsc --noEmit`, `npm test`, `npm run build`. Проверка: все команды завершаются без ошибок
 - [x] 6.3 `openspec validate add-workflow-loop-guard --strict` проходит
