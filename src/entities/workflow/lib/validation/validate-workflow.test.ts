@@ -141,6 +141,28 @@ describe('validateWorkflow', () => {
       expect(codes).toContain('CHOICE_NO_BUTTONS');
       expect(result.isValid).toBe(false);
     });
+
+    it('returns isValid=false and counts every node of a cycle without a waiting node', () => {
+      const nodes: AppNode[] = [
+        makeStartNode('start-1'),
+        makeMessageNode('msg-a'),
+        makeMessageNode('msg-b'),
+        makeEndNode('end-1'),
+      ];
+      const edges: AppEdge[] = [
+        makeEdge('e1', 'start-1', 'msg-a'),
+        makeEdge('e2', 'msg-a', 'msg-b'),
+        makeEdge('e3', 'msg-b', 'msg-a'),
+        makeEdge('e4', 'msg-b', 'end-1'),
+      ];
+
+      const result = validateWorkflow({ nodes, edges });
+
+      const cycleIssues = result.issues.filter((i) => i.code === 'CYCLE_WITHOUT_WAITING_NODE');
+      expect(result.isValid).toBe(false);
+      expect(cycleIssues.map((i) => i.nodeId).sort()).toEqual(['msg-a', 'msg-b']);
+      expect(result.errorCount).toBe(cycleIssues.length);
+    });
   });
 
   describe('workflows with warnings only', () => {

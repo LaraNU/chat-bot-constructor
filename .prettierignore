@@ -4,3 +4,12 @@ dist
 build
 public
 package-lock.json
+.claude
+.cursor
+.github
+.husky
+.vscode
+docs
+openspec
+scripts
+tests

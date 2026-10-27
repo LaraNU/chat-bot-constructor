@@ -1,10 +1,20 @@
 import type { AppNode, AppEdge, WorkflowNodeType } from '@/entities/workflow';
+// Deep import: the entity's public barrel also re-exports server/UI modules
+// that must not be pulled into the runtime engine.
+import { isWaitingNodeType } from '@/entities/workflow/model/node-semantics';
 
 import type { UserContext } from '../model/types';
 
+import { WorkflowExecutionLimitError } from './execution-limit-error';
 import { getNodeHandler } from './nodes/registry';
 
 import type { TempData } from './nodes/types';
+
+/**
+ * Hard cap on node executions per Telegram update. A backstop on top of the
+ * cycle check: an acyclic pass is already bounded by the node count.
+ */
+export const MAX_STEPS_PER_UPDATE = 100;
 
 interface RunEngineParams {
   nodes: AppNode[];
@@ -85,6 +95,13 @@ export async function runWorkflowEngine({
 
   let currentNodeId = isResuming ? initialNodeId : getNextNodeId(null, state);
 
+  // Only the first executed handler may treat the update as a resume. A later
+  // visit to the same waiting node must ask again, not re-consume the answer.
+  let resumeNodeId = initialNodeId;
+
+  const executedNonWaitingNodeIds = new Set<string>();
+  let stepCount = 0;
+
   while (currentNodeId) {
     const currentNode = state.nodesById.get(currentNodeId);
 
@@ -100,6 +117,20 @@ export async function runWorkflowEngine({
       break;
     }
 
+    if (stepCount >= MAX_STEPS_PER_UPDATE) {
+      throw new WorkflowExecutionLimitError('step_limit', context.botId, currentNode.id);
+    }
+
+    if (!isWaitingNodeType(nodeType)) {
+      if (executedNonWaitingNodeIds.has(currentNode.id)) {
+        throw new WorkflowExecutionLimitError('cycle', context.botId, currentNode.id);
+      }
+
+      executedNonWaitingNodeIds.add(currentNode.id);
+    }
+
+    stepCount++;
+
     const result = await handler.handle({
       node: currentNode,
       edges,
@@ -108,8 +139,10 @@ export async function runWorkflowEngine({
       edgesBySource: state.edgesBySource,
       context,
       tempData,
-      initialNodeId,
+      initialNodeId: resumeNodeId,
     });
+
+    resumeNodeId = null;
 
     if (result.shouldStop) {
       return result.nextNodeId;
