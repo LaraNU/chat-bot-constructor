@@ -106,9 +106,11 @@ The workflow entity contains:
 - isolated Zustand Vanilla Store (one store instance per editor, provided via React Context — never a global singleton)
 - React Context provider
 - selectors and mutations
-- workflow validation (4-phase: graph structure, cycles without a waiting node, node connections, node data)
-- node semantics (`model/node-semantics.ts`: which node types wait for user input — shared by runtime,
-  validation, and canvas)
+- workflow validation (4-phase: graph structure, cycles without a waiting node, node connections — required
+  edges, at most one edge per output, dead-end linear nodes — and node data, including non-empty
+  `message`/`question` text)
+- node semantics (`model/node-semantics.ts`: which node types wait for user input and what outputs each type
+  has — shared by runtime, validation, and canvas)
 - workflow persistence actions
 - node configuration and domain types
 
@@ -198,6 +200,13 @@ enforced in three places — the canvas rejects such connections (`isValidConnec
 `CYCLE_WITHOUT_WAITING_NODE`, and the engine stops with `WorkflowExecutionLimitError` when a non-waiting node is
 reached twice within one update or `MAX_STEPS_PER_UPDATE` is exceeded. Only the first executed handler receives
 `initialNodeId`; a later visit to the same waiting node asks again instead of re-consuming the answer.
+
+Single edge per output invariant: every node output (the single output of `start`, `message`, `question`,
+`summary`; each `choice` button; each `condition` branch) has at most one outgoing edge. It is enforced in two
+places — the canvas rejects a connection from an occupied output (`isValidConnection` via `isOutputOccupied`),
+and validation reports `MULTIPLE_EDGES_FROM_OUTPUT` for drafts saved before the rule. The runtime relies on it:
+handlers follow the only edge of an output (`[0]` for linear nodes, the edge matching `sourceHandle` for
+`choice`/`condition`).
 
 ### Known runtime limitations (do not treat as resolved)
 

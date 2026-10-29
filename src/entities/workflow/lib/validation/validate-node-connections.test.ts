@@ -7,9 +7,11 @@ import {
   makeEdge,
   makeEndNode,
   makeMessageNode,
+  makeQuestionNode,
   makeStartNode,
+  makeSummaryNode,
 } from './test-utils/fixtures';
-import type { AppNode } from '../../model/types';
+import type { AppEdge, AppNode } from '../../model/types';
 
 describe('validateNodeConnections', () => {
   describe('condition node branches', () => {
@@ -188,6 +190,135 @@ describe('validateNodeConnections', () => {
       const issues = validateNodeConnections(nodes, edges);
 
       expect(issues).toHaveLength(0);
+    });
+  });
+
+  describe('output cardinality', () => {
+    const multipleEdgeIssues = (nodes: AppNode[], edges: AppEdge[]) =>
+      validateNodeConnections(nodes, edges).filter((i) => i.code === 'MULTIPLE_EDGES_FROM_OUTPUT');
+
+    it('emits one MULTIPLE_EDGES_FROM_OUTPUT error for a message with two edges', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeMessageNode('msg-1'),
+        makeEndNode('end-1'),
+        makeEndNode('end-2'),
+      ];
+      const edges = [
+        makeEdge('e1', 'start-1', 'msg-1'),
+        makeEdge('e2', 'msg-1', 'end-1'),
+        makeEdge('e3', 'msg-1', 'end-2'),
+      ];
+
+      expect(multipleEdgeIssues(nodes, edges)).toEqual([
+        {
+          severity: 'error',
+          code: 'MULTIPLE_EDGES_FROM_OUTPUT',
+          nodeId: 'msg-1',
+          messageKey: 'validation.multipleEdgesFromOutput',
+          messageParams: { handleId: '', count: '2' },
+        },
+      ]);
+    });
+
+    it('emits MULTIPLE_EDGES_FROM_OUTPUT for two edges from the same choice button', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeChoiceNode('choice-1'),
+        makeEndNode('end-1'),
+        makeEndNode('end-2'),
+        makeEndNode('end-3'),
+      ];
+      const edges = [
+        makeEdge('e1', 'start-1', 'choice-1'),
+        makeEdge('e2', 'choice-1', 'end-1', 'btn-a'),
+        makeEdge('e3', 'choice-1', 'end-2', 'btn-a'),
+        makeEdge('e4', 'choice-1', 'end-3', 'btn-b'),
+      ];
+
+      expect(multipleEdgeIssues(nodes, edges)).toEqual([
+        expect.objectContaining({
+          nodeId: 'choice-1',
+          messageParams: { handleId: 'btn-a', count: '2' },
+        }),
+      ]);
+    });
+
+    it('emits no error for one edge per condition branch and per choice button', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeConditionNode('cond-1'),
+        makeChoiceNode('choice-1'),
+        makeEndNode('end-1'),
+        makeEndNode('end-2'),
+        makeEndNode('end-3'),
+      ];
+      const edges = [
+        makeEdge('e1', 'start-1', 'cond-1'),
+        makeEdge('e2', 'cond-1', 'choice-1', 'true'),
+        makeEdge('e3', 'cond-1', 'end-1', 'false'),
+        makeEdge('e4', 'choice-1', 'end-2', 'btn-a'),
+        makeEdge('e5', 'choice-1', 'end-3', 'btn-b'),
+      ];
+
+      expect(multipleEdgeIssues(nodes, edges)).toHaveLength(0);
+    });
+
+    it('treats an edge without sourceHandle and an edge with null sourceHandle as one output', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeMessageNode('msg-1'),
+        makeEndNode('end-1'),
+        makeEndNode('end-2'),
+      ];
+      const edges: AppEdge[] = [
+        makeEdge('e1', 'start-1', 'msg-1'),
+        makeEdge('e2', 'msg-1', 'end-1'),
+        { ...makeEdge('e3', 'msg-1', 'end-2'), sourceHandle: null },
+      ];
+
+      expect(multipleEdgeIssues(nodes, edges)).toEqual([
+        expect.objectContaining({ nodeId: 'msg-1', messageParams: { handleId: '', count: '2' } }),
+      ]);
+    });
+  });
+
+  describe('nodes without an outgoing edge', () => {
+    const deadEndIssues = (nodes: AppNode[], edges: AppEdge[]) =>
+      validateNodeConnections(nodes, edges).filter((i) => i.code === 'NODE_HAS_NO_OUTGOING_EDGE');
+
+    it('emits a NODE_HAS_NO_OUTGOING_EDGE warning for dead-end message, question and summary', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeMessageNode('msg-1'),
+        makeQuestionNode('q-1'),
+        makeSummaryNode('sum-1'),
+      ];
+      const edges = [makeEdge('e1', 'start-1', 'msg-1')];
+
+      const issues = deadEndIssues(nodes, edges);
+
+      expect(issues.map((i) => i.nodeId)).toEqual(['msg-1', 'q-1', 'sum-1']);
+      expect(issues.every((i) => i.severity === 'warning')).toBe(true);
+      expect(issues[0].messageKey).toBe('validation.nodeHasNoOutgoingEdge');
+    });
+
+    it('does not emit the warning for end, start, choice and condition', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeChoiceNode('choice-1'),
+        makeConditionNode('cond-1'),
+        makeEndNode(),
+      ];
+
+      expect(deadEndIssues(nodes, [])).toHaveLength(0);
+    });
+
+    it('does not emit the warning for a linear node with an outgoing edge', () => {
+      const nodes: AppNode[] = [makeStartNode(), makeMessageNode('msg-1'), makeEndNode()];
+      const edges = [makeEdge('e1', 'start-1', 'msg-1'), makeEdge('e2', 'msg-1', 'end-1')];
+
+      expect(deadEndIssues(nodes, edges)).toHaveLength(0);
     });
   });
 });

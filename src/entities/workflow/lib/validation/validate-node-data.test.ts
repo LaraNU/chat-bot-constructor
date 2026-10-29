@@ -5,6 +5,7 @@ import {
   makeChoiceNode,
   makeConditionNode,
   makeEndNode,
+  makeMessageNode,
   makeQuestionNode,
   makeStartNode,
   makeSummaryNode,
@@ -157,8 +158,51 @@ describe('validateNodeData', () => {
     });
   });
 
-  describe('nodes without a registered validator', () => {
-    it('returns no issues for start, end, message, and question nodes', () => {
+  describe('message and question text', () => {
+    it.each([
+      ['empty message', makeMessageNode('node-1', { text: '' })],
+      ['whitespace-only message', makeMessageNode('node-1', { text: '   ' })],
+      ['empty question', makeQuestionNode('node-1', { text: '' })],
+      ['whitespace-only question', makeQuestionNode('node-1', { text: ' \n\t ' })],
+    ])('emits EMPTY_NODE_TEXT for %s', (_, node) => {
+      const issues = validateNodeData([makeStartNode(), node, makeEndNode()], NO_EDGES);
+
+      expect(issues).toEqual([
+        expect.objectContaining({
+          code: 'EMPTY_NODE_TEXT',
+          severity: 'error',
+          nodeId: 'node-1',
+          messageKey: 'validation.emptyNodeText',
+        }),
+      ]);
+    });
+
+    it('emits EMPTY_NODE_TEXT for a message with attachments but no text', () => {
+      const node = makeMessageNode('msg-1', { text: '', attachmentIds: ['file-1'] });
+
+      const issues = validateNodeData([makeStartNode(), node, makeEndNode()], NO_EDGES);
+
+      expect(issues).toContainEqual(
+        expect.objectContaining({ code: 'EMPTY_NODE_TEXT', nodeId: 'msg-1' })
+      );
+    });
+
+    it('emits no EMPTY_NODE_TEXT when message and question have text', () => {
+      const nodes: AppNode[] = [
+        makeStartNode(),
+        makeMessageNode('msg-1', { text: 'Hi' }),
+        makeQuestionNode('q-1', { text: 'Name?' }),
+        makeEndNode(),
+      ];
+
+      const issues = validateNodeData(nodes, NO_EDGES);
+
+      expect(issues.map((i) => i.code)).not.toContain('EMPTY_NODE_TEXT');
+    });
+  });
+
+  describe('nodes with valid data', () => {
+    it('returns no issues for start, end, and filled message and question nodes', () => {
       const nodes: AppNode[] = [
         makeStartNode(),
         makeEndNode(),
