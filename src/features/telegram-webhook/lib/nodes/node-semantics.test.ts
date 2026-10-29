@@ -1,7 +1,10 @@
 import { vi, beforeEach, describe, test, expect } from 'vitest';
 
 import type { AppNode, WorkflowNodeType } from '@/entities/workflow';
-import { isWaitingNodeType } from '@/entities/workflow/model/node-semantics';
+import {
+  WORKFLOW_NODE_SEMANTICS,
+  isWaitingNodeType,
+} from '@/entities/workflow/model/node-semantics';
 import { sendTelegramMessage } from '@/shared/api/telegram/client';
 import { prisma } from '@/shared/lib/prisma';
 import type { UserContext } from '../../model/types';
@@ -83,6 +86,40 @@ describe('node semantics ↔ runtime handlers', () => {
       });
 
       expect(Boolean(result.shouldStop)).toBe(isWaitingNodeType(type));
+    }
+  );
+
+  test('only `end` has no outputs', () => {
+    const typesWithoutOutputs = nodeTypes.filter(
+      (type) => WORKFLOW_NODE_SEMANTICS[type].outputs === 'none'
+    );
+
+    expect(typesWithoutOutputs).toEqual(['end']);
+  });
+
+  // `start` is advanced by the engine itself and `end` has no outputs, so only
+  // the remaining handlers pick the next edge on their own.
+  const edgeSelectingTypes = nodeTypes.filter((type) => type !== 'start' && type !== 'end');
+
+  test.each(edgeSelectingTypes)(
+    '`%s`: outputs is `perHandle` exactly when the handler ignores an edge from another handle',
+    async (type) => {
+      const node = NODE_FIXTURES[type];
+      const foreignEdge = { id: 'e1', source: node.id, target: 'next', sourceHandle: 'foreign' };
+
+      const result = await nodeHandlersRegistry[type].handle({
+        node,
+        nodes: [node],
+        edges: [foreignEdge],
+        nodesById: new Map([[node.id, node]]),
+        edgesBySource: new Map([[node.id, [foreignEdge]]]),
+        context: { ...mockContext, userText: 'yes', callbackData: 'btn-a' },
+        tempData: { answers: {}, responses: [] },
+        initialNodeId: node.id,
+      });
+
+      const followsAnyEdge = result.nextNodeId === 'next';
+      expect(WORKFLOW_NODE_SEMANTICS[type].outputs === 'perHandle').toBe(!followsAnyEdge);
     }
   );
 });

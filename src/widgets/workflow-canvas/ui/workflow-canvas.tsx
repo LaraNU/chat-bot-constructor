@@ -13,7 +13,12 @@ import '@xyflow/react/dist/style.css';
 
 import { useCallback, useMemo } from 'react';
 
-import { NODE_TYPES, CustomEdge, wouldCreateUnsafeCycle } from '@/entities/workflow';
+import {
+  NODE_TYPES,
+  CustomEdge,
+  isOutputOccupied,
+  wouldCreateUnsafeCycle,
+} from '@/entities/workflow';
 
 import {
   useWorkflowNodes,
@@ -49,11 +54,19 @@ export function WorkflowCanvas({ onNodeDoubleClick }: Props) {
 
   const storeApi = useWorkflowStoreApi();
 
+  // Rejects a connection from an output that already has an edge (each node
+  // output has at most one) or one that would close a cycle without a waiting
+  // node. React Flow normalizes drags started from a target handle, so both
+  // directions are covered.
   // Runs on every pointer move while a connection is dragged: read the graph
   // at call time instead of re-creating the callback on each graph change.
   const isValidConnection = useCallback<IsValidConnection>(
-    ({ source, target }) => {
+    ({ source, sourceHandle, target }) => {
       const { nodes: currentNodes, edges: currentEdges } = storeApi.getState();
+
+      if (isOutputOccupied(currentEdges, { source, sourceHandle })) {
+        return false;
+      }
 
       return !wouldCreateUnsafeCycle(currentNodes, currentEdges, { source, target });
     },

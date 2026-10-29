@@ -152,8 +152,8 @@ describe('validateWorkflow', () => {
       const edges: AppEdge[] = [
         makeEdge('e1', 'start-1', 'msg-a'),
         makeEdge('e2', 'msg-a', 'msg-b'),
+        // msg-b has a single output, so the loop leaves end-1 unreachable.
         makeEdge('e3', 'msg-b', 'msg-a'),
-        makeEdge('e4', 'msg-b', 'end-1'),
       ];
 
       const result = validateWorkflow({ nodes, edges });
@@ -162,6 +162,38 @@ describe('validateWorkflow', () => {
       expect(result.isValid).toBe(false);
       expect(cycleIssues.map((i) => i.nodeId).sort()).toEqual(['msg-a', 'msg-b']);
       expect(result.errorCount).toBe(cycleIssues.length);
+    });
+  });
+
+  describe('graph from the branching-message report', () => {
+    it('reports multiple edges, empty texts and the dead end', () => {
+      const nodes: AppNode[] = [
+        makeStartNode('start-1'),
+        makeMessageNode('m1', { text: '' }),
+        makeMessageNode('m2', { text: '' }),
+        makeMessageNode('m3', { text: '' }),
+        makeEndNode('end-1'),
+      ];
+      const edges: AppEdge[] = [
+        makeEdge('e1', 'start-1', 'm1'),
+        makeEdge('e2', 'm1', 'm2'),
+        makeEdge('e3', 'm2', 'end-1'),
+        makeEdge('e4', 'm1', 'm3'),
+      ];
+
+      const result = validateWorkflow({ nodes, edges });
+
+      const issueKeys = result.issues.map((i) => `${i.code}:${i.nodeId}`);
+      expect(result.isValid).toBe(false);
+      expect(issueKeys).toEqual(
+        expect.arrayContaining([
+          'MULTIPLE_EDGES_FROM_OUTPUT:m1',
+          'EMPTY_NODE_TEXT:m1',
+          'EMPTY_NODE_TEXT:m2',
+          'EMPTY_NODE_TEXT:m3',
+          'NODE_HAS_NO_OUTGOING_EDGE:m3',
+        ])
+      );
     });
   });
 

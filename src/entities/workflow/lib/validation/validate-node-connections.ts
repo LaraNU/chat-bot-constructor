@@ -1,4 +1,6 @@
 import type { AppEdge, AppNode, ChoiceAppNode, ConditionAppNode } from '../../model/types';
+import { WORKFLOW_NODE_SEMANTICS } from '../../model/node-semantics';
+import { groupEdgesByOutput } from '../graph';
 
 import type { ValidationIssue } from './types';
 
@@ -15,13 +17,17 @@ function buildEdgesBySource(edges: AppEdge[]): Map<string, AppEdge[]> {
 }
 
 /**
- * Validates that each node type has the required outgoing edges.
+ * Validates outgoing edges of each node against its type.
  *
  * - condition nodes must have both a 'true' and a 'false' edge.
  * - choice nodes must have a corresponding edge for every configured button.
+ * - every node output may have at most one edge (error): the runtime follows
+ *   only the first one, so extra edges would be silently dead branches.
+ * - single-output nodes other than start should have an outgoing edge
+ *   (warning): otherwise the dialog ends without reaching an end node.
+ *   A missing start edge is reported by validateGraphStructure.
  *
- * These checks catch missing connections that would cause the runtime engine
- * to silently dead-end on a null nextNodeId.
+ * These checks catch connections the runtime engine cannot execute as drawn.
  */
 export function validateNodeConnections(nodes: AppNode[], edges: AppEdge[]): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
@@ -70,6 +76,32 @@ export function validateNodeConnections(nodes: AppNode[], edges: AppEdge[]): Val
           });
         }
       }
+    }
+
+    const { outputs } = WORKFLOW_NODE_SEMANTICS[node.type];
+
+    if (outputs === 'single' && node.type !== 'start' && !edgesBySource.has(node.id)) {
+      issues.push({
+        severity: 'warning',
+        code: 'NODE_HAS_NO_OUTGOING_EDGE',
+        nodeId: node.id,
+        messageKey: 'validation.nodeHasNoOutgoingEdge',
+      });
+    }
+  }
+
+  for (const output of groupEdgesByOutput(edges)) {
+    if (output.edges.length > 1) {
+      issues.push({
+        severity: 'error',
+        code: 'MULTIPLE_EDGES_FROM_OUTPUT',
+        nodeId: output.source,
+        messageKey: 'validation.multipleEdgesFromOutput',
+        messageParams: {
+          handleId: output.sourceHandle ?? '',
+          count: String(output.edges.length),
+        },
+      });
     }
   }
 

@@ -5,6 +5,8 @@ import type { NodeDataValidator } from '../types';
 import { conditionNodeValidator } from './condition-validator';
 import { choiceNodeValidator } from './choice-validator';
 import { summaryNodeValidator } from './summary-validator';
+import { messageNodeValidator } from './message-validator';
+import { questionNodeValidator } from './question-validator';
 
 /**
  * Registry of per-node data validators keyed by node type.
@@ -16,4 +18,6 @@ export const NODE_DATA_VALIDATORS: Partial<Record<WorkflowNodeType, NodeDataVali
   condition: conditionNodeValidator,
   choice: choiceNodeValidator,
   summary: summaryNodeValidator,
+  message: messageNodeValidator,
+  question: questionNodeValidator,
 };
